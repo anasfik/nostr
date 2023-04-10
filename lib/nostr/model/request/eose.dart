@@ -1,7 +1,8 @@
 import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
-import 'package:nostr_client/nostr/core/constants.dart';
+
+import '../../core/constants.dart';
 
 class NostrEOSE extends Equatable {
   final String subscriptionId;

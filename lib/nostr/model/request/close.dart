@@ -1,7 +1,8 @@
 import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
-import 'package:nostr_client/nostr/core/constants.dart';
+
+import '../../core/constants.dart';
 
 /// {@template nostr_request_close}
 /// A request to close a subscription with a given subscription id.

@@ -1,4 +1,4 @@
-name: nostr
+name: dart_nostr
 description: This is a helper package that simplify and accelerate the use of Nostr protocal in Dart/Flutter environment
 version: 1.0.0-dev
 repository: https://github.com/anasfik/nostr/
@@ -7,8 +7,10 @@ environment:
   sdk: ">=2.19.0 <3.0.0"
 
 dependencies:
-  bip340:
-  equatable:
+  bip340: ^0.1.0
+  equatable: ^2.0.5
+  convert: ^3.1.1
+  crypto: ^3.0.2
 
 dev_dependencies:
   lints:

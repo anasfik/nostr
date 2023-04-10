@@ -15,9 +15,9 @@ class NostrEvent extends Equatable {
   final String pubkey;
   final DateTime createdAt;
   final List<List<String>> tags;
-  String? subscriptionId;
+  final String? subscriptionId;
 
-  NostrEvent({
+  const NostrEvent({
     required this.id,
     required this.kind,
     required this.content,
@@ -148,5 +148,27 @@ class NostrEvent extends Equatable {
     // make a unique tag for this event.
 
     return "$id$createdAt$subscriptionId$pubkey";
+  }
+
+  NostrEvent copyWith({
+    String? id,
+    int? kind,
+    String? content,
+    String? sig,
+    String? pubkey,
+    DateTime? createdAt,
+    List<List<String>>? tags,
+    String? subscriptionId,
+  }) {
+    return NostrEvent(
+      id: id ?? this.id,
+      kind: kind ?? this.kind,
+      content: content ?? this.content,
+      sig: sig ?? this.sig,
+      pubkey: pubkey ?? this.pubkey,
+      createdAt: createdAt ?? this.createdAt,
+      tags: tags ?? this.tags,
+      subscriptionId: subscriptionId ?? this.subscriptionId,
+    );
   }
 }

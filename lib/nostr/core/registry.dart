@@ -1,13 +1,9 @@
 import 'dart:io';
 
-import 'package:nostr_client/nostr/core/utils.dart';
-
-import '../nostr.dart';
-
 /// This is responsible for registering and retrieving relays [WebSocket]s that are connected to the app.
 abstract class NostrRegistry {
   /// This is the registry which will have all relays [WebSocket]s.
-  static Map<String, WebSocket> _relaysWebSocketsRegistry = {};
+  static final Map<String, WebSocket> _relaysWebSocketsRegistry = {};
 
   /// Registers a [WebSocket] to the registry with the given [relayUrl].
   /// If a [WebSocket] is already registered with the given [relayUrl], it will be replaced.
