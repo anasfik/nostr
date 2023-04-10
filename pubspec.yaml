@@ -1,0 +1,15 @@
+name: nostr_client
+description: A starting point for Dart libraries or applications.
+version: 1.0.0
+# repository: https://github.com/my_org/my_repo
+
+environment:
+  sdk: ">=2.19.0 <3.0.0"
+
+dependencies:
+  bip340:
+  equatable:
+
+dev_dependencies:
+  lints:
+  test:
