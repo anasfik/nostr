@@ -1,7 +1,7 @@
-name: nostr_client
-description: A starting point for Dart libraries or applications.
-version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+name: nostr
+description: This is a helper package that simplify and accelerate the use of Nostr protocal in Dart/Flutter environment
+version: 1.0.0-dev
+repository: https://github.com/anasfik/nostr/
 
 environment:
   sdk: ">=2.19.0 <3.0.0"
