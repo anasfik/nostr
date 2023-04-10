@@ -32,7 +32,7 @@ abstract class NostrRegistry {
   }
 
   /// Returns all [WebSocket]s registered in the registry.
-  static List<WebSocket> allRelayWebSockets() {
-    return _relaysWebSocketsRegistry.values.toList();
+  static List<MapEntry<String, WebSocket>> allRelaysEntries() {
+    return _relaysWebSocketsRegistry.entries.toList();
   }
 }

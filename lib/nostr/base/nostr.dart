@@ -1,14 +1,16 @@
-import 'package:web_socket_channel/web_socket_channel.dart';
-
 import '../model/event.dart';
 import '../model/request/request.dart';
+import '../core/key_pairs.dart';
 
 abstract class NostrServiceBase {
-  String generateKeys();
+  void disableLogs();
+  void enableLogs();
+  String generatePrivateKey();
+  NostrKeyPairs generateKeyPair();
 
   void sendEventToRelays(NostrEvent event);
 
-  Stream<NostrEvent> subscribeToEvents({
-    required NostrRequest request,
-  });
+  Stream<NostrEvent> startEventsSubscription({required NostrRequest request});
+
+  void closeEventsSubscription(String subscriptionId);
 }
