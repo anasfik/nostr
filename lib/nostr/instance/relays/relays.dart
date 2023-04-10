@@ -21,6 +21,32 @@ class NostrRelays implements NostrRelaysBase {
   /// This is the stream which will have all events from all relays.
   Stream<NostrEvent> get stream => _streamController.stream;
 
+  /// This method is responsible for initializing the connection to all relays.
+  /// It takes a [List<String>] of relays urls, then it connects to each relay and registers it for future use, if [relayUrl] is empty, it will throw an [AssertionError] since it doesn't make sense to connect to an empty list of relays.
+  ///
+  ///
+  /// The [WebSocket]s of the relays will start being listened to get events from them immediately after calling this method, unless you set the [lazyListeningToRelays] parameter to `true`, then you will have to call the [startListeningToRelays] method to start listening to the relays manually.
+  ///
+  ///
+  /// You can also pass a callback to the [onRelayListening] parameter to be notified when a relay starts listening to it's websocket.
+  ///
+  ///
+  /// You can also pass a callback to the [onRelayError] parameter to be notified when a relay websocket throws an error.
+  ///
+  ///
+  /// You can also pass a callback to the [onRelayDone] parameter to be notified when a relay websocket is closed.
+  ///
+  ///
+  /// You will need to call this method before using any other method, as example, in your `main()` method to make sure that the connection is established before using any other method.
+  /// ```dart
+  /// void main() async {
+  ///  await Nostr.instance.init(relaysUrl: ["wss://relay.damus.io"]);
+  /// // ...
+  /// runApp(MyApp()); // if it is a flutter app
+  /// }
+  /// ```
+  ///
+  /// You can also use this method to re-connect to all relays in case of a connection failure.
   Future<void> init({
     required List<String> relaysUrl,
     void Function(String relayUrl, dynamic receivedData)? onRelayListening,
@@ -128,6 +154,7 @@ class NostrRelays implements NostrRelaysBase {
   /// This method will start listening to all relays that you did registered with the [init] method.
   ///
   /// you need to call this method manually only if you set the [lazyListeningToRelays] parameter to `true` in the [init] method, otherwise it will be called automatically by the [init] method.
+  @override
   void startListeningToRelays({
     required String relay,
     void Function(String relayUrl, dynamic receivedData)? onRelayListening,
