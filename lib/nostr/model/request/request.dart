@@ -4,30 +4,34 @@ import 'package:equatable/equatable.dart';
 
 import '../../core/constants.dart';
 import 'filter.dart';
+import '../../core/utils.dart';
 
 /// {@template nostr_request}
 /// NostrRequest is a request to subscribe to a set of events that match a set of filters with a given [subscriptionId].
 /// {@endtemplate}
 class NostrRequest extends Equatable {
   /// The subscription ID of the request.
-  late String subscriptionId;
+  String? subscriptionId;
 
   /// A list of filters that the request will match.
-  late List<NostrFilter> filters;
+  List<NostrFilter> filters;
 
   /// {@macro nostr_request}
   NostrRequest({
-    required this.subscriptionId,
+    this.subscriptionId,
     required this.filters,
   });
 
   /// Serialize the request to send it to the remote relays websockets.
   String serialized() {
-    var theFilters = jsonEncode(filters.map((item) => item.toMap()).toList());
+    String decodedFilters =
+        jsonEncode(filters.map((item) => item.toMap()).toList());
 
-    var header = jsonEncode([NostrConstants.request, subscriptionId]);
+    subscriptionId ??= NostrClientUtils.random64HexChars();
+    String header = jsonEncode([NostrConstants.request, subscriptionId]);
+
     final result =
-        '${header.substring(0, header.length - 1)},${theFilters.substring(1, theFilters.length)}';
+        '${header.substring(0, header.length - 1)},${decodedFilters.substring(1, decodedFilters.length)}';
 
     return result;
   }
