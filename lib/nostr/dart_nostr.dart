@@ -1,5 +1,4 @@
 import 'dart:core';
-import 'dart:io';
 import 'package:dart_nostr/nostr/instance/relays/relays.dart';
 
 import 'base/nostr.dart';
