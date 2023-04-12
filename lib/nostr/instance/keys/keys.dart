@@ -28,6 +28,13 @@ class NostrKeys implements NostrKeysBase {
     return nostrKeyPairs;
   }
 
+  @override
+  NostrKeyPairs generateKeyPairFromExistingPrivateKey(
+    String privateKey,
+  ) {
+    return NostrKeyPairs(private: privateKey);
+  }
+
   /// You can use this method to generate a key pair for your end users.
   /// it returns the private key of the generated key pair.
   @override
@@ -48,5 +55,20 @@ class NostrKeys implements NostrKeysBase {
     );
 
     return signature;
+  }
+
+  /// You can use this method to verify a [message] with a [publicKey] and it's [signature].
+  /// it returns a [bool] that indicates if the [message] is verified or not.
+  bool verify({
+    required String publicKey,
+    required String message,
+    required String signature,
+  }) {
+    final isVerified = NostrKeyPairs.verify(publicKey, message, signature);
+    NostrClientUtils.log(
+      "verified message with public key: $publicKey, with it's value is: $isVerified",
+    );
+
+    return isVerified;
   }
 }

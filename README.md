@@ -1,4 +1,5 @@
 # Nostr Dart Client for Nostr protocol.
+
 <p align="center">
 <img src="https://imgur.com/KqnGsN2.png" width="70%" placeholder="Nostr protocol" />
 </p>
@@ -30,4 +31,52 @@ Nostr.instance;
 Nostr.instance.keysService; // access to the keys service, which will provide methods to handle user key pairs, private keys, public keys, etc.
 
 Nostr.instance.relaysService; // access to the relays service, which will provide methods to interact with your own relays such as sending events, listening to events, etc.
+```
+
+## Keys Service:
+
+#### Generate a new key pair:
+
+```dart
+NostrKeyPairs keyPair = await Nostr.instance.keysService.generateKeyPair();
+
+print(keyPair.private); // ...
+print(keyPair.public); // ...
+```
+
+#### Get a key pair from an existent private key:
+
+```dart
+NostrKeyPairs keyPair = await Nostr.instance.keysService.generateKeyPairFromExistingPrivateKey(privateKey);
+```
+
+#### generate and get a new private key directly:
+
+```dart
+String privateKey = await Nostr.instance.keysService.generatePrivateKey();
+```
+
+#### Derive a public key from a private key directly:
+
+```dart
+String publicKey = await Nostr.instance.keysService.derivePublicKey(privateKey);
+```
+
+#### Sign and verify a message:
+
+```dart
+final privateKey = ...;
+final message = ...;
+String signature = await Nostr.instance.keysService.sign(
+  privateKey: privateKey,
+  message: message,
+);
+print(signature); // ...
+
+bool isVerified = await Nostr.instance.keysService.verify(
+  publicKey: publicKey,
+  message: message,
+  signature: signature,
+);
+print(isMessageVerified); // ...
 ```
