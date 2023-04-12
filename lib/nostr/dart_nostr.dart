@@ -19,7 +19,6 @@ class Nostr implements NostrServiceBase {
   /// {@macro nostr_service}
   Nostr._();
 
-
   /// This method will disable the logs of the library.
   @override
   void disableLogs() {
@@ -33,8 +32,8 @@ class Nostr implements NostrServiceBase {
   }
 
   /// {@macro nostr_keys}
-  final NostrKeys keys = NostrKeys();
+  final NostrKeys keysService = NostrKeys();
 
   /// {@macro nostr_relays}
-  final NostrRelays service = NostrRelays();
+  final NostrRelays relaysService = NostrRelays();
 }
