@@ -1,4 +1,7 @@
 # Nostr Dart Client for Nostr protocol.
+<p align="center">
+<img src="https://imgur.com/KqnGsN2.png" width="70%" placeholder="Nostr protocol" />
+</p>
 
 **help this gets discovered and noticed by other developers with a star ⭐**
 
