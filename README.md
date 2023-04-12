@@ -65,8 +65,7 @@ String publicKey = await Nostr.instance.keysService.derivePublicKey(privateKey);
 #### Sign and verify a message:
 
 ```dart
-final privateKey = ...;
-final message = ...;
+String message = ...;
 String signature = await Nostr.instance.keysService.sign(
   privateKey: privateKey,
   message: message,
