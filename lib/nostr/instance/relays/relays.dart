@@ -19,6 +19,7 @@ class NostrRelays implements NostrRelaysBase {
   final _streamController = StreamController<NostrEvent>.broadcast();
 
   /// This is the stream which will have all events from all relays.
+  @override
   Stream<NostrEvent> get stream => _streamController.stream;
 
   /// This method is responsible for initializing the connection to all relays.
@@ -47,12 +48,15 @@ class NostrRelays implements NostrRelaysBase {
   /// ```
   ///
   /// You can also use this method to re-connect to all relays in case of a connection failure.
+  @override
   Future<void> init({
     required List<String> relaysUrl,
     void Function(String relayUrl, dynamic receivedData)? onRelayListening,
     void Function(String relayUrl, Object? error)? onRelayError,
     void Function(String relayUrl)? onRelayDone,
     bool lazyListeningToRelays = false,
+    bool retryOnError = false,
+    bool retryOnClose = false,
   }) async {
     assert(
       relaysUrl.isNotEmpty,
@@ -76,6 +80,8 @@ class NostrRelays implements NostrRelaysBase {
           onRelayListening: onRelayListening,
           onRelayError: onRelayError,
           onRelayDone: onRelayDone,
+          retryOnError: retryOnError,
+          retryOnClose: retryOnClose,
         );
       }
     }
@@ -160,6 +166,8 @@ class NostrRelays implements NostrRelaysBase {
     void Function(String relayUrl, dynamic receivedData)? onRelayListening,
     void Function(String relayUrl, Object? error)? onRelayError,
     void Function(String relayUrl)? onRelayDone,
+    bool retryOnError = false,
+    bool retryOnClose = false,
   }) {
     NostrRegistry.getRelayWebSocket(relayUrl: relay)!.listen((d) {
       if (onRelayListening != null) {
@@ -179,6 +187,20 @@ class NostrRelays implements NostrRelaysBase {
       //       "EOS from relay $relay with id: ${NostrEOSE.fromRelayMessage(d).subscriptionId}");
       // }
     }, onError: (error) {
+      if (retryOnError) {
+        NostrClientUtils.log(
+          "retrying to listen to relay with url: $relay...",
+        );
+        startListeningToRelays(
+          relay: relay,
+          onRelayListening: onRelayListening,
+          onRelayError: onRelayError,
+          onRelayDone: onRelayDone,
+          retryOnError: retryOnError,
+          retryOnClose: retryOnClose,
+        );
+      }
+
       if (onRelayError != null) {
         onRelayError(relay, error);
       }
@@ -187,6 +209,20 @@ class NostrRelays implements NostrRelaysBase {
         error,
       );
     }, onDone: () {
+      if (retryOnClose) {
+        NostrClientUtils.log(
+          "retrying to listen to relay with url: $relay...",
+        );
+        startListeningToRelays(
+          relay: relay,
+          onRelayListening: onRelayListening,
+          onRelayError: onRelayError,
+          onRelayDone: onRelayDone,
+          retryOnError: retryOnError,
+          retryOnClose: retryOnClose,
+        );
+      }
+
       if (onRelayDone != null) {
         onRelayDone(relay);
       }
