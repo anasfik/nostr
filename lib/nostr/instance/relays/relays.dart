@@ -57,7 +57,6 @@ class NostrRelays implements NostrRelaysBase {
     bool lazyListeningToRelays = false,
     bool retryOnError = false,
     bool retryOnClose = false,
-    bool removeDuplicatedEvents = true,
   }) async {
     assert(
       relaysUrl.isNotEmpty,
@@ -83,7 +82,6 @@ class NostrRelays implements NostrRelaysBase {
           onRelayDone: onRelayDone,
           retryOnError: retryOnError,
           retryOnClose: retryOnClose,
-          removeDuplicatedEvents: removeDuplicatedEvents,
         );
       }
     }
@@ -170,7 +168,6 @@ class NostrRelays implements NostrRelaysBase {
     void Function(String relayUrl)? onRelayDone,
     bool retryOnError = false,
     bool retryOnClose = false,
-    bool removeDuplicatedEvents = true,
   }) {
     NostrRegistry.getRelayWebSocket(relayUrl: relay)!.listen((d) {
       if (onRelayListening != null) {
@@ -178,21 +175,7 @@ class NostrRelays implements NostrRelaysBase {
       }
 
       if (NostrEvent.canBeDeserializedEvent(d)) {
-        if (removeDuplicatedEvents) {
-          _streamController.stream.toList().then((list) {
-            if (list
-                .where((e) => e.id == NostrEvent.fromRelayMessage(d).id)
-                .isEmpty) {
-              _streamController.sink.add(NostrEvent.fromRelayMessage(d));
-            } else {
-              NostrClientUtils.log(
-                "received duplicated event with id: ${NostrEvent.fromRelayMessage(d).id} from relay: $relay",
-              );
-            }
-          });
-        } else {
-          _streamController.sink.add(NostrEvent.fromRelayMessage(d));
-        }
+        _streamController.sink.add(NostrEvent.fromRelayMessage(d));
         NostrClientUtils.log(
             "received event with content: ${NostrEvent.fromRelayMessage(d).content} from relay: $relay");
       } else {
