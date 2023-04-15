@@ -57,6 +57,7 @@ class NostrRelays implements NostrRelaysBase {
     bool lazyListeningToRelays = false,
     bool retryOnError = false,
     bool retryOnClose = false,
+    bool removeDuplicatedEvents = true,
   }) async {
     assert(
       relaysUrl.isNotEmpty,
@@ -82,6 +83,7 @@ class NostrRelays implements NostrRelaysBase {
           onRelayDone: onRelayDone,
           retryOnError: retryOnError,
           retryOnClose: retryOnClose,
+          removeDuplicatedEvents: removeDuplicatedEvents,
         );
       }
     }
@@ -168,6 +170,7 @@ class NostrRelays implements NostrRelaysBase {
     void Function(String relayUrl)? onRelayDone,
     bool retryOnError = false,
     bool retryOnClose = false,
+    bool removeDuplicatedEvents = true,
   }) {
     NostrRegistry.getRelayWebSocket(relayUrl: relay)!.listen((d) {
       if (onRelayListening != null) {
@@ -175,9 +178,32 @@ class NostrRelays implements NostrRelaysBase {
       }
 
       if (NostrEvent.canBeDeserializedEvent(d)) {
-        _streamController.sink.add(NostrEvent.fromRelayMessage(d));
+        final event = NostrEvent.fromRelayMessage(d, relay);
+
         NostrClientUtils.log(
-            "received event with content: ${NostrEvent.fromRelayMessage(d).content} from relay: $relay");
+          "received event with content: ${event.content} from relay: $relay",
+        );
+        if (removeDuplicatedEvents) {
+          NostrClientUtils.log(
+            "removeDuplicatedEvents: true, so duplicated events will be ignored on the stream.",
+          );
+          if (NostrRegistry.isEventAlreadyReceived(event)) {
+            NostrClientUtils.log(
+              "event with id: ${event.id} is already received in the events registry, so it will be ignored and not added to the stream.",
+            );
+          } else {
+            NostrClientUtils.log(
+              "event with id: ${event.id} is received for the first time, so it will be added to the stream.",
+            );
+            NostrRegistry.registerEvent(event);
+            _streamController.sink.add(event);
+          }
+        } else {
+          NostrClientUtils.log(
+            "removeDuplicatedEvents: false, so duplicated events will be added to the stream.",
+          );
+          _streamController.sink.add(event);
+        }
       } else {
         NostrClientUtils.log(
             "received non-event message from relay: $relay, message: $d");

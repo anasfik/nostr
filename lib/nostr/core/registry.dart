@@ -1,7 +1,12 @@
 import 'dart:io';
 
+import 'package:dart_nostr/nostr/model/event.dart';
+
 /// This is responsible for registering and retrieving relays [WebSocket]s that are connected to the app.
 abstract class NostrRegistry {
+  // This is the registry which will have all relays events.
+  static final Map<String, NostrEvent> _relaysEventsRegistry = {};
+
   /// This is the registry which will have all relays [WebSocket]s.
   static final Map<String, WebSocket> _relaysWebSocketsRegistry = {};
 
@@ -30,5 +35,13 @@ abstract class NostrRegistry {
   /// Returns all [WebSocket]s registered in the registry.
   static List<MapEntry<String, WebSocket>> allRelaysEntries() {
     return _relaysWebSocketsRegistry.entries.toList();
+  }
+
+  static void registerEvent(NostrEvent event) {
+    _relaysEventsRegistry[event.id] = event;
+  }
+
+  static isEventAlreadyReceived(NostrEvent event) {
+    return _relaysEventsRegistry.containsKey(event.id);
   }
 }

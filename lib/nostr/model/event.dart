@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
+import 'package:dart_nostr/nostr/core/constants.dart';
 import 'package:equatable/equatable.dart';
 
 import '../core/key_pairs.dart';
@@ -16,6 +17,7 @@ class NostrEvent extends Equatable {
   final DateTime createdAt;
   final List<List<String>> tags;
   final String? subscriptionId;
+  final String? relayUrl;
 
   const NostrEvent({
     required this.id,
@@ -26,6 +28,7 @@ class NostrEvent extends Equatable {
     required this.createdAt,
     required this.tags,
     this.subscriptionId,
+    this.relayUrl,
   });
 
   @override
@@ -38,6 +41,7 @@ class NostrEvent extends Equatable {
         createdAt,
         tags,
         subscriptionId,
+        relayUrl,
       ];
 
   Map<String, dynamic> _toMap() {
@@ -84,12 +88,17 @@ class NostrEvent extends Equatable {
     );
   }
 
-  factory NostrEvent.fromRelayMessage(String data) {
-    assert(canBeDeserializedEvent(data));
+  factory NostrEvent.fromRelayMessage(String data, String relayUrl) {
+    assert(
+      canBeDeserializedEvent(data),
+      "This event can't be deserialized properly, $data",
+    );
+
     final decoded = jsonDecode(data) as List;
 
     final event = decoded.last as Map<String, dynamic>;
     return NostrEvent(
+      relayUrl: relayUrl,
       id: event['id'] as String,
       kind: event['kind'] as int,
       content: event['content'] as String,
@@ -110,10 +119,11 @@ class NostrEvent extends Equatable {
       subscriptionId: decoded.length == 3 ? decoded[1] as String : null,
     );
   }
+
   static bool canBeDeserializedEvent(String dataFromRelay) {
     final decoded = jsonDecode(dataFromRelay) as List;
 
-    return decoded.first == "EVENT";
+    return decoded.first == NostrConstants.event;
   }
 
   static String getEventId({
