@@ -178,32 +178,23 @@ class NostrRelays implements NostrRelaysBase {
       }
 
       if (NostrEvent.canBeDeserializedEvent(d)) {
-        final event = NostrEvent.fromRelayMessage(d, relay);
-
-        NostrClientUtils.log(
-          "received event with content: ${event.content} from relay: $relay",
-        );
         if (removeDuplicatedEvents) {
-          NostrClientUtils.log(
-            "removeDuplicatedEvents: true, so duplicated events will be ignored on the stream.",
-          );
-          if (NostrRegistry.isEventAlreadyReceived(event)) {
-            NostrClientUtils.log(
-              "event with id: ${event.id} is already received in the events registry, so it will be ignored and not added to the stream.",
-            );
-          } else {
-            NostrClientUtils.log(
-              "event with id: ${event.id} is received for the first time, so it will be added to the stream.",
-            );
-            NostrRegistry.registerEvent(event);
-            _streamController.sink.add(event);
-          }
+          _streamController.stream.toList().then((list) {
+            if (list
+                .where((e) => e.id == NostrEvent.fromRelayMessage(d).id)
+                .isEmpty) {
+              _streamController.sink.add(NostrEvent.fromRelayMessage(d));
+            } else {
+              NostrClientUtils.log(
+                "received duplicated event with id: ${NostrEvent.fromRelayMessage(d).id} from relay: $relay",
+              );
+            }
+          });
         } else {
-          NostrClientUtils.log(
-            "removeDuplicatedEvents: false, so duplicated events will be added to the stream.",
-          );
-          _streamController.sink.add(event);
+          _streamController.sink.add(NostrEvent.fromRelayMessage(d));
         }
+        NostrClientUtils.log(
+            "received event with content: ${NostrEvent.fromRelayMessage(d).content} from relay: $relay");
       } else {
         NostrClientUtils.log(
             "received non-event message from relay: $relay, message: $d");

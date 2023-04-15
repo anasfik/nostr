@@ -1,3 +1,7 @@
+## 1.0.2-dev
+
+- Added more functionalities and parameters to the `relays` service.
+
 ## 1.0.1-dev
 
 - organized the main package to services (keys, relays).
