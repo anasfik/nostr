@@ -8,24 +8,15 @@
 
 This package is a client for the [Nostr protocol](https://github.com/nostr-protocol/). It is a wrapper that lets you interact with the Nostr protocol in an easier, faster and more organized way.
 
-## TODO:
-
-(talking to me) please, when you have time, here is a thing to do in addition to maintaining the package.
-
-- [ ] Add tests for every single member.
-- [ ] Add more documentation.
-- [ ] add more examples.
-- [ ] ...
-
 # Usage:
 
-the main and only the instance that you need to use to access all other memebers in this package is:
+The main and only instance that you need to use to access all other members in this package is:
 
 ```dart
 Nostr.instance;
 ```
 
-`Nostr.instance` offers access to the services of this package which they-self offer many other functionalities to get your things done.
+`Nostr.instance` offers access to separated services of this package which they-self offer many other members/functions to get your things done.
 
 ```dart
 Nostr.instance.keysService; // access to the keys service, which will provide methods to handle user key pairs, private keys, public keys, etc.
@@ -33,9 +24,15 @@ Nostr.instance.keysService; // access to the keys service, which will provide me
 Nostr.instance.relaysService; // access to the relays service, which will provide methods to interact with your own relays such as sending events, listening to events, etc.
 ```
 
+<br>
+
 ## Keys Service:
 
+This service is responsible for handling anything that is related to the user's key pairs, private keys, public keys, signing and verifying messages, etc.
+
 #### Generate a new key pair:
+
+In order to generate a new key pair, you will need to call the `generateKeyPair()` function, which will return a `NostrKeyPairs` object that contains the private key and the public key of the generated key pair.
 
 ```dart
 NostrKeyPairs keyPair = await Nostr.instance.keysService.generateKeyPair();
@@ -46,11 +43,15 @@ print(keyPair.public); // ...
 
 #### Get a key pair from an existent private key:
 
+If you already have a private key, you can get a key pair from it by calling the `generateKeyPairFromExistingPrivateKey()` function, which will return a `NostrKeyPairs` object that contains the private key and the generated public key.
+
 ```dart
 NostrKeyPairs keyPair = await Nostr.instance.keysService.generateKeyPairFromExistingPrivateKey(privateKey);
 ```
 
 #### generate and get a new private key directly:
+
+Sometimes, you will need to only generate a private key and not a key pair, in this case, you can call the `generatePrivateKey()` function, which will return a `String` that contains the generated private key directly.
 
 ```dart
 String privateKey = await Nostr.instance.keysService.generatePrivateKey();
@@ -58,11 +59,15 @@ String privateKey = await Nostr.instance.keysService.generatePrivateKey();
 
 #### Derive a public key from a private key directly:
 
+Or, if you already have a private key, you can derive the public key from it by calling the `derivePublicKey()` function, which will return a `String` that contains the derived public key directly.
+
 ```dart
 String publicKey = await Nostr.instance.keysService.derivePublicKey(privateKey);
 ```
 
 #### Sign and verify a message:
+
+To sign a message, you will need to call the `sign()` function, which will return a `String` that contains the signature of the message.
 
 ```dart
 String message = ...;
@@ -80,11 +85,13 @@ bool isVerified = await Nostr.instance.keysService.verify(
 print(isMessageVerified); // ...
 ```
 
+<br>
+
 ## Relays Service:
 
-#### Creating, signing Nostr events:
+#### Creating and signing Nostr events:
 
-You can get the final events that you will send to your relays by either creating a raw `NostrEvent` object and then you will need to generate it's `id` and `sign` by yourself, example:
+You can get the final events that you will send to your relays by either creating a raw `NostrEvent` object and then you will need to generate and set it's `id` and `sign` by yourself using the Nostr protocol speceifications which you can check manually from it's official documentation.
 
 ```dart
 
@@ -99,7 +106,9 @@ You can get the final events that you will send to your relays by either creatin
   );
 ```
 
-As it is explained, this will require you to set every single value of the event manually, including the `id` and `sig` values, or you can rely on the package for doing the hard part and create a `NostrEvent.fromPartialData(...)` which requires only the direct fields to be set and the rest will be handled automatically.
+As it is explained, this will require you to set every single value of the event manually, including the `id` and `sig` values.
+
+This package covers you in thus part and offers a `NostrEvent.fromPartialData(...)` which requires only the direct fields to be set and the rest will be handled automatically so you don't need to worry about it.
 
 ```dart
   final event = NostrEvent.fromPartialData(
@@ -111,15 +120,19 @@ As it is explained, this will require you to set every single value of the event
   );
 ```
 
-The only required fields here are: `kind`, `keyPairs`and `content`. if `tags` os ignored, it will be set to `[]`, and if `createdAt` is ignored, it will be set to `DateTime.now()` automatically.
+The only required fields here are `kind`, `keyPairs` and `content`.
 
-`NostrEvent.fromPartialData` requires the `keyPairs` because it needs to get the private key to sign the event and assign it the `sign` field, and it needs to get the public key to use it as the `pubkey` of the event.
+- if `tags` is ignored, it will be set to `[]`.
+- if `createdAt` is ignored, it will be set to `DateTime.now()` automatically.
+- other fields like `id` and `sign` will be generated automatically.
 
-to get a `NostrKeyPairs` of your event creator, refer please to the [Keys Service](#keys-service) section.
+`NostrEvent.fromPartialData` requires the `keyPairs` because it needs to get the private key to sign the event and assign to the `sign` field, and it needs to get the public key to use it as the `pubkey` of the event.
+
+To get a `NostrKeyPairs` of your event creator, refer please to the [Keys Service](#keys-service) section.
 
 #### Connecting to relay(s):
 
-as I already said, that this package exposes only one main instance, which is `Nostr.instance`, you will need to initialize/connect to your relay(s) only one time in your Dart/Flutter app with:
+as I already said, this package exposes only one main instance, which is `Nostr.instance`, you will need to initialize/connect to your relay(s) only one time in your Dart/Flutter app with:
 
 ```dart
 Nostr.instance.relaysService.init(
@@ -131,17 +144,17 @@ Nostr.instance.relaysService.init(
 );
 ```
 
-the only required field here is `relaysUrl`, which is a list of strings that contains the URLs of your relays web sockets, you can pass as many relays as you want.
+the only required field here is `relaysUrl`, which accepts a `List<String>` that contains the URLs of your relays web sockets, you can pass as many relays as you want.
 
 I personally recommend initializing the relays service in the `main()` function of your app, so that it will be initialized as soon as the app starts, and will be available to be used anywhere else in your app.
 
-#### Sending events to relay(s):
-
 ```dart
-Nostr.instance.relaysService.sendEventToRelays(event);
-```
+void main() {
+Nostr.instance.relaysService.init(...);
 
-the event will be sent to all the connected relays.
+//...
+ }
+```
 
 #### Listening to events from relay(s):
 
@@ -169,3 +182,13 @@ stream.listen((event) {
 ```
 
 you can set manually the `subscriptionId` of the request, or you can let the package generate it for you automatically.
+
+#### Sending events to relay(s):
+
+When you have an event that is ready to be sent to your relay(s), you can call the `sendEventToRelays()` function with the event as the only parameter:
+
+```dart
+Nostr.instance.relaysService.sendEventToRelays(event);
+```
+
+The event will be sent to all the connected relays now, and if you're already subscribing with a `NostrRequest` to the relays, you will start receiving the event in your stream.
