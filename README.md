@@ -119,10 +119,53 @@ to get a `NostrKeyPairs` of your event creator, refer please to the [Keys Servic
 
 #### Connecting to relay(s):
 
-as we did said that the package exposes only one main instance, which is `Nostr.instance`, you will need to initialize/connect to your relay(s) only one time in your Dart/Flutter app with:
+as I already said, that this package exposes only one main instance, which is `Nostr.instance`, you will need to initialize/connect to your relay(s) only one time in your Dart/Flutter app with:
 
 ```dart
 Nostr.instance.relaysService.init(
   relaysUrl: ['wss://relay.damus.io'],
+ onRelayListening: (String relayUrl, receivedData) {}, // will be called once a relay is connected and listening to events.
+ onRelayError: (String relayUrl, Object? error) {}, // will be called once a relay is disconnected or an error occurred.
+ onRelayDone: (String relayUrl) {}, // will be called once a relay is disconnected, finished.
+ lazyListeningToRelays: false, // if true, the relays will not start listening to events until you call `Nostr.instance.relaysService.startListeningToRelays()`, if false, the relays will start listening to events as soon as they are connected.
 );
 ```
+
+the only required field here is `relaysUrl`, which is a list of strings that contains the URLs of your relays web sockets, you can pass as many relays as you want.
+
+I personally recommend initializing the relays service in the `main()` function of your app, so that it will be initialized as soon as the app starts, and will be available to be used anywhere else in your app.
+
+#### Sending events to relay(s):
+
+```dart
+Nostr.instance.relaysService.sendEventToRelays(event);
+```
+
+the event will be sent to all the connected relays.
+
+#### Listening to events from relay(s):
+
+For listening to events from relay(s), you will need to create a `NostrRequest` request with the target filters:
+
+```dart
+// creating the request.
+NostrRequest req = NostrRequest(
+ filters: [
+   NostrFilter(
+     kind: 1,
+     tags: ["p", "..."],
+     authors: ["..."],
+     ),
+ ],
+);
+
+// creating a stream of events.
+Stream<NostrEvent> stream = Nostr.instance.relaysService.startEventsSubscription(req);
+
+// listening to the stream.
+stream.listen((event) {
+  print(event);
+});
+```
+
+you can set manually the `subscriptionId` of the request, or you can let the package generate it for you automatically.
