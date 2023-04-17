@@ -192,3 +192,17 @@ Nostr.instance.relaysService.sendEventToRelays(event);
 ```
 
 The event will be sent to all the connected relays now, and if you're already subscribing with a `NostrRequest` to the relays, you will start receiving the event in your stream.
+
+#### nip-05 verification:
+
+in order to verify a user(pubkey) with his internet identifier, you will need to call the `verifyNip05()` function with the user's pubkey and internet identifier as the only parameters:
+
+```dart
+bool isVerified = await Nostr.instance.relaysService.verifyNip05(
+  internetIdentifier: '<THE-INTERNET-IDENTIFIER-OF-THE-USER>',
+  pubkey: '<THE-PUBKEY-OF-THE-USER>',
+);
+print(isVerified); // ...
+```
+
+if the user is verified, the function will return `true`, otherwise it will return `false`.
