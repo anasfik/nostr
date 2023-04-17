@@ -8,7 +8,13 @@
 
 This package is a client for the [Nostr protocol](https://github.com/nostr-protocol/). It is a wrapper that lets you interact with the Nostr protocol in an easier, faster and more organized way.
 
-## NIPS that can be implemented with this package:
+## NIPS that you can expect to implement and use with this package:
+
+**What this means?**, it means that you can check the official Nostr documentation and their NIPs, and then you can expect an implementation of it in this package so you can get your things done faster and easier.
+
+Some NIPs have a custom implementation in this package like the NIP-05, which you can check from here.
+
+Some other implementations are not intended to work in the Dart environment, so they are not implemented in this package, such as NIP-07 which is based on the `window` object of a browser. that being said it can be implemented separately if there is a use of Flutter web, but for now, it is not implemented.
 
 - NIP-01
 - NIP-02
@@ -22,12 +28,30 @@ This package is a client for the [Nostr protocol](https://github.com/nostr-proto
 - NIP-14
 - NIP-16
 - NIP-18
-- ...
+- NIP-20
+- NIP-23
+- NIP-25
+- NIP-27
+- NIP-28
+- NIP-33
+- NIP-36
+- NIP-39
+- NIP-40
+- NIP-56
+- NIP-65
 
 ## TODO (if you want to contribute, please feel free to implement any of the following NIPS and make a pull request, I will be happy to review it and merge it.)
 
 - NIP-06
 - NIP-13
+- NIP-19
+- NIP-26
+- NIP-42
+- NIP-45
+- NIP-50
+- NIP-51
+- NIP-57
+- NIP-58
 
 # Usage:
 
