@@ -8,6 +8,10 @@
 
 This package is a client for the [Nostr protocol](https://github.com/nostr-protocol/). It is a wrapper that lets you interact with the Nostr protocol in an easier, faster and more organized way.
 
+# NIPS that can be implemented with this package:
+
+[NIP-01, NIP-02, NIP-03]
+
 # Usage:
 
 The main and only instance that you need to use to access all other members in this package is:
@@ -195,7 +199,7 @@ The event will be sent to all the connected relays now, and if you're already su
 
 #### nip-05 verification:
 
-in order to verify a user(pubkey) with his internet identifier, you will need to call the `verifyNip05()` function with the user's pubkey and internet identifier as the only parameters:
+in order to verify a user pubkey with his internet identifier, you will need to call the `verifyNip05()` function with the user's pubkey and internet identifier as the only parameters:
 
 ```dart
 bool isVerified = await Nostr.instance.relaysService.verifyNip05(
@@ -205,4 +209,4 @@ bool isVerified = await Nostr.instance.relaysService.verifyNip05(
 print(isVerified); // ...
 ```
 
-if the user is verified, the function will return `true`, otherwise it will return `false`.
+if the user is verified, the function will return `true`, otherwise, it will return `false`.

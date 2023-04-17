@@ -16,6 +16,7 @@ class NostrEvent extends Equatable {
   final DateTime createdAt;
   final List<List<String>> tags;
   final String? subscriptionId;
+  final String? ots;
 
   const NostrEvent({
     required this.id,
@@ -26,6 +27,7 @@ class NostrEvent extends Equatable {
     required this.createdAt,
     required this.tags,
     this.subscriptionId,
+    this.ots,
   });
 
   @override
@@ -38,6 +40,7 @@ class NostrEvent extends Equatable {
         createdAt,
         tags,
         subscriptionId,
+        ots,
       ];
 
   Map<String, dynamic> _toMap() {
@@ -49,6 +52,7 @@ class NostrEvent extends Equatable {
       'pubkey': pubkey,
       'created_at': createdAt.millisecondsSinceEpoch ~/ 1000,
       'tags': tags,
+      if (ots != null) 'ots': ots,
     };
   }
 
@@ -58,6 +62,7 @@ class NostrEvent extends Equatable {
     required NostrKeyPairs keyPairs,
     List<List<String>>? tags,
     DateTime? createdAt,
+    String? ots,
   }) {
     final pubkey = keyPairs.public;
     final tagsToUse = tags ?? [];
@@ -81,6 +86,7 @@ class NostrEvent extends Equatable {
       pubkey: pubkey,
       createdAt: createdAtToUse,
       tags: tagsToUse,
+      ots: ots,
     );
   }
 
@@ -108,6 +114,7 @@ class NostrEvent extends Equatable {
           )
           .toList()),
       subscriptionId: decoded.length == 3 ? decoded[1] as String : null,
+      ots: event['ots'] as String?,
     );
   }
   static bool canBeDeserializedEvent(String dataFromRelay) {
@@ -159,6 +166,7 @@ class NostrEvent extends Equatable {
     DateTime? createdAt,
     List<List<String>>? tags,
     String? subscriptionId,
+    String? ots,
   }) {
     return NostrEvent(
       id: id ?? this.id,
@@ -169,6 +177,7 @@ class NostrEvent extends Equatable {
       createdAt: createdAt ?? this.createdAt,
       tags: tags ?? this.tags,
       subscriptionId: subscriptionId ?? this.subscriptionId,
+      ots: ots ?? this.ots,
     );
   }
 }

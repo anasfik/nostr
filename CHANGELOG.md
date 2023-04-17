@@ -1,3 +1,7 @@
+## 1.0.1
+
+- Added docs for nip-05 verification.
+
 ## 1.0.0
 
 - Implementation of nip 05 for internet identity verification.
