@@ -1,3 +1,8 @@
+## 1.0.3
+
+- Added support for more nips.
+- Exposed them in the docs.
+
 ## 1.0.2
 
 - Added implementation of nip 11 and its docs
