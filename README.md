@@ -18,10 +18,16 @@ This package is a client for the [Nostr protocol](https://github.com/nostr-proto
 - NIP-09
 - NIP-10
 - NIP-11
+- NIP-12
+- NIP-14
+- NIP-16
+- NIP-18
+- ...
 
 ## TODO (if you want to contribute, please feel free to implement any of the following NIPS and make a pull request, I will be happy to review it and merge it.)
 
 - NIP-06
+- NIP-13
 
 # Usage:
 
