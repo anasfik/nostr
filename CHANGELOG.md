@@ -1,3 +1,7 @@
+## 1.0.2
+
+- Added implementation of nip 11 and its docs
+
 ## 1.0.1
 
 - Added docs for nip-05 verification.
