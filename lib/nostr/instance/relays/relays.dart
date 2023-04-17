@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_nostr/nostr/model/request/request.dart';
@@ -10,6 +11,8 @@ import '../../core/utils.dart';
 import '../../model/relay.dart';
 import '../../model/request/close.dart';
 import 'base/relays.dart';
+
+import 'package:http/http.dart' as http;
 
 /// {@template nostr_relays}
 /// This class is responsible for all the relays related operations.
@@ -57,34 +60,24 @@ class NostrRelays implements NostrRelaysBase {
     bool lazyListeningToRelays = false,
     bool retryOnError = false,
     bool retryOnClose = false,
+    bool ensureToClearRegistriesBeforeStarting = true,
   }) async {
     assert(
       relaysUrl.isNotEmpty,
       "initiating relays with an empty list doesn't make sense, please provide at least one relay url.",
     );
 
-    for (String relay in relaysUrl) {
-      NostrRegistry.registerRelayWebSocket(
-        relayUrl: relay,
-        webSocket: await WebSocket.connect(relay),
-      );
-      NostrClientUtils.log(
-        "the websocket for the relay with url: $relay, is registered.",
-      );
-      NostrClientUtils.log(
-        "listening to the websocket for the relay with url: $relay...",
-      );
-      if (!lazyListeningToRelays) {
-        startListeningToRelays(
-          relay: relay,
-          onRelayListening: onRelayListening,
-          onRelayError: onRelayError,
-          onRelayDone: onRelayDone,
-          retryOnError: retryOnError,
-          retryOnClose: retryOnClose,
-        );
-      }
-    }
+    _clearRegistriesIf(ensureToClearRegistriesBeforeStarting);
+
+    await _startConnectingAndRegisteringRelays(
+      relaysUrl: relaysUrl,
+      onRelayListening: onRelayListening,
+      onRelayError: onRelayError,
+      onRelayDone: onRelayDone,
+      lazyListeningToRelays: lazyListeningToRelays,
+      retryOnError: retryOnError,
+      retryOnClose: retryOnClose,
+    );
   }
 
   /// This method is responsible for sending an event to all relays that you did registered with the [init] method.
@@ -92,7 +85,7 @@ class NostrRelays implements NostrRelaysBase {
   /// It takes a [NostrEvent] object, then it serializes it internally and sends it to all relays [WebSocket]s.
   ///
   @override
-  void sendEventToRelays(NostrEvent event) async {
+  void sendEventToRelays(NostrEvent event) {
     final serialized = event.serialized();
 
     _runFunctionOverRelationIteration((relay) {
@@ -140,23 +133,6 @@ class NostrRelays implements NostrRelaysBase {
     });
   }
 
-  void _runFunctionOverRelationIteration(
-    Function(NostrRelay) function,
-  ) {
-    for (int index = 0;
-        index < NostrRegistry.allRelaysEntries().length;
-        index++) {
-      final entries = NostrRegistry.allRelaysEntries();
-      final current = entries[index];
-      function(
-        NostrRelay(
-          url: current.key,
-          socket: current.value,
-        ),
-      );
-    }
-  }
-
   /// This method will start listening to all relays that you did registered with the [init] method.
   ///
   /// you need to call this method manually only if you set the [lazyListeningToRelays] parameter to `true` in the [init] method, otherwise it will be called automatically by the [init] method.
@@ -182,16 +158,9 @@ class NostrRelays implements NostrRelaysBase {
         NostrClientUtils.log(
             "received non-event message from relay: $relay, message: $d");
       }
-      // else if (NostrEOSE.canBeDeserialized(d)) {
-      //   print(
-      //       "EOS from relay $relay with id: ${NostrEOSE.fromRelayMessage(d).subscriptionId}");
-      // }
     }, onError: (error) {
       if (retryOnError) {
-        NostrClientUtils.log(
-          "retrying to listen to relay with url: $relay...",
-        );
-        startListeningToRelays(
+        _reconnectToRelay(
           relay: relay,
           onRelayListening: onRelayListening,
           onRelayError: onRelayError,
@@ -210,10 +179,7 @@ class NostrRelays implements NostrRelaysBase {
       );
     }, onDone: () {
       if (retryOnClose) {
-        NostrClientUtils.log(
-          "retrying to listen to relay with url: $relay...",
-        );
-        startListeningToRelays(
+        _reconnectToRelay(
           relay: relay,
           onRelayListening: onRelayListening,
           onRelayError: onRelayError,
@@ -232,5 +198,114 @@ close code: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeCode}.
 close reason: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeReason}.
 """);
     });
+  }
+
+  Future<bool> verifyNip05({
+    required String internetIdentifier,
+    required String pubKey,
+  }) async {
+    assert(
+      pubKey.length == 64 || !pubKey.startsWith("npub"),
+      "pub key is invalid, it must be in hex format and not a npub(nip19) key!",
+    );
+    assert(
+      internetIdentifier.contains("@") &&
+          internetIdentifier.split("@").length == 2,
+      "invalid internet identifier",
+    );
+
+    try {
+      final localPart = internetIdentifier.split("@")[0];
+      final domainPart = internetIdentifier.split("@")[1];
+      final res = await http.get(
+        Uri.parse("https://$domainPart/.well-known/nostr.json?name=$localPart"),
+      );
+
+      final decoded = jsonDecode(res.body) as Map<String, dynamic>;
+      assert(decoded["names"] != null, "invalid nip05 response, no names key!");
+      final pubKeyFromResponse = decoded["names"][localPart];
+      assert(pubKeyFromResponse != null, "invalid nip05 response, no pub key!");
+
+      return pubKey == pubKeyFromResponse;
+    } catch (e) {
+      NostrClientUtils.log(
+        "error while verifying nip05 for internet identifier: $internetIdentifier",
+        e,
+      );
+      return false;
+    }
+  }
+
+  void _runFunctionOverRelationIteration(
+    Function(NostrRelay) function,
+  ) {
+    for (int index = 0;
+        index < NostrRegistry.allRelaysEntries().length;
+        index++) {
+      final entries = NostrRegistry.allRelaysEntries();
+      final current = entries[index];
+      function(NostrRelay(url: current.key, socket: current.value));
+    }
+  }
+
+  void _clearRegistriesIf(bool ensureToClearRegistriesBeforeStarting) {
+    if (ensureToClearRegistriesBeforeStarting) {
+      NostrRegistry.clearAllRegistries();
+    }
+  }
+
+  void _reconnectToRelay({
+    required String relay,
+    void Function(String relayUrl, dynamic receivedData)? onRelayListening,
+    void Function(String relayUrl, Object? error)? onRelayError,
+    void Function(String relayUrl)? onRelayDone,
+    bool retryOnError = false,
+    bool retryOnClose = false,
+  }) {
+    NostrClientUtils.log(
+      "retrying to listen to relay with url: $relay...",
+    );
+
+    startListeningToRelays(
+      relay: relay,
+      onRelayListening: onRelayListening,
+      onRelayError: onRelayError,
+      onRelayDone: onRelayDone,
+      retryOnError: retryOnError,
+      retryOnClose: retryOnClose,
+    );
+  }
+
+  Future<void> _startConnectingAndRegisteringRelays({
+    required List<String> relaysUrl,
+    void Function(String relayUrl, dynamic receivedData)? onRelayListening,
+    void Function(String relayUrl, Object? error)? onRelayError,
+    void Function(String relayUrl)? onRelayDone,
+    bool lazyListeningToRelays = false,
+    bool retryOnError = false,
+    bool retryOnClose = false,
+  }) async {
+    for (String relay in relaysUrl) {
+      NostrRegistry.registerRelayWebSocket(
+        relayUrl: relay,
+        webSocket: await WebSocket.connect(relay),
+      );
+      NostrClientUtils.log(
+        "the websocket for the relay with url: $relay, is registered.",
+      );
+      NostrClientUtils.log(
+        "listening to the websocket for the relay with url: $relay...",
+      );
+      if (!lazyListeningToRelays) {
+        startListeningToRelays(
+          relay: relay,
+          onRelayListening: onRelayListening,
+          onRelayError: onRelayError,
+          onRelayDone: onRelayDone,
+          retryOnError: retryOnError,
+          retryOnClose: retryOnClose,
+        );
+      }
+    }
   }
 }

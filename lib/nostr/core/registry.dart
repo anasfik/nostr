@@ -31,4 +31,8 @@ abstract class NostrRegistry {
   static List<MapEntry<String, WebSocket>> allRelaysEntries() {
     return _relaysWebSocketsRegistry.entries.toList();
   }
+
+  static void clearAllRegistries() {
+    _relaysWebSocketsRegistry.clear();
+  }
 }
