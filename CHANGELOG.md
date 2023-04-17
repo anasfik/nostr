@@ -1,3 +1,8 @@
+## 1.0.0
+
+- Implementation of nip 05 for internet identity verification.
+- Adding more docs and examples.
+
 ## 1.0.2-dev
 
 - Added more functionalities and parameters to the `relays` service.
