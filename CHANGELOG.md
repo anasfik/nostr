@@ -1,3 +1,7 @@
+## 1.0.4
+
+- Highlighted support for more nips in the docs.
+
 ## 1.0.3
 
 - Added support for more nips.
