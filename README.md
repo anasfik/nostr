@@ -8,9 +8,20 @@
 
 This package is a client for the [Nostr protocol](https://github.com/nostr-protocol/). It is a wrapper that lets you interact with the Nostr protocol in an easier, faster and more organized way.
 
-# NIPS that can be implemented with this package:
+## NIPS that can be implemented with this package:
 
-[NIP-01, NIP-02, NIP-03]
+- NIP-01
+- NIP-02
+- NIP-03
+- NIP-04 (TODO: make the encryption part automated by the package).
+- NIP-05
+- NIP-09
+- NIP-10
+- NIP-11
+
+## TODO (if you want to contribute, please feel free to implement any of the following NIPS and make a pull request, I will be happy to review it and merge it.)
+
+- NIP-06
 
 # Usage:
 
@@ -210,3 +221,15 @@ print(isVerified); // ...
 ```
 
 if the user is verified, the function will return `true`, otherwise, it will return `false`.
+
+#### nip-11 relay Information Document:
+
+You can get the relay information document by calling the `getRelayInformationDocument()` function with the relay's URL as the only parameter:
+
+```dart
+
+  RelayInformations relayInformationDocument = await Nostr.instance.relaysService.getRelayInformationDocument(
+    relayUrl: 'wss://relay.damus.io',
+  );
+  print(relayInformationDocument.supportedNips); // ...
+```

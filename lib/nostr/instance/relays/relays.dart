@@ -9,6 +9,7 @@ import 'package:dart_nostr/nostr/model/event.dart';
 import '../../core/registry.dart';
 import '../../core/utils.dart';
 import '../../model/relay.dart';
+import '../../model/relay_informations.dart';
 import '../../model/request/close.dart';
 import 'base/relays.dart';
 
@@ -232,7 +233,51 @@ close reason: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeReason}.
         "error while verifying nip05 for internet identifier: $internetIdentifier",
         e,
       );
-      return false;
+      rethrow;
+    }
+  }
+
+  Future<RelayInformations> relayInformationsDocumentNip11({
+    required String relayUrl,
+  }) async {
+    try {
+      final relayHttpUri = _getHttpUrlFromWebSocketUrl(relayUrl);
+      final res = await http.get(
+        relayHttpUri,
+        headers: {
+          "Accept": "application/nostr+json",
+        },
+      );
+      final decoded = jsonDecode(res.body) as Map<String, dynamic>;
+
+      return RelayInformations.fromNip11Response(decoded);
+    } catch (e) {
+      NostrClientUtils.log(
+        "error while getting relay informations from nip11 for relay url: $relayUrl",
+        e,
+      );
+
+      rethrow;
+    }
+  }
+
+  Uri _getHttpUrlFromWebSocketUrl(String relayUrl) {
+    assert(
+      relayUrl.startsWith("ws://") || relayUrl.startsWith("wss://"),
+      "invalid relay url",
+    );
+
+    try {
+      String removeWebsocketSign = relayUrl.replaceFirst("ws://", "");
+      removeWebsocketSign = removeWebsocketSign.replaceFirst("wss://", "");
+      return Uri.parse(removeWebsocketSign);
+    } catch (e) {
+      NostrClientUtils.log(
+        "error while getting http url from websocket url: $relayUrl",
+        e,
+      );
+
+      rethrow;
     }
   }
 
