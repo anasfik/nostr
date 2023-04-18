@@ -1,3 +1,7 @@
+## 1.0.6
+
+- Added more helper methods with docs and examples.
+
 ## 1.0.5
 
 - Added more docs with examples to more methods.
