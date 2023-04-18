@@ -1,3 +1,7 @@
+## 1.0.5
+
+- Added more docs with examples to more methods.
+
 ## 1.0.4
 
 - Highlighted support for more nips in the docs.
