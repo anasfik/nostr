@@ -55,6 +55,8 @@ class NostrRelays implements NostrRelaysBase {
   ///
   /// If you want to clear all registries before starting, you can set the [ensureToClearRegistriesBeforeStarting] parameter to `true`, the first time you call the [init] method, the registries will be always cleared, but if you want to clear them before each call to the [init] method (as example for implementing a reconnect mechanism), you can set this parameter to `true`.
   ///
+  /// If you want to ignore connection exceptions, you can set the [ignoreConnectionException] parameter to `true`, this is useful if you want to ignore connection exceptions and retry connecting to relays in case of an error, you can do that by setting the [retryOnError] parameter to `true`.
+  ///
   ///
   /// You will need to call this method before using any other method, as example, in your `main()` method to make sure that the connection is established before using any other method.
   /// ```dart
@@ -87,6 +89,7 @@ class NostrRelays implements NostrRelaysBase {
     bool retryOnError = false,
     bool retryOnClose = false,
     bool ensureToClearRegistriesBeforeStarting = true,
+    bool ignoreConnectionException = true,
   }) async {
     assert(
       relaysUrl.isNotEmpty,
@@ -95,7 +98,7 @@ class NostrRelays implements NostrRelaysBase {
 
     _clearRegistriesIf(ensureToClearRegistriesBeforeStarting);
 
-    await _startConnectingAndRegisteringRelays(
+    return await _startConnectingAndRegisteringRelays(
       relaysUrl: relaysUrl,
       onRelayListening: onRelayListening,
       onRelayError: onRelayError,
@@ -103,6 +106,7 @@ class NostrRelays implements NostrRelaysBase {
       lazyListeningToRelays: lazyListeningToRelays,
       retryOnError: retryOnError,
       retryOnClose: retryOnClose,
+      ignoreConnectionException: ignoreConnectionException,
     );
   }
 
@@ -405,12 +409,27 @@ close reason: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeReason}.
     bool lazyListeningToRelays = false,
     bool retryOnError = false,
     bool retryOnClose = false,
+    bool ignoreConnectionException = false,
   }) async {
+    Completer completer = Completer();
+
     for (String relay in relaysUrl) {
-      NostrRegistry.registerRelayWebSocket(
-        relayUrl: relay,
-        webSocket: await WebSocket.connect(relay),
-      );
+      try {
+        NostrRegistry.registerRelayWebSocket(
+          relayUrl: relay,
+          webSocket: await WebSocket.connect(relay),
+        );
+      } catch (e) {
+        NostrClientUtils.log(
+          "error while connecting to the relay with url: $relay",
+          e,
+        );
+        if (ignoreConnectionException) {
+          continue;
+        } else {
+          rethrow;
+        }
+      }
       NostrClientUtils.log(
         "the websocket for the relay with url: $relay, is registered.",
       );
@@ -428,5 +447,9 @@ close reason: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeReason}.
         );
       }
     }
+
+    completer.complete();
+
+    return completer.future;
   }
 }

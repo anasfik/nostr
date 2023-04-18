@@ -1,6 +1,10 @@
 import 'dart:io';
+import 'package:meta/meta.dart';
+
+import 'exceptions.dart';
 
 /// This is responsible for registering and retrieving relays [WebSocket]s that are connected to the app.
+@protected
 abstract class NostrRegistry {
   /// This is the registry which will have all relays [WebSocket]s.
   static final Map<String, WebSocket> _relaysWebSocketsRegistry = {};
@@ -23,7 +27,7 @@ abstract class NostrRegistry {
     if (targetWebSocket != null) {
       return _relaysWebSocketsRegistry[relayUrl]!;
     } else {
-      throw Exception("No relay with url $relayUrl found in the registry");
+      throw RelayNotFoundException(relayUrl);
     }
   }
 
@@ -32,7 +36,13 @@ abstract class NostrRegistry {
     return _relaysWebSocketsRegistry.entries.toList();
   }
 
+  /// Clears all registries.
   static void clearAllRegistries() {
     _relaysWebSocketsRegistry.clear();
+  }
+
+  /// Wether a [WebSocket] is registered with the given [relayUrl].
+  static bool isRelayRegistered(String relayUrl) {
+    return _relaysWebSocketsRegistry.containsKey(relayUrl);
   }
 }
