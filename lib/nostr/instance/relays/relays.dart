@@ -22,7 +22,14 @@ class NostrRelays implements NostrRelaysBase {
   /// This is the controller which will receive all events from all relays.
   final _streamController = StreamController<NostrEvent>.broadcast();
 
-  /// This is the stream which will have all events from all relays.
+  /// This is the stream which will have all events from all relays, all your sent requests will be included in this stream, and so in order to filter them, you will need to use the [Stream.where] method.
+  /// ```dart
+  /// Nostr.instance.relays.stream.where((event) {
+  ///  return event.subscriptionId == "your_subscription_id";
+  /// });
+  /// ```
+  ///
+  /// You can also use the [Nostr.startEventsSubscription] method to get a stream of events that will be filtered by the [subscriptionId] that you passed to it automatically.
   @override
   Stream<NostrEvent> get stream => _streamController.stream;
 
@@ -41,13 +48,31 @@ class NostrRelays implements NostrRelaysBase {
   ///
   /// You can also pass a callback to the [onRelayDone] parameter to be notified when a relay websocket is closed.
   ///
+  /// You can choose `lazyListeningToRelays` to `true` if you want to start listening to relays manually, this is useful if you want to start listening to relays after you called the [init] method.
+  ///
+  /// If you want to retry connecting to relays in case of an error, you can set the [retryOnError] parameter to `true`, and if you want to retry connecting to relays in case of a close, you can set the [retryOnClose] parameter to `true`.
+  ///
+  ///
+  /// If you want to clear all registries before starting, you can set the [ensureToClearRegistriesBeforeStarting] parameter to `true`, the first time you call the [init] method, the registries will be always cleared, but if you want to clear them before each call to the [init] method (as example for implementing a reconnect mechanism), you can set this parameter to `true`.
+  ///
   ///
   /// You will need to call this method before using any other method, as example, in your `main()` method to make sure that the connection is established before using any other method.
   /// ```dart
   /// void main() async {
-  ///  await Nostr.instance.init(relaysUrl: ["wss://relay.damus.io"]);
-  /// // ...
-  /// runApp(MyApp()); // if it is a flutter app
+  ///  await Nostr.instance.relays.init(
+  ///   relaysUrl: ["ws://localhost:8080"],
+  ///  onRelayListening: (relayUrl) {
+  ///   print("relay with url: $relayUrl is listening");
+  /// },
+  /// onRelayError: (relayUrl, error) {
+  ///  print("relay with url: $relayUrl has thrown an error: $error");
+  /// },
+  /// onRelayDone: (relayUrl) {
+  ///  print("relay with url: $relayUrl is closed");
+  /// },
+  /// );
+  ///
+  /// runApp(MyApp());
   /// }
   /// ```
   ///
@@ -85,6 +110,10 @@ class NostrRelays implements NostrRelaysBase {
   ///
   /// It takes a [NostrEvent] object, then it serializes it internally and sends it to all relays [WebSocket]s.
   ///
+  /// example:
+  /// ```dart
+  /// Nostr.instance.relays.sendEventToRelays(event);
+  /// ```
   @override
   void sendEventToRelays(NostrEvent event) {
     final serialized = event.serialized();
@@ -99,7 +128,13 @@ class NostrRelays implements NostrRelaysBase {
 
   /// This method will send a [request] to all relays that you did registered with the [init] method, and gets your a [Stream] of [NostrEvent]s that will be filtered by the [request]'s [subscriptionId] automatically.
   ///
+  ///
   /// if the you do not specify a [subscriptionId] in the [request], it will be generated automatically from the library. (This is recommended only of you're not planning to use the [closeEventsSubscription] method.
+  ///
+  /// example:
+  /// ```dart
+  /// Nostr.instance.relays.startEventsSubscription(request);
+  /// ```
   @override
   Stream<NostrEvent> startEventsSubscription({
     required NostrRequest request,
@@ -120,7 +155,13 @@ class NostrRelays implements NostrRelaysBase {
 
   /// This method will close the subscription of the [subscriptionId] that you passed to it.
   ///
+  ///
   /// You can use after calling the [startEventsSubscription] method to close the subscription of the [subscriptionId] that you passed to it.
+  ///
+  /// example:
+  /// ```dart
+  /// Nostr.instance.relays.closeEventsSubscription("<subscriptionId>");
+  /// ```
   @override
   void closeEventsSubscription(String subscriptionId) {
     final close = NostrRequestClose(subscriptionId: subscriptionId);
@@ -136,7 +177,25 @@ class NostrRelays implements NostrRelaysBase {
 
   /// This method will start listening to all relays that you did registered with the [init] method.
   ///
+  ///
   /// you need to call this method manually only if you set the [lazyListeningToRelays] parameter to `true` in the [init] method, otherwise it will be called automatically by the [init] method.
+  ///
+  /// example:
+  /// ```dart
+  /// Nostr.instance.relays.startListeningToRelays(
+  ///  onRelayListening: (relayUrl, receivedData) {
+  ///  print("received data: $receivedData from relay with url: $relayUrl");
+  /// },
+  /// onRelayError: (relayUrl, error) {
+  /// print("relay with url: $relayUrl has thrown an error: $error");
+  /// },
+  /// onRelayDone: (relayUrl) {
+  /// print("relay with url: $relayUrl is closed");
+  /// },
+  /// );
+  /// ```
+  ///
+  /// You can also use this method to re-connect to all relays in case of a connection failure.
   @override
   void startListeningToRelays({
     required String relay,
@@ -201,6 +260,15 @@ close reason: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeReason}.
     });
   }
 
+  /// This method will verify the [internetIdentifier] with a [pubKey] using the NIP05 implementation, and simply will return a [Future] with a [bool] that indicates if the verification was successful or not.
+  ///
+  /// example:
+  /// ```dart
+  /// final verified = await Nostr.instance.relays.verifyNip05(
+  ///  internetIdentifier: "localPart@domainPart",
+  ///  pubKey: "pub key in hex format",
+  /// );
+  /// ```
   Future<bool> verifyNip05({
     required String internetIdentifier,
     required String pubKey,
@@ -237,6 +305,14 @@ close reason: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeReason}.
     }
   }
 
+  /// Ths method will get you [RelayInformations] that contains the given [relayUrl] using the NIP11 implementation.
+  ///
+  /// example:
+  /// ```dart
+  /// final relayInformations = await Nostr.instance.relays.relayInformationsDocumentNip11(
+  /// relayUrl: "ws://relay.nostr.dev",
+  /// );
+  /// ```
   Future<RelayInformations> relayInformationsDocumentNip11({
     required String relayUrl,
   }) async {
