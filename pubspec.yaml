@@ -12,6 +12,7 @@ dependencies:
   convert: ^3.1.1
   crypto: ^3.0.2
   http: ^0.13.5
+  meta: ^1.9.1
 
 dev_dependencies:
   lints:

@@ -27,7 +27,7 @@ class RelayInformations extends Equatable {
       pubkey: json['pubkey'],
       software: json['software'],
       supportedNips:
-          (json['supportedNips'] as List).map((e) => e as int).toList(),
+          (json['supported_nips'] as List).map((e) => e as int).toList(),
       version: json['version'],
     );
   }

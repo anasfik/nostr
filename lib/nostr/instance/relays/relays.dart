@@ -348,8 +348,9 @@ close reason: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeReason}.
     );
 
     try {
-      String removeWebsocketSign = relayUrl.replaceFirst("ws://", "");
-      removeWebsocketSign = removeWebsocketSign.replaceFirst("wss://", "");
+      String removeWebsocketSign = relayUrl.replaceFirst("ws://", "http://");
+      removeWebsocketSign =
+          removeWebsocketSign.replaceFirst("wss://", "https://");
       return Uri.parse(removeWebsocketSign);
     } catch (e) {
       NostrClientUtils.log(
