@@ -309,6 +309,30 @@ close reason: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeReason}.
     }
   }
 
+  Future<String> pubKeyFromIdentifierNip05({
+    required String internetIdentifier,
+  }) async {
+    try {
+      final localPart = internetIdentifier.split("@")[0];
+      final domainPart = internetIdentifier.split("@")[1];
+      final res = await http.get(
+        Uri.parse("https://$domainPart/.well-known/nostr.json?name=$localPart"),
+      );
+
+      final decoded = jsonDecode(res.body) as Map<String, dynamic>;
+      assert(decoded["names"] != null, "invalid nip05 response, no names key!");
+      final pubKeyFromResponse = decoded["names"][localPart];
+
+      return pubKeyFromResponse;
+    } catch (e) {
+      NostrClientUtils.log(
+        "error while verifying nip05 for internet identifier: $internetIdentifier",
+        e,
+      );
+      rethrow;
+    }
+  }
+
   /// Ths method will get you [RelayInformations] that contains the given [relayUrl] using the NIP11 implementation.
   ///
   /// example:
