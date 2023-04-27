@@ -1,6 +1,6 @@
 name: dart_nostr
 description: This is a helper package that simplify and accelerate the use of Nostr protocal in Dart/Flutter environment
-version: 1.0.6
+version: 1.1.0
 repository: https://github.com/anasfik/nostr/
 
 environment:

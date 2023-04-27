@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'dart:developer' as dev;
@@ -28,5 +29,9 @@ abstract class NostrClientUtils {
         error: error,
       );
     }
+  }
+
+  static hexEncode(String input) {
+    return hex.encode(utf8.encode(input));
   }
 }

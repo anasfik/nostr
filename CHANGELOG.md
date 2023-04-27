@@ -1,3 +1,8 @@
+## 1.1.0
+
+- Fixed signing and verifying hexadiciaml encoding issue.
+- added more example in example/ folder.
+
 ## 1.0.6
 
 - Added more helper methods with docs and examples.
