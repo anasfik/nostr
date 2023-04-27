@@ -12,7 +12,7 @@ import 'filter.dart';
 /// {@endtemplate}
 class NostrRequest extends Equatable {
   /// The subscription ID of the request.
-  final String? subscriptionId;
+  String? subscriptionId;
 
   /// A list of filters that the request will match.
   final List<NostrFilter> filters;
@@ -25,15 +25,12 @@ class NostrRequest extends Equatable {
 
   /// Serialize the request to send it to the remote relays websockets.
   String serialized() {
-    final requestCopy = copyWith(
-      subscriptionId: subscriptionId ?? NostrClientUtils.random64HexChars(),
-    );
+    subscriptionId = subscriptionId ?? NostrClientUtils.random64HexChars();
 
     String decodedFilters =
         jsonEncode(filters.map((item) => item.toMap()).toList());
 
-    String header =
-        jsonEncode([NostrConstants.request, requestCopy.subscriptionId]);
+    String header = jsonEncode([NostrConstants.request, subscriptionId]);
 
     final result =
         '${header.substring(0, header.length - 1)},${decodedFilters.substring(1, decodedFilters.length)}';

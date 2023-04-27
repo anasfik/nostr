@@ -152,8 +152,12 @@ class NostrRelays implements NostrRelaysBase {
       );
     });
 
+    final requestSubId = request.subscriptionId;
+
     return stream.where((event) {
-      return event.subscriptionId == request.subscriptionId;
+      final eventSubId = event.subscriptionId;
+
+      return eventSubId == requestSubId;
     });
   }
 
@@ -440,9 +444,14 @@ close reason: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeReason}.
 
     for (String relay in relaysUrl) {
       try {
+        final relayWebSocket = await WebSocket.connect(
+          relay,
+          compression: CompressionOptions.compressionOff,
+        );
+
         NostrRegistry.registerRelayWebSocket(
           relayUrl: relay,
-          webSocket: await WebSocket.connect(relay),
+          webSocket: relayWebSocket,
         );
       } catch (e) {
         NostrClientUtils.log(
