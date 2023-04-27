@@ -1,3 +1,8 @@
+# 1.2.0
+
+- Added example of litening to events.
+- Fixing the subscription id that turns null when not se
+
 ## 1.1.0
 
 - Fixed signing and verifying hexadiciaml encoding issue.
