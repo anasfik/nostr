@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dart_nostr/nostr/model/event.dart';
 import 'package:meta/meta.dart';
 
 import 'exceptions.dart';
@@ -8,6 +9,9 @@ import 'exceptions.dart';
 abstract class NostrRegistry {
   /// This is the registry which will have all relays [WebSocket]s.
   static final Map<String, WebSocket> _relaysWebSocketsRegistry = {};
+
+  ///  This is the registry which will have all events.
+  static final Map<String, NostrEvent> _eventsRegistry = {};
 
   /// Registers a [WebSocket] to the registry with the given [relayUrl].
   /// If a [WebSocket] is already registered with the given [relayUrl], it will be replaced.
@@ -44,5 +48,13 @@ abstract class NostrRegistry {
   /// Wether a [WebSocket] is registered with the given [relayUrl].
   static bool isRelayRegistered(String relayUrl) {
     return _relaysWebSocketsRegistry.containsKey(relayUrl);
+  }
+
+  static bool isEventRegistered(NostrEvent event) {
+    return _eventsRegistry.containsKey(event.id);
+  }
+
+  static void registerEvent(NostrEvent event) {
+    _eventsRegistry[event.id] = event;
   }
 }

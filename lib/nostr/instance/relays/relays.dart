@@ -219,9 +219,13 @@ class NostrRelays implements NostrRelaysBase {
       }
 
       if (NostrEvent.canBeDeserializedEvent(d)) {
-        _streamController.sink.add(NostrEvent.fromRelayMessage(d));
+        final event = NostrEvent.fromRelayMessage(d);
         NostrClientUtils.log(
-            "received event with content: ${NostrEvent.fromRelayMessage(d).content} from relay: $relay");
+            "received event with content: ${event.content} from relay: $relay");
+        if (NostrRegistry.isEventRegistered(event)) {
+          _streamController.sink.add(NostrEvent.fromRelayMessage(d));
+          NostrRegistry.registerEvent(event);
+        }
       } else {
         NostrClientUtils.log(
             "received non-event message from relay: $relay, message: $d");
