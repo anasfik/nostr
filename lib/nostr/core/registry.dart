@@ -51,10 +51,14 @@ abstract class NostrRegistry {
   }
 
   static bool isEventRegistered(NostrEvent event) {
-    return _eventsRegistry.containsKey(event.id);
+    return _eventsRegistry.containsKey(eventUniqueId(event));
   }
 
   static void registerEvent(NostrEvent event) {
-    _eventsRegistry[event.id] = event;
+    _eventsRegistry[eventUniqueId(event)] = event;
+  }
+
+  static String eventUniqueId(NostrEvent event) {
+    return event.id + event.subscriptionId.toString();
   }
 }
