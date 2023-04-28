@@ -222,7 +222,7 @@ class NostrRelays implements NostrRelaysBase {
         final event = NostrEvent.fromRelayMessage(d);
         NostrClientUtils.log(
             "received event with content: ${event.content} from relay: $relay");
-        if (NostrRegistry.isEventRegistered(event)) {
+        if (!NostrRegistry.isEventRegistered(event)) {
           _streamController.sink.add(NostrEvent.fromRelayMessage(d));
           NostrRegistry.registerEvent(event);
         }
