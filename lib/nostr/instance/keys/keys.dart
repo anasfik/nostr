@@ -74,4 +74,8 @@ class NostrKeys implements NostrKeysBase {
 
     return isVerified;
   }
+
+  bool isValidPrivateKey(String key) {
+    return NostrKeyPairs.isValidPrivateKey(key);
+  }
 }

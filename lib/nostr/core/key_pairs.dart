@@ -49,6 +49,16 @@ class NostrKeyPairs extends Equatable {
     return bip340.verify(pubkey, message, signature);
   }
 
+  static bool isValidPrivateKey(String privateKey) {
+    try {
+      NostrKeyPairs(private: privateKey);
+
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
   @override
   List<Object?> get props => [
         private,
