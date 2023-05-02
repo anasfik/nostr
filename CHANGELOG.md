@@ -1,3 +1,8 @@
+# 1.3.3
+
+- refactored the optional memebers to requests in the internal library packages.
+- ( experiental ) Implementation of a work around over the relays subscrition limits.
+
 # 1.3.2
 
 - Added a main example.

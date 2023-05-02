@@ -1,6 +1,3 @@
-import 'dart:convert';
-
-import 'package:convert/convert.dart';
 import 'package:dart_nostr/dart_nostr.dart';
 
 void main() {

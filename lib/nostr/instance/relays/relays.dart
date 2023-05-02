@@ -92,6 +92,7 @@ class NostrRelays implements NostrRelaysBase {
     bool ensureToClearRegistriesBeforeStarting = true,
     bool ignoreConnectionException = true,
     bool shouldReconnectToRelayOnNotice = false,
+    Duration connectionTimeout = const Duration(seconds: 5),
   }) async {
     assert(
       relaysUrl.isNotEmpty,
@@ -110,6 +111,7 @@ class NostrRelays implements NostrRelaysBase {
       retryOnClose: retryOnClose,
       ignoreConnectionException: ignoreConnectionException,
       shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
+      connectionTimeout: connectionTimeout,
     );
   }
 
@@ -472,14 +474,19 @@ close reason: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeReason}.
     required bool retryOnClose,
     required bool ignoreConnectionException,
     required bool shouldReconnectToRelayOnNotice,
+    required Duration connectionTimeout,
   }) async {
     Completer completer = Completer();
+
+    final client = HttpClient();
+    client.connectionTimeout = connectionTimeout;
 
     for (String relay in relaysUrl) {
       try {
         final relayWebSocket = await WebSocket.connect(
           relay,
           compression: CompressionOptions.compressionOff,
+          customClient: client,
         );
 
         NostrRegistry.registerRelayWebSocket(

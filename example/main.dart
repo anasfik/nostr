@@ -46,7 +46,8 @@ Future<void> main() async {
 // listen to events
   final sub =
       Nostr.instance.relaysService.startEventsSubscription(request: request);
-  StreamSubscription sub2 = Stream.empty().listen((event) {
+
+  sub.listen((event) {
     print(event);
   });
 }
