@@ -1,3 +1,7 @@
+# 1.3.2
+
+- Added a main example.
+
 # 1.3.0
 
 - Add more helper methods.
