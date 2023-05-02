@@ -1,3 +1,8 @@
+# 1.3.0
+
+- Add more helper methods.
+- Minor fixes.
+
 # 1.2.0
 
 - Added example of litening to events.
