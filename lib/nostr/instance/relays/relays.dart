@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dart_nostr/nostr/model/notice.dart';
 import 'package:dart_nostr/nostr/model/request/request.dart';
 
 import 'package:dart_nostr/nostr/model/event.dart';
@@ -90,6 +91,7 @@ class NostrRelays implements NostrRelaysBase {
     bool retryOnClose = false,
     bool ensureToClearRegistriesBeforeStarting = true,
     bool ignoreConnectionException = true,
+    bool shouldReconnectToRelayOnNotice = false,
   }) async {
     assert(
       relaysUrl.isNotEmpty,
@@ -107,6 +109,7 @@ class NostrRelays implements NostrRelaysBase {
       retryOnError: retryOnError,
       retryOnClose: retryOnClose,
       ignoreConnectionException: ignoreConnectionException,
+      shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
     );
   }
 
@@ -207,11 +210,13 @@ class NostrRelays implements NostrRelaysBase {
   @override
   void startListeningToRelays({
     required String relay,
-    void Function(String relayUrl, dynamic receivedData)? onRelayListening,
-    void Function(String relayUrl, Object? error)? onRelayError,
-    void Function(String relayUrl)? onRelayDone,
-    bool retryOnError = false,
-    bool retryOnClose = false,
+    required void Function(String relayUrl, dynamic receivedData)?
+        onRelayListening,
+    required void Function(String relayUrl, Object? error)? onRelayError,
+    required void Function(String relayUrl)? onRelayDone,
+    required bool retryOnError,
+    required bool retryOnClose,
+    required bool shouldReconnectToRelayOnNotice,
   }) {
     NostrRegistry.getRelayWebSocket(relayUrl: relay)!.listen((d) {
       if (onRelayListening != null) {
@@ -227,8 +232,25 @@ class NostrRelays implements NostrRelaysBase {
           NostrRegistry.registerEvent(event);
         }
       } else {
-        NostrClientUtils.log(
-            "received non-event message from relay: $relay, message: $d");
+        if (NostrNotice.canBeDeserializedNotice(d) &&
+            shouldReconnectToRelayOnNotice) {
+          final notice = NostrNotice.fromRelayMessage(d);
+          NostrClientUtils.log(
+            "received notice with message: ${notice.message} from relay: $relay",
+          );
+          _reconnectToRelay(
+            relay: relay,
+            onRelayListening: onRelayListening,
+            onRelayError: onRelayError,
+            onRelayDone: onRelayDone,
+            retryOnError: retryOnError,
+            retryOnClose: retryOnClose,
+            shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
+          );
+        } else {
+          NostrClientUtils.log(
+              "received non-event message from relay: $relay, message: $d");
+        }
       }
     }, onError: (error) {
       if (retryOnError) {
@@ -239,6 +261,7 @@ class NostrRelays implements NostrRelaysBase {
           onRelayDone: onRelayDone,
           retryOnError: retryOnError,
           retryOnClose: retryOnClose,
+          shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
         );
       }
 
@@ -258,6 +281,7 @@ class NostrRelays implements NostrRelaysBase {
           onRelayDone: onRelayDone,
           retryOnError: retryOnError,
           retryOnClose: retryOnClose,
+          shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
         );
       }
 
@@ -414,11 +438,13 @@ close reason: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeReason}.
 
   void _reconnectToRelay({
     required String relay,
-    void Function(String relayUrl, dynamic receivedData)? onRelayListening,
-    void Function(String relayUrl, Object? error)? onRelayError,
-    void Function(String relayUrl)? onRelayDone,
-    bool retryOnError = false,
-    bool retryOnClose = false,
+    required void Function(String relayUrl, dynamic receivedData)?
+        onRelayListening,
+    required void Function(String relayUrl, Object? error)? onRelayError,
+    required void Function(String relayUrl)? onRelayDone,
+    required bool retryOnError,
+    required bool retryOnClose,
+    required bool shouldReconnectToRelayOnNotice,
   }) {
     NostrClientUtils.log(
       "retrying to listen to relay with url: $relay...",
@@ -431,18 +457,21 @@ close reason: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeReason}.
       onRelayDone: onRelayDone,
       retryOnError: retryOnError,
       retryOnClose: retryOnClose,
+      shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
     );
   }
 
   Future<void> _startConnectingAndRegisteringRelays({
     required List<String> relaysUrl,
-    void Function(String relayUrl, dynamic receivedData)? onRelayListening,
-    void Function(String relayUrl, Object? error)? onRelayError,
-    void Function(String relayUrl)? onRelayDone,
-    bool lazyListeningToRelays = false,
-    bool retryOnError = false,
-    bool retryOnClose = false,
-    bool ignoreConnectionException = false,
+    required void Function(String relayUrl, dynamic receivedData)?
+        onRelayListening,
+    required void Function(String relayUrl, Object? error)? onRelayError,
+    required void Function(String relayUrl)? onRelayDone,
+    required bool lazyListeningToRelays,
+    required bool retryOnError,
+    required bool retryOnClose,
+    required bool ignoreConnectionException,
+    required bool shouldReconnectToRelayOnNotice,
   }) async {
     Completer completer = Completer();
 
@@ -482,6 +511,7 @@ close reason: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeReason}.
           onRelayDone: onRelayDone,
           retryOnError: retryOnError,
           retryOnClose: retryOnClose,
+          shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
         );
       }
     }

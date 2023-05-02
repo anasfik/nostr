@@ -15,5 +15,6 @@ dependencies:
   meta: ^1.8.0
 
 dev_dependencies:
+  dart_code_metrics: ^5.7.2
   lints:
   test:

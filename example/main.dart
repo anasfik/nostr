@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dart_nostr/dart_nostr.dart';
 
 Future<void> main() async {
@@ -44,4 +46,7 @@ Future<void> main() async {
 // listen to events
   final sub =
       Nostr.instance.relaysService.startEventsSubscription(request: request);
+  StreamSubscription sub2 = Stream.empty().listen((event) {
+    print(event);
+  });
 }

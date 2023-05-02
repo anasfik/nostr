@@ -20,8 +20,12 @@ abstract class NostrRelaysBase {
   void closeEventsSubscription(String subscriptionId);
   void startListeningToRelays({
     required String relay,
-    void Function(String relayUrl, dynamic receivedData)? onRelayListening,
-    void Function(String relayUrl, Object? error)? onRelayError,
-    void Function(String relayUrl)? onRelayDone,
+    required void Function(String relayUrl, dynamic receivedData)?
+        onRelayListening,
+    required void Function(String relayUrl, Object? error)? onRelayError,
+    required void Function(String relayUrl)? onRelayDone,
+    required bool retryOnError,
+    required bool retryOnClose,
+    required bool shouldReconnectToRelayOnNotice,
   });
 }

@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
+import 'package:dart_nostr/nostr/core/constants.dart';
 import 'package:equatable/equatable.dart';
 
 import '../core/key_pairs.dart';
@@ -120,7 +121,7 @@ class NostrEvent extends Equatable {
   static bool canBeDeserializedEvent(String dataFromRelay) {
     final decoded = jsonDecode(dataFromRelay) as List;
 
-    return decoded.first == "EVENT";
+    return decoded.first == NostrConstants.event;
   }
 
   static String getEventId({
