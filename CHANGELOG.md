@@ -1,3 +1,10 @@
+# 1.5.0
+
+- Added implementation of bech32 encoder in general.
+- Added implementation of npub & nsec encoder.
+- Added example for generating npub & nsec keys.
+- Added more documentation and documenttaion-example for some memebers that miss it in the keys service.
+
 # 1.4.0
 
 - Added the reconnecting option when a relay sent's a notice message.
