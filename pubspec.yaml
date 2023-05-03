@@ -13,6 +13,8 @@ dependencies:
   crypto: ^3.0.2
   http: ^0.13.5
   meta: ^1.8.0
+  bech32: ^0.2.2
+  hex: ^0.2.0
 
 dev_dependencies:
   dart_code_metrics: ^5.7.2

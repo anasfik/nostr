@@ -1,4 +1,7 @@
 {
-  "cSpell.words": ["Nostr"],
+  "cSpell.words": [
+    "Nostr",
+    "Nsec"
+  ],
   "editor.acceptSuggestionOnEnter": "off"
 }
