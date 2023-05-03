@@ -1,3 +1,7 @@
+# 1.4.0
+
+- Added the reconnecting option when a relay sent's a notice message.
+
 # 1.3.3
 
 - refactored the optional memebers to requests in the internal library packages.
