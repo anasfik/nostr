@@ -20,6 +20,7 @@ abstract class NostrRegistry {
     required WebSocket webSocket,
   }) {
     _relaysWebSocketsRegistry[relayUrl] = webSocket;
+    return;
   }
 
   /// Returns the [WebSocket] registered with the given [relayUrl].
@@ -29,7 +30,9 @@ abstract class NostrRegistry {
     final targetWebSocket = _relaysWebSocketsRegistry[relayUrl];
 
     if (targetWebSocket != null) {
-      return _relaysWebSocketsRegistry[relayUrl]!;
+      final relay = _relaysWebSocketsRegistry[relayUrl]!;
+
+      return relay;
     } else {
       throw RelayNotFoundException(relayUrl);
     }
@@ -60,5 +63,10 @@ abstract class NostrRegistry {
 
   static String eventUniqueId(NostrEvent event) {
     return event.id + event.subscriptionId.toString();
+  }
+
+  static bool unregisterRelay(String relay) {
+    final isUnregistered = _relaysWebSocketsRegistry.remove(relay) != null;
+    return isUnregistered;
   }
 }

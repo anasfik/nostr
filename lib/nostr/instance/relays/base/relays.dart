@@ -27,5 +27,8 @@ abstract class NostrRelaysBase {
     required bool retryOnError,
     required bool retryOnClose,
     required bool shouldReconnectToRelayOnNotice,
+    required Duration connectionTimeout,
+    required bool ignoreConnectionException,
+    required bool lazyListeningToRelays,
   });
 }

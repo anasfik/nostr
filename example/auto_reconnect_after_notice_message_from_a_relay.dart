@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:dart_nostr/dart_nostr.dart';
 
 void main() async {
@@ -9,8 +11,9 @@ void main() async {
   );
 
   // sending n different requests to the relays.
-  for (var i = 0; i < 100; i++) {
+  for (var i = 0; i < 11; i++) {
     // Creating the request that we will listen with to events.
+
     final req = NostrRequest(
       filters: <NostrFilter>[
         NostrFilter(

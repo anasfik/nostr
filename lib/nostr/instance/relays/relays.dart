@@ -180,12 +180,14 @@ class NostrRelays implements NostrRelaysBase {
     final close = NostrRequestClose(subscriptionId: subscriptionId);
     final serialized = close.serialized();
 
-    _runFunctionOverRelationIteration((relay) {
-      relay.socket.add(serialized);
-      NostrClientUtils.log(
-        "close request with subscription id: $subscriptionId is sent to relay with url: ${relay.url}",
-      );
-    });
+    _runFunctionOverRelationIteration(
+      (relay) {
+        relay.socket.add(serialized);
+        NostrClientUtils.log(
+          "close request with subscription id: $subscriptionId is sent to relay with url: ${relay.url}",
+        );
+      },
+    );
   }
 
   /// This method will start listening to all relays that you did registered with the [init] method.
@@ -219,8 +221,12 @@ class NostrRelays implements NostrRelaysBase {
     required bool retryOnError,
     required bool retryOnClose,
     required bool shouldReconnectToRelayOnNotice,
+    required Duration connectionTimeout,
+    required bool ignoreConnectionException,
+    required bool lazyListeningToRelays,
   }) {
-    NostrRegistry.getRelayWebSocket(relayUrl: relay)!.listen((d) {
+    final relayWebSocket = NostrRegistry.getRelayWebSocket(relayUrl: relay);
+    relayWebSocket!.listen((d) {
       if (onRelayListening != null) {
         onRelayListening(relay, d);
       }
@@ -240,15 +246,29 @@ class NostrRelays implements NostrRelaysBase {
           NostrClientUtils.log(
             "received notice with message: ${notice.message} from relay: $relay",
           );
-          _reconnectToRelay(
-            relay: relay,
-            onRelayListening: onRelayListening,
-            onRelayError: onRelayError,
-            onRelayDone: onRelayDone,
-            retryOnError: retryOnError,
-            retryOnClose: retryOnClose,
-            shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
-          );
+
+          if (NostrRegistry.isRelayRegistered(relay)) {
+            final registeredRelay =
+                NostrRegistry.getRelayWebSocket(relayUrl: relay);
+
+            registeredRelay?.close().then((value) {
+              final relayUnregistered = NostrRegistry.unregisterRelay(relay);
+
+              _reconnectToRelay(
+                relayUnregistered: relayUnregistered,
+                relay: relay,
+                onRelayListening: onRelayListening,
+                onRelayError: onRelayError,
+                onRelayDone: onRelayDone,
+                retryOnError: retryOnError,
+                retryOnClose: retryOnClose,
+                shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
+                connectionTimeout: connectionTimeout,
+                ignoreConnectionException: ignoreConnectionException,
+                lazyListeningToRelays: lazyListeningToRelays,
+              );
+            });
+          }
         } else {
           NostrClientUtils.log(
               "received non-event message from relay: $relay, message: $d");
@@ -264,6 +284,9 @@ class NostrRelays implements NostrRelaysBase {
           retryOnError: retryOnError,
           retryOnClose: retryOnClose,
           shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
+          connectionTimeout: connectionTimeout,
+          ignoreConnectionException: ignoreConnectionException,
+          lazyListeningToRelays: lazyListeningToRelays,
         );
       }
 
@@ -284,17 +307,15 @@ class NostrRelays implements NostrRelaysBase {
           retryOnError: retryOnError,
           retryOnClose: retryOnClose,
           shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
+          connectionTimeout: connectionTimeout,
+          ignoreConnectionException: ignoreConnectionException,
+          lazyListeningToRelays: lazyListeningToRelays,
         );
       }
 
       if (onRelayDone != null) {
         onRelayDone(relay);
       }
-      NostrClientUtils.log("""
-web socket of relay with $relay is done:
-close code: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeCode}.
-close reason: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeReason}.
-""");
     });
   }
 
@@ -438,7 +459,7 @@ close reason: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeReason}.
     }
   }
 
-  void _reconnectToRelay({
+  Future<void> _reconnectToRelay({
     required String relay,
     required void Function(String relayUrl, dynamic receivedData)?
         onRelayListening,
@@ -447,19 +468,53 @@ close reason: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeReason}.
     required bool retryOnError,
     required bool retryOnClose,
     required bool shouldReconnectToRelayOnNotice,
-  }) {
-    NostrClientUtils.log(
-      "retrying to listen to relay with url: $relay...",
-    );
+    required Duration connectionTimeout,
+    required bool ignoreConnectionException,
+    required bool lazyListeningToRelays,
+    bool relayUnregistered = true,
+  }) async {
+    NostrClientUtils.log("retrying to listen to relay with url: $relay...");
 
-    startListeningToRelays(
-      relay: relay,
+    if (relayUnregistered) {
+      await _startConnectingAndRegisteringRelay(
+        relayUrl: relay,
+        onRelayListening: onRelayListening,
+        onRelayError: onRelayError,
+        onRelayDone: onRelayDone,
+        retryOnError: retryOnError,
+        retryOnClose: retryOnClose,
+        shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
+        connectionTimeout: connectionTimeout,
+        ignoreConnectionException: ignoreConnectionException,
+        lazyListeningToRelays: lazyListeningToRelays,
+      );
+    }
+  }
+
+  Future<void> _startConnectingAndRegisteringRelay({
+    required String relayUrl,
+    required void Function(String relayUrl, dynamic receivedData)?
+        onRelayListening,
+    required void Function(String relayUrl, Object? error)? onRelayError,
+    required void Function(String relayUrl)? onRelayDone,
+    required bool lazyListeningToRelays,
+    required bool retryOnError,
+    required bool retryOnClose,
+    required bool ignoreConnectionException,
+    required bool shouldReconnectToRelayOnNotice,
+    required Duration connectionTimeout,
+  }) {
+    return _startConnectingAndRegisteringRelays(
+      relaysUrl: [relayUrl],
       onRelayListening: onRelayListening,
       onRelayError: onRelayError,
       onRelayDone: onRelayDone,
+      lazyListeningToRelays: lazyListeningToRelays,
       retryOnError: retryOnError,
       retryOnClose: retryOnClose,
+      ignoreConnectionException: ignoreConnectionException,
       shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
+      connectionTimeout: connectionTimeout,
     );
   }
 
@@ -519,6 +574,9 @@ close reason: ${NostrRegistry.getRelayWebSocket(relayUrl: relay)!.closeReason}.
           retryOnError: retryOnError,
           retryOnClose: retryOnClose,
           shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
+          connectionTimeout: connectionTimeout,
+          ignoreConnectionException: ignoreConnectionException,
+          lazyListeningToRelays: lazyListeningToRelays,
         );
       }
     }
