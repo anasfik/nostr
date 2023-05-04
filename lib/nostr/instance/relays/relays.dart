@@ -159,11 +159,13 @@ class NostrRelays implements NostrRelaysBase {
 
     final requestSubId = request.subscriptionId;
 
-    return stream.where((event) {
-      final eventSubId = event.subscriptionId;
+    return stream.where(
+      (event) {
+        final eventSubId = event.subscriptionId;
 
-      return eventSubId == requestSubId;
-    });
+        return eventSubId == requestSubId;
+      },
+    );
   }
 
   /// This method will close the subscription of the [subscriptionId] that you passed to it.

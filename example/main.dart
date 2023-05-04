@@ -32,8 +32,12 @@ Future<void> main() async {
 
   await Future.delayed(Duration(seconds: 5));
 
+  // create a subscription id.
+  final subscriptionId = NostrClientUtils.random64HexChars();
+
   // creating a request for listening to events.
   NostrRequest request = NostrRequest(
+    subscriptionId: subscriptionId,
     filters: [
       NostrFilter(
         kinds: [1],
@@ -47,7 +51,34 @@ Future<void> main() async {
   final sub =
       Nostr.instance.relaysService.startEventsSubscription(request: request);
 
-  sub.listen((event) {
-    print(event);
+  StreamSubscription subscritpion = sub.listen(
+    (event) {
+      print(event);
+    },
+    onDone: () {
+      print("done");
+    },
+  );
+
+  await Future.delayed(Duration(seconds: 5));
+
+  // cancel the subscription
+  subscritpion.cancel().whenComplete(() {
+    Nostr.instance.relaysService.closeEventsSubscription(subscriptionId);
   });
+
+  await Future.delayed(Duration(seconds: 5));
+
+  // create a new event that will not be received by the subscription because it is closed.
+  final event2 = NostrEvent.fromPartialData(
+    kind: 1,
+    content: "example content",
+    keyPairs: keyPair,
+    tags: [
+      ["t", currentDateInMsAsString],
+    ],
+  );
+
+  // send the event 2
+  Nostr.instance.relaysService.sendEventToRelays(event2);
 }
