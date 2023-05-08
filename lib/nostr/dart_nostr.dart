@@ -4,6 +4,7 @@ import 'package:dart_nostr/nostr/instance/relays/relays.dart';
 import 'base/nostr.dart';
 import 'core/utils.dart';
 import 'instance/keys/keys.dart';
+import 'instance/utils/utils.dart';
 
 /// {@template nostr_service}
 /// This class is responsible for handling the connection to all relays.
