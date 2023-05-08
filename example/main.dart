@@ -79,6 +79,6 @@ Future<void> main() async {
     ],
   );
 
-  // send the event 2
+  // send the event 2 that will not be received by the subscription because it is closed.
   Nostr.instance.relaysService.sendEventToRelays(event2);
 }

@@ -35,4 +35,7 @@ class Nostr implements NostrServiceBase {
 
   /// {@macro nostr_relays}
   final NostrRelays relaysService = NostrRelays();
+
+  /// {@macro nostr_utils}
+  final NostrUtils utilsService = NostrUtils();
 }
