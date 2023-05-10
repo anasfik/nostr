@@ -33,7 +33,7 @@ Future<void> main() async {
   await Future.delayed(Duration(seconds: 5));
 
   // create a subscription id.
-  final subscriptionId = NostrClientUtils.random64HexChars();
+  final subscriptionId = Nostr.instance.utilsService.random64HexChars();
 
   // creating a request for listening to events.
   NostrRequest request = NostrRequest(

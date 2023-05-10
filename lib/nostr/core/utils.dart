@@ -15,12 +15,6 @@ abstract class NostrClientUtils {
     _isLogsEnabled = true;
   }
 
-  static String random64HexChars() {
-    final random = Random.secure();
-    final randomBytes = List<int>.generate(32, (i) => random.nextInt(256));
-    return hex.encode(randomBytes);
-  }
-
   static log(String message, [Object? error]) {
     if (_isLogsEnabled) {
       dev.log(
@@ -29,9 +23,5 @@ abstract class NostrClientUtils {
         error: error,
       );
     }
-  }
-
-  static hexEncode(String input) {
-    return hex.encode(utf8.encode(input));
   }
 }

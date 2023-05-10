@@ -1,6 +1,7 @@
 import 'package:bip340/bip340.dart' as bip340;
 import 'package:equatable/equatable.dart';
 
+import '../dart_nostr.dart';
 import 'utils.dart';
 
 /// {@template nostr_key_pairs}
@@ -30,13 +31,13 @@ class NostrKeyPairs extends Equatable {
   /// Instantiate a [NostrKeyPairs] from random bytes.
   factory NostrKeyPairs.generate() {
     return NostrKeyPairs(
-      private: NostrClientUtils.random64HexChars(),
+      private: Nostr.instance.utilsService.random64HexChars(),
     );
   }
 
   /// This will sign a [message] with the [private] key and return the signature.
   String sign(String message) {
-    String aux = NostrClientUtils.random64HexChars();
+    String aux = Nostr.instance.utilsService.random64HexChars();
     return bip340.sign(private, message, aux);
   }
 

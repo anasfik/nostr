@@ -4,6 +4,7 @@ import 'package:dart_nostr/nostr/core/key_pairs.dart';
 import 'package:hex/hex.dart';
 
 import '../../core/utils.dart';
+import '../../dart_nostr.dart';
 import 'base/keys.dart';
 
 /// {@template nostr_keys}
@@ -109,7 +110,8 @@ class NostrKeys implements NostrKeysBase {
     required String message,
   }) {
     final nostrKeyPairs = NostrKeyPairs(private: privateKey);
-    final hexEncodedMessage = NostrClientUtils.hexEncode(message);
+    final hexEncodedMessage =
+        Nostr.instance.utilsService.hexEncodeString(message);
     final signature = nostrKeyPairs.sign(hexEncodedMessage);
     NostrClientUtils.log(
       "signed message with private key, with it's value is: $signature",
@@ -135,7 +137,8 @@ class NostrKeys implements NostrKeysBase {
     required String message,
     required String signature,
   }) {
-    final hexEncodedMessage = NostrClientUtils.hexEncode(message);
+    final hexEncodedMessage =
+        Nostr.instance.utilsService.hexEncodeString(message);
     final isVerified =
         NostrKeyPairs.verify(publicKey, hexEncodedMessage, signature);
     NostrClientUtils.log(

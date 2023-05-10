@@ -5,6 +5,7 @@ import 'package:equatable/equatable.dart';
 
 import '../../core/constants.dart';
 import '../../core/utils.dart';
+import '../../dart_nostr.dart';
 import 'filter.dart';
 
 /// {@template nostr_request}
@@ -25,7 +26,8 @@ class NostrRequest extends Equatable {
 
   /// Serialize the request to send it to the remote relays websockets.
   String serialized() {
-    subscriptionId = subscriptionId ?? NostrClientUtils.random64HexChars();
+    subscriptionId =
+        subscriptionId ?? Nostr.instance.utilsService.random64HexChars();
 
     String decodedFilters =
         jsonEncode(filters.map((item) => item.toMap()).toList());
