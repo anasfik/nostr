@@ -19,6 +19,7 @@ abstract class NostrRelaysBase {
   NostrEventsStream startEventsSubscription({required NostrRequest request});
 
   void closeEventsSubscription(String subscriptionId);
+
   void startListeningToRelays({
     required String relay,
     required void Function(String relayUrl, dynamic receivedData)?

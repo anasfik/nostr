@@ -159,16 +159,12 @@ class NostrRelays implements NostrRelaysBase {
     });
 
     final requestSubId = request.subscriptionId;
-
     final subStream = stream.where(
-      (event) {
-        final eventSubId = event.subscriptionId;
-
-        return eventSubId == requestSubId;
-      },
+      (event) => _filterNostrEventsWithId(event, requestSubId),
     );
 
     return NostrEventsStream(
+      request: request,
       stream: subStream,
       subscriptionId: request.subscriptionId!,
     );
@@ -194,7 +190,7 @@ class NostrRelays implements NostrRelaysBase {
       (relay) {
         relay.socket.add(serialized);
         NostrClientUtils.log(
-          "close request with subscription id: $subscriptionId is sent to relay with url: ${relay.url}",
+          "Close request with subscription id: $subscriptionId is sent to relay with url: ${relay.url}",
         );
       },
     );
@@ -594,5 +590,14 @@ class NostrRelays implements NostrRelaysBase {
     completer.complete();
 
     return completer.future;
+  }
+
+  bool _filterNostrEventsWithId(
+    NostrEvent event,
+    String? requestSubId,
+  ) {
+    final eventSubId = event.subscriptionId;
+
+    return eventSubId == requestSubId;
   }
 }

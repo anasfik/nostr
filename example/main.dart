@@ -36,7 +36,7 @@ Future<void> main() async {
   final subscriptionId = Nostr.instance.utilsService.random64HexChars();
 
   // creating a request for listening to events.
-  NostrRequest request = NostrRequest(
+  final request = NostrRequest(
     subscriptionId: subscriptionId,
     filters: [
       NostrFilter(
