@@ -9,6 +9,7 @@ import 'package:dart_nostr/nostr/model/event.dart';
 
 import '../../core/registry.dart';
 import '../../core/utils.dart';
+import '../../model/nostr_eve,ts_stream.dart';
 import '../../model/relay.dart';
 import '../../model/relay_informations.dart';
 import '../../model/request/close.dart';
@@ -145,7 +146,7 @@ class NostrRelays implements NostrRelaysBase {
   /// Nostr.instance.relays.startEventsSubscription(request);
   /// ```
   @override
-  Stream<NostrEvent> startEventsSubscription({
+  NostrEventsStream startEventsSubscription({
     required NostrRequest request,
   }) {
     final serialized = request.serialized();
@@ -159,15 +160,21 @@ class NostrRelays implements NostrRelaysBase {
 
     final requestSubId = request.subscriptionId;
 
-    return stream.where(
+    final subStream = stream.where(
       (event) {
         final eventSubId = event.subscriptionId;
 
         return eventSubId == requestSubId;
       },
     );
+
+    return NostrEventsStream(
+      stream: subStream,
+      subscriptionId: request.subscriptionId!,
+    );
   }
 
+  /// {@template close_events_subscription}
   /// This method will close the subscription of the [subscriptionId] that you passed to it.
   ///
   ///
@@ -177,6 +184,7 @@ class NostrRelays implements NostrRelaysBase {
   /// ```dart
   /// Nostr.instance.relays.closeEventsSubscription("<subscriptionId>");
   /// ```
+  /// {endtemplate}
   @override
   void closeEventsSubscription(String subscriptionId) {
     final close = NostrRequestClose(subscriptionId: subscriptionId);
