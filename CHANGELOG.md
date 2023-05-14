@@ -1,3 +1,7 @@
+# 1.5.1
+
+- Exported the `NostrEventsStream` model class
+
 # 1.5.0
 
 - Added implementation of bech32 encoder in general.

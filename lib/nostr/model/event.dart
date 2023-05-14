@@ -152,6 +152,10 @@ class NostrEvent extends Equatable {
     return jsonEncode(["EVENT", _toMap()]);
   }
 
+  static NostrEvent deserialized(String serialized) {
+    return NostrEvent.fromRelayMessage(serialized);
+  }
+
   String uniqueTag() {
     // make a unique tag for this event.
 
