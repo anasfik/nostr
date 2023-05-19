@@ -6,11 +6,20 @@ import 'package:hex/hex.dart';
 import '../../core/utils.dart';
 import '../../dart_nostr.dart';
 import 'base/keys.dart';
+import 'package:dart_bip32_bip44/dart_bip32_bip44.dart' as bip32_bip44;
+import 'package:bip39/bip39.dart' as bip39;
 
 /// {@template nostr_keys}
 /// This class is responsible for generating key pairs and deriving public keys from private keys..
 /// {@endtemplate}
 class NostrKeys implements NostrKeysBase {
+  /// Derives a public key from a [privateKey] directly, use this if you want a quick way to get a public key from a private key.
+  ///
+  ///
+  /// ```dart
+  /// final publicKey = Nostr.instance.keysService.derivePublicKey(privateKey: yourPrivateKey);
+  /// print(publicKey); // ...
+  /// ```
   @override
   String derivePublicKey({required String privateKey}) {
     final nostrKeyPairs = NostrKeyPairs(private: privateKey);
@@ -22,6 +31,13 @@ class NostrKeys implements NostrKeysBase {
   }
 
   /// You can use this method to generate a key pair for your end users.
+  ///
+  ///
+  /// ```dart
+  /// final keyPair = Nostr.instance.keysService.generateKeyPair();
+  /// print(keyPair.public); // ...
+  /// print(keyPair.private); // ...
+  /// ```
   @override
   NostrKeyPairs generateKeyPair() {
     final nostrKeyPairs = NostrKeyPairs.generate();
@@ -32,6 +48,13 @@ class NostrKeys implements NostrKeysBase {
     return nostrKeyPairs;
   }
 
+  /// Generates a key pair from an existing [privateKey], use this if you want to generate a key pair from an existing private key.
+  ///
+  /// ```dart
+  /// final keyPair = Nostr.instance.keysService.generateKeyPairFromExistingPrivateKey(yourPrivateKey);
+  /// print(keyPair.public); // ...
+  /// print(keyPair.private); // ...
+  /// ```
   @override
   NostrKeyPairs generateKeyPairFromExistingPrivateKey(
     String privateKey,
@@ -41,6 +64,11 @@ class NostrKeys implements NostrKeysBase {
 
   /// You can use this method to generate a key pair for your end users.
   /// it returns the private key of the generated key pair.
+  ///
+  /// ```dart
+  /// final privateKey = Nostr.instance.keysService.generatePrivateKey();
+  /// print(privateKey); // ...
+  /// ```
   @override
   String generatePrivateKey() {
     return generateKeyPair().private;
@@ -181,6 +209,35 @@ class NostrKeys implements NostrKeysBase {
     final Bech32 bech32 = codec.decode(bech32String, bech32String.length);
     final eightBitWords = _convertBits(bech32.data, 5, 8, false);
     return [HEX.encode(eightBitWords), bech32.hrp];
+  }
+
+  /// Wether the given [text] is a valid mnemonic or not.
+  ///
+  /// ```dart
+  ///  final isValid = Nostr.instance.keysService.isMnemonicValid('your mnemonic');
+  ///  print(isValid); // ...
+  /// ```
+  static bool isMnemonicValid(String text) {
+    return bip39.validateMnemonic(text);
+  }
+
+  static String getPrivateKeyFromMnemonic(String mnemonic) {
+    String seed = bip39.mnemonicToSeedHex(mnemonic);
+    bip32_bip44.Chain chain = bip32_bip44.Chain.seed(seed);
+
+    bip32_bip44.ExtendedPrivateKey key =
+        chain.forPath("m/44'/1237'/0'/0") as bip32_bip44.ExtendedPrivateKey;
+
+    bip32_bip44.ExtendedPrivateKey? childKey =
+        bip32_bip44.deriveExtendedPrivateChildKey(key, 0);
+
+    String hexChildKey = "";
+
+    if (childKey.key != null) {
+      hexChildKey = childKey.key!.toRadixString(16);
+    }
+
+    return hexChildKey;
   }
 
   /// Convert bits from one base to another
