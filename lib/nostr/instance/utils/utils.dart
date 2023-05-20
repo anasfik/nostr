@@ -9,6 +9,15 @@ import 'base/base.dart';
 /// This class is responsible for handling some of the helper utils of the library.
 /// {@endtemplate}
 class NostrUtils implements NostrUtilsBase {
+  /// Wether the given [identifier] has a valid format.
+  ///
+  ///
+  /// Example:
+  ///
+  /// ```dart
+  /// final isIdentifierValid = Nostr.instance.utilsService.isValidNip05Identifier("example");
+  /// print(isIdentifierValid) // false
+  /// ```
   @override
   bool isValidNip05Identifier(String identifier) {
     final emailRegEx =
@@ -17,11 +26,29 @@ class NostrUtils implements NostrUtilsBase {
     return emailRegEx.hasMatch(identifier);
   }
 
+  /// Encodes the given [input] to hex format
+  ///
+  ///
+  /// Exmaple:
+  ///
+  /// ```dart
+  /// final hexDecodedString = Nostr.instance.utilsService.hexEncodeString("example");
+  /// print(hexDecodedString); // ...
+  /// ```
   @override
   String hexEncodeString(String input) {
     return hex.encode(utf8.encode(input));
   }
 
+  /// Generates a randwom 64-length hexadecimal string.
+  ///
+  ///
+  /// Example:
+  ///
+  /// ```dart
+  /// final randomGeneratedHex = Nostr.instance.utilsService.random64HexChars();
+  /// print(randomGeneratedHex); // ...
+  /// ```
   @override
   String random64HexChars() {
     final random = Random.secure();

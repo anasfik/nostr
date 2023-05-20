@@ -32,11 +32,11 @@ class Nostr implements NostrServiceBase {
   }
 
   /// {@macro nostr_keys}
-  final NostrKeys keysService = NostrKeys();
+  final keysService = NostrKeys();
 
   /// {@macro nostr_relays}
-  final NostrRelays relaysService = NostrRelays();
+  final relaysService = NostrRelays();
 
   /// {@macro nostr_utils}
-  final NostrUtils utilsService = NostrUtils();
+  final utilsService = NostrUtils();
 }

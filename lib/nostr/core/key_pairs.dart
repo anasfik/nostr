@@ -2,7 +2,6 @@ import 'package:bip340/bip340.dart' as bip340;
 import 'package:equatable/equatable.dart';
 
 import '../dart_nostr.dart';
-import 'utils.dart';
 
 /// {@template nostr_key_pairs}
 /// This class is responsible for generating, handling and signing keys.
@@ -61,8 +60,5 @@ class NostrKeyPairs extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-        private,
-        public,
-      ];
+  List<Object?> get props => [private, public];
 }

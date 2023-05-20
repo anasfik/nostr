@@ -1,3 +1,10 @@
+# 2.0.0
+ 
+ - Exposed new APIs with new documentation for more developer experience use of this package.
+ - Addition of utils service.
+ - Addition of more nostr NIPs in the package.
+ - Added more examples.
+
 # 1.5.1
 
 - Exported the `NostrEventsStream` model class

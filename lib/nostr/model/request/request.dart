@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:equatable/equatable.dart';
 
 import '../../core/constants.dart';
-import '../../core/utils.dart';
 import '../../dart_nostr.dart';
 import 'filter.dart';
 

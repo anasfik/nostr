@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:dart_nostr/dart_nostr.dart';
 
