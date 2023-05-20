@@ -334,6 +334,7 @@ class NostrRelays implements NostrRelaysBase {
   ///  pubKey: "pub key in hex format",
   /// );
   /// ```
+  @override
   Future<bool> verifyNip05({
     required String internetIdentifier,
     required String pubKey,
@@ -370,6 +371,7 @@ class NostrRelays implements NostrRelaysBase {
     }
   }
 
+  @override
   Future<String> pubKeyFromIdentifierNip05({
     required String internetIdentifier,
   }) async {
@@ -402,6 +404,7 @@ class NostrRelays implements NostrRelaysBase {
   /// relayUrl: "ws://relay.nostr.dev",
   /// );
   /// ```
+  @override
   Future<RelayInformations> relayInformationsDocumentNip11({
     required String relayUrl,
   }) async {

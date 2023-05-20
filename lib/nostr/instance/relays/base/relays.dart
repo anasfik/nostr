@@ -1,5 +1,6 @@
 import '../../../model/event.dart';
 import '../../../model/nostr_eve,ts_stream.dart';
+import '../../../model/relay_informations.dart';
 import '../../../model/request/request.dart';
 
 abstract class NostrRelaysBase {
@@ -32,5 +33,18 @@ abstract class NostrRelaysBase {
     required Duration connectionTimeout,
     required bool ignoreConnectionException,
     required bool lazyListeningToRelays,
+  });
+
+  Future<bool> verifyNip05({
+    required String internetIdentifier,
+    required String pubKey,
+  });
+
+  Future<String> pubKeyFromIdentifierNip05({
+    required String internetIdentifier,
+  });
+
+  Future<RelayInformations> relayInformationsDocumentNip11({
+    required String relayUrl,
   });
 }
