@@ -1,5 +1,5 @@
 import '../../../model/event.dart';
-import '../../../model/nostr_eve,ts_stream.dart';
+import '../../../model/nostr_events_stream.dart';
 import '../../../model/relay_informations.dart';
 import '../../../model/request/request.dart';
 

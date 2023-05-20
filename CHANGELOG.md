@@ -1,3 +1,7 @@
+# 2.0.1
+ 
+ - Minor changes in the docs.
+ - Added more docs to memebers that miss it. 
 # 2.0.0
  
  - Exposed new APIs with new documentation for more developer experience use of this package.

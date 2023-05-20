@@ -9,7 +9,7 @@ import 'package:dart_nostr/nostr/model/event.dart';
 
 import '../../core/registry.dart';
 import '../../core/utils.dart';
-import '../../model/nostr_eve,ts_stream.dart';
+import '../../model/nostr_events_stream.dart';
 import '../../model/relay.dart';
 import '../../model/relay_informations.dart';
 import '../../model/request/close.dart';
@@ -20,6 +20,7 @@ import 'package:http/http.dart' as http;
 /// {@template nostr_relays}
 /// This class is responsible for all the relays related operations.
 /// {@endtemplate}
+
 class NostrRelays implements NostrRelaysBase {
   /// This is the controller which will receive all events from all relays.
   final _streamController = StreamController<NostrEvent>.broadcast();
