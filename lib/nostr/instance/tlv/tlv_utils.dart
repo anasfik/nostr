@@ -3,7 +3,7 @@ import 'package:dart_nostr/nostr/model/tlv.dart';
 
 import 'base/base.dart';
 
-class TlvUtils implements TLVBase {
+class NostrTLV implements TLVBase {
   /// Decode list bytes to list tlv model
   @override
   List<TLV> decode(Uint8List data) {
