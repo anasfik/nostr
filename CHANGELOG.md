@@ -1,3 +1,10 @@
+# 2.1.1
+
+- Changes the dart_bip32_bip44 with bip32_bip44 so it works with dart packages and projects and not Flutter ones sonce it breaks pana scoring system.
+
+# 2.1.0
+ 
+ - Added nprofile & tlv services
 # 2.0.1
  
  - Minor changes in the docs.

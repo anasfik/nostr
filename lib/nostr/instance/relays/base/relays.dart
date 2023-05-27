@@ -35,15 +35,6 @@ abstract class NostrRelaysBase {
     required bool lazyListeningToRelays,
   });
 
-  Future<bool> verifyNip05({
-    required String internetIdentifier,
-    required String pubKey,
-  });
-
-  Future<String> pubKeyFromIdentifierNip05({
-    required String internetIdentifier,
-  });
-
   Future<RelayInformations> relayInformationsDocumentNip11({
     required String relayUrl,
   });
