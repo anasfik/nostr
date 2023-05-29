@@ -8,4 +8,5 @@ abstract class NostrConstants {
 
   static const String npub = 'npub';
   static const String nsec = 'nsec';
+  static const String nProfile = "nprofile";
 }

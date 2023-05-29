@@ -11,4 +11,11 @@ abstract class NostrUtilsBase {
   Future<String> pubKeyFromIdentifierNip05({
     required String internetIdentifier,
   });
+
+  Map<String, dynamic> decodeNprofileToMap(String bech32);
+
+  String encodePubKeyToNProfile({
+    required String pubkey,
+    List<String> userRelays = const [],
+  });
 }

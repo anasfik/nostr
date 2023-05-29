@@ -195,6 +195,7 @@ class NostrKeys implements NostrKeysBase {
   String encodeBech32(String hex, String hrp) {
     final bytes = HEX.decode(hex);
     final fiveBitWords = _convertBits(bytes, 8, 5, true);
+
     return bech32.encode(Bech32(hrp, fiveBitWords), hex.length + hrp.length);
   }
 
