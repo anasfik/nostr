@@ -14,7 +14,14 @@ abstract class NostrUtilsBase {
 
   Map<String, dynamic> decodeNprofileToMap(String bech32);
 
+  Map<String, dynamic> decodeNeventToMap(String bech32);
+
   String encodePubKeyToNProfile({
+    required String pubkey,
+    List<String> userRelays = const [],
+  });
+  String encodeNevent({
+    required String eventId,
     required String pubkey,
     List<String> userRelays = const [],
   });

@@ -152,6 +152,21 @@ class NostrUtils implements NostrUtilsBase {
     return _nProfileMapToBech32(map);
   }
 
+  @override
+  String encodeNevent({
+    required String eventId,
+    required String pubkey,
+    List<String> userRelays = const [],
+  }) {
+    final map = <String, dynamic>{
+      "pubkey": pubkey,
+      "relays": userRelays,
+      "eventId": eventId,
+    };
+
+    return _nEventMapToBech32(map);
+  }
+
   /// [returns] a map with pubkey and relays
   @override
   Map<String, dynamic> decodeNprofileToMap(String bech32) {
@@ -162,9 +177,28 @@ class NostrUtils implements NostrUtilsBase {
     final List<int> data = HEX.decode(dataString);
 
     final List<TLV> tlvList = _tlvService.decode(Uint8List.fromList(data));
-    final Map<String, dynamic> resultMap = _parseTlvList(tlvList);
+    final Map<String, dynamic> resultMap = _parseNprofileTlvList(tlvList);
 
     if (resultMap["pubkey"].length != 64) {
+      throw Exception("Invalid pubkey length");
+    }
+
+    return resultMap;
+  }
+
+  /// [returns] a map with pubkey and relays
+
+  Map<String, dynamic> decodeNeventToMap(String bech32) {
+    final List<String> decodedBech32 =
+        Nostr.instance.keysService.decodeBech32(bech32);
+
+    final String dataString = decodedBech32[0];
+    final List<int> data = HEX.decode(dataString);
+
+    final List<TLV> tlvList = _tlvService.decode(Uint8List.fromList(data));
+    final Map<String, dynamic> resultMap = _parseNeventTlvList(tlvList);
+
+    if (resultMap["eventId"].length != 64) {
       throw Exception("Invalid pubkey length");
     }
 
@@ -190,7 +224,7 @@ class NostrUtils implements NostrUtilsBase {
 
     final List<String> relays = List<String>.from(map['relays']);
 
-    final List<TLV> tlvList = _generateTlvList(pubkey, relays);
+    final List<TLV> tlvList = _generatenProfileTlvList(pubkey, relays);
 
     final Uint8List bytes = _tlvService.encode(tlvList);
 
@@ -202,7 +236,26 @@ class NostrUtils implements NostrUtilsBase {
     );
   }
 
-  Map<String, dynamic> _parseTlvList(List<TLV> tlvList) {
+  String _nEventMapToBech32(Map<String, dynamic> map) {
+    final String eventId = map['eventId'];
+    final String? authorPubkey = map['pubkey'];
+    final List<String> relays = List<String>.from(map['relays']);
+
+    final List<TLV> tlvList = _generatenEventTlvList(
+      eventId,
+      authorPubkey,
+      relays,
+    );
+
+    final String dataString = HEX.encode(_tlvService.encode(tlvList));
+
+    return Nostr.instance.keysService.encodeBech32(
+      dataString,
+      NostrConstants.nEvent,
+    );
+  }
+
+  Map<String, dynamic> _parseNprofileTlvList(List<TLV> tlvList) {
     String pubkey = "";
     List<String> relays = [];
     for (TLV tlv in tlvList) {
@@ -215,7 +268,65 @@ class NostrUtils implements NostrUtilsBase {
     return {"pubkey": pubkey, "relays": relays};
   }
 
-  List<TLV> _generateTlvList(String pubkey, List<String> relays) {
+  Map<String, dynamic> _parseNeventTlvList(List<TLV> tlvList) {
+    String pubkey = "";
+    List<String> relays = [];
+    String eventId = "";
+    for (TLV tlv in tlvList) {
+      if (tlv.type == 0) {
+        eventId = HEX.encode(tlv.value);
+      } else if (tlv.type == 1) {
+        relays.add(ascii.decode(tlv.value));
+      } else if (tlv.type == 2) {
+        pubkey = HEX.encode(tlv.value);
+      }
+    }
+
+    return {"eventId": eventId, "pubkey": pubkey, "relays": relays};
+  }
+
+  /// Generates a list of TLV objects
+  List<TLV> _generatenEventTlvList(
+    String eventId,
+    String? authorPubkey,
+    List<String> relays,
+  ) {
+    final List<TLV> tlvList = [];
+    tlvList.add(_generateEventIdTlv(eventId));
+
+    tlvList.addAll(relays.map(_generateRelayTlv));
+
+    if (authorPubkey != null) {
+      tlvList.add(_generateAuthorPubkeyTlv(authorPubkey));
+    }
+
+    return tlvList;
+  }
+
+  /// TLV type 1
+  /// [relay] must be a string
+  TLV _generateRelayTlv(String relay) {
+    final Uint8List relayBytes = Uint8List.fromList(ascii.encode(relay));
+    return TLV(type: 1, length: relayBytes.length, value: relayBytes);
+  }
+
+  /// TLV type 2
+  /// [authorPubkey] must be 32 bytes long
+  TLV _generateAuthorPubkeyTlv(String authorPubkey) {
+    final Uint8List authorPubkeyBytes =
+        Uint8List.fromList(HEX.decode(authorPubkey));
+
+    return TLV(type: 2, length: 32, value: authorPubkeyBytes);
+  }
+
+  /// TLV type 0
+  /// [eventId] must be 32 bytes long
+  TLV _generateEventIdTlv(String eventId) {
+    final Uint8List eventIdBytes = Uint8List.fromList(HEX.decode(eventId));
+    return TLV(type: 0, length: 32, value: eventIdBytes);
+  }
+
+  List<TLV> _generatenProfileTlvList(String pubkey, List<String> relays) {
     final Uint8List pubkeyBytes = _hexDecodeToUint8List(pubkey);
     List<TLV> tlvList = [TLV(type: 0, length: 32, value: pubkeyBytes)];
 
