@@ -1,5 +1,4 @@
 import 'dart:core';
-import 'package:dart_nostr/nostr/instance/nprofile/nprofile.dart';
 import 'package:dart_nostr/nostr/instance/relays/relays.dart';
 import 'package:dart_nostr/nostr/instance/tlv/tlv_utils.dart';
 
@@ -44,6 +43,4 @@ class Nostr implements NostrServiceBase {
 
   /// {@macro nostr_utils}
   final tlvService = NostrTLV();
-
-  final nProfileService = NostrNProfile();
 }
