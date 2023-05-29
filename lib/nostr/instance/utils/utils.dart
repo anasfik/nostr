@@ -11,12 +11,16 @@ import '../../core/constants.dart';
 import '../../core/utils.dart';
 import '../../dart_nostr.dart';
 import '../../model/tlv.dart';
+import '../tlv/tlv_utils.dart';
 import 'base/base.dart';
 
 /// {@template nostr_utils}
 /// This class is responsible for handling some of the helper utils of the library.
 /// {@endtemplate}
 class NostrUtils implements NostrUtilsBase {
+  /// {@macro nostr_utils}
+  final _tlvService = NostrTLV();
+
   /// Wether the given [identifier] has a valid format.
   ///
   ///
@@ -157,8 +161,7 @@ class NostrUtils implements NostrUtilsBase {
     final String dataString = decodedBech32[0];
     final List<int> data = HEX.decode(dataString);
 
-    final List<TLV> tlvList =
-        Nostr.instance.tlvService.decode(Uint8List.fromList(data));
+    final List<TLV> tlvList = _tlvService.decode(Uint8List.fromList(data));
     final Map<String, dynamic> resultMap = _parseTlvList(tlvList);
 
     if (resultMap["pubkey"].length != 64) {
@@ -189,7 +192,7 @@ class NostrUtils implements NostrUtilsBase {
 
     final List<TLV> tlvList = _generateTlvList(pubkey, relays);
 
-    final Uint8List bytes = Nostr.instance.tlvService.encode(tlvList);
+    final Uint8List bytes = _tlvService.encode(tlvList);
 
     final String dataString = HEX.encode(bytes);
 

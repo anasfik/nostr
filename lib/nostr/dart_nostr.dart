@@ -40,7 +40,4 @@ class Nostr implements NostrServiceBase {
 
   /// {@macro nostr_utils}
   final utilsService = NostrUtils();
-
-  /// {@macro nostr_utils}
-  final tlvService = NostrTLV();
 }
