@@ -1,3 +1,10 @@
+# 3.0.0
+ 
+ - Added new utils methods to the utils service.
+ - Exposed and modifed some implmentation source service class.
+ - Minor modifications for better maintainence of code.
+ - Commented out more APIs of the package.
+
 # 2.1.1
 
 - Changes the dart_bip32_bip44 with bip32_bip44 so it works with dart packages and projects and not Flutter ones sonce it breaks pana scoring system.
