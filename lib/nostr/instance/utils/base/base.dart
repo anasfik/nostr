@@ -1,6 +1,8 @@
 abstract class NostrUtilsBase {
   bool isValidNip05Identifier(String identifier);
+
   String hexEncodeString(String input);
+
   String random64HexChars();
 
   Future<bool> verifyNip05({
@@ -20,9 +22,14 @@ abstract class NostrUtilsBase {
     required String pubkey,
     List<String> userRelays = const [],
   });
+
   String encodeNevent({
     required String eventId,
     required String pubkey,
     List<String> userRelays = const [],
   });
+
+  String encodeBech32(String hex, String hrp);
+
+  List<String> decodeBech32(String bech32String);
 }

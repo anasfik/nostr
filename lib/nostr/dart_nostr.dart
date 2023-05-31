@@ -1,6 +1,5 @@
 import 'dart:core';
 import 'package:dart_nostr/nostr/instance/relays/relays.dart';
-import 'package:dart_nostr/nostr/instance/tlv/tlv_utils.dart';
 
 import 'base/nostr.dart';
 import 'core/utils.dart';

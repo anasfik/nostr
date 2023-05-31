@@ -5,7 +5,7 @@ void main() {
 
   final relays = ["wss://relay.damus.io"];
 
-  final nProfile = Nostr.instance.utilsService.encodePubKeyToNProfile(
+  final nProfile = Nostr.instance.utilsService.encodeNProfile(
     pubkey: newKeyPair.public,
     userRelays: relays,
   );

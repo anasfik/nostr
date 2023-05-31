@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:bech32/bech32.dart';
 import 'package:hex/hex.dart';
 import 'package:http/http.dart' as http;
 import 'dart:math';
@@ -216,8 +217,7 @@ class NostrUtils implements NostrUtilsBase {
   /// ```
   @override
   Map<String, dynamic> decodeNprofileToMap(String bech32) {
-    final List<String> decodedBech32 =
-        Nostr.instance.keysService.decodeBech32(bech32);
+    final List<String> decodedBech32 = decodeBech32(bech32);
 
     final String dataString = decodedBech32[0];
     final List<int> data = HEX.decode(dataString);
@@ -246,8 +246,7 @@ class NostrUtils implements NostrUtilsBase {
   /// ```
   @override
   Map<String, dynamic> decodeNeventToMap(String bech32) {
-    final List<String> decodedBech32 =
-        Nostr.instance.keysService.decodeBech32(bech32);
+    final List<String> decodedBech32 = decodeBech32(bech32);
 
     final String dataString = decodedBech32[0];
     final List<int> data = HEX.decode(dataString);
@@ -286,10 +285,36 @@ class NostrUtils implements NostrUtilsBase {
 
     final String dataString = HEX.encode(bytes);
 
-    return Nostr.instance.keysService.encodeBech32(
+    return encodeBech32(
       dataString,
       NostrConstants.nProfile,
     );
+  }
+
+  /// Encodes a [hex] string into a bech32 string with a [hrp] human readable part.
+  ///
+  /// ```dart
+  /// final npubString = Nostr.instance.keysService.encodeBech32(yourHexString, 'npub');
+  /// print(npubString); // ...
+  /// ```
+  String encodeBech32(String hex, String hrp) {
+    final bytes = HEX.decode(hex);
+    final fiveBitWords = _convertBits(bytes, 8, 5, true);
+
+    return bech32.encode(Bech32(hrp, fiveBitWords), hex.length + hrp.length);
+  }
+
+  /// Decodes a bech32 string into a [hex] string and a [hrp] human readable part.
+  ///
+  /// ```dart
+  /// final decodedHexString = Nostr.instance.keysService.decodeBech32(npubString);
+  /// print(decodedHexString); // ...
+  /// ```
+  List<String> decodeBech32(String bech32String) {
+    final Bech32Codec codec = const Bech32Codec();
+    final Bech32 bech32 = codec.decode(bech32String, bech32String.length);
+    final eightBitWords = _convertBits(bech32.data, 5, 8, false);
+    return [HEX.encode(eightBitWords), bech32.hrp];
   }
 
   String _nEventMapToBech32(Map<String, dynamic> map) {
@@ -305,7 +330,7 @@ class NostrUtils implements NostrUtilsBase {
 
     final String dataString = HEX.encode(_tlvService.encode(tlvList));
 
-    return Nostr.instance.keysService.encodeBech32(
+    return encodeBech32(
       dataString,
       NostrConstants.nEvent,
     );
@@ -400,5 +425,38 @@ class NostrUtils implements NostrUtilsBase {
 
   Uint8List _asciiEncodeToUint8List(String asciiString) {
     return Uint8List.fromList(ascii.encode(asciiString));
+  }
+
+  /// Convert bits from one base to another
+  /// [data] - the data to convert
+  /// [fromBits] - the number of bits per input value
+  /// [toBits] - the number of bits per output value
+  /// [pad] - whether to pad the output if there are not enough bits
+  /// If pad is true, and there are remaining bits after the conversion, then the remaining bits are left-shifted and added to the result
+  /// [return] - the converted data
+  List<int> _convertBits(List<int> data, int fromBits, int toBits, bool pad) {
+    int acc = 0;
+    int bits = 0;
+    List<int> result = [];
+
+    for (int value in data) {
+      acc = (acc << fromBits) | value;
+      bits += fromBits;
+
+      while (bits >= toBits) {
+        bits -= toBits;
+        result.add((acc >> bits) & ((1 << toBits) - 1));
+      }
+    }
+
+    if (pad) {
+      if (bits > 0) {
+        result.add((acc << (toBits - bits)) & ((1 << toBits) - 1));
+      }
+    } else if (bits >= fromBits || (acc & ((1 << bits) - 1)) != 0) {
+      throw Exception('Invalid padding');
+    }
+
+    return result;
   }
 }
