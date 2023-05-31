@@ -41,7 +41,7 @@ class NostrUtils implements NostrUtilsBase {
   /// Encodes the given [input] to hex format
   ///
   ///
-  /// Exmaple:
+  /// Example:
   ///
   /// ```dart
   /// final hexDecodedString = Nostr.instance.utilsService.hexEncodeString("example");
@@ -115,6 +115,17 @@ class NostrUtils implements NostrUtilsBase {
     }
   }
 
+  /// Return the public key found by the NIP05 implementation via the given for the given [internetIdentifier]
+  ///
+  ///
+  /// Example:
+  /// ```dart
+  ///  final pubKey = await Nostr.instance.relays.pubKeyFromIdentifierNip05(
+  ///   internetIdentifier: "localPart@domainPart",
+  /// );
+  ///
+  /// print(pubKey); // ...
+  /// ```
   @override
   Future<String> pubKeyFromIdentifierNip05({
     required String internetIdentifier,
@@ -140,10 +151,22 @@ class NostrUtils implements NostrUtilsBase {
     }
   }
 
-  /// [pubkey] is the users pubkey
-  /// [userRelays] is a list of relay urls to include in the nprofile
-  /// finds relays and [returns] a bech32 encoded nprofile with relay hints
-  String encodePubKeyToNProfile({
+  /// Generates a nprofile id from the given [pubkey] and [relays], if no [relays] are given, it will be an empty list.
+  /// You can decode the generated nprofile id with [decodeNprofileToMap].
+  ///
+  ///
+  /// Example:
+  ///
+  /// ```dart
+  /// final nProfileId = Nostr.instance.utilsService.encodePubKeyToNProfile(
+  ///  pubkey: "pubkey in hex format",
+  /// userRelays: ["relay1", "relay2"],
+  /// );
+  ///
+  /// print(nProfileId); // ...
+  /// ```
+  @override
+  String encodeNProfile({
     required String pubkey,
     List<String> userRelays = const [],
   }) {
@@ -152,6 +175,19 @@ class NostrUtils implements NostrUtilsBase {
     return _nProfileMapToBech32(map);
   }
 
+  /// Generates a nprofile id from the given [eventId], [pubkey] and [relays].
+  /// You can decode the generated nprofile id with [decodeNeventToMap].
+  ///
+  /// Example:
+  /// ```dart
+  /// final nEventId = Nostr.instance.utilsService.encodeNevent(
+  /// eventId: "event id in hex format",
+  /// pubkey: "pubkey in hex format",
+  /// userRelays: ["relay1", "relay2"],
+  /// );
+  ///
+  /// print(nEventId); // ...
+  /// ```
   @override
   String encodeNevent({
     required String eventId,
@@ -167,7 +203,17 @@ class NostrUtils implements NostrUtilsBase {
     return _nEventMapToBech32(map);
   }
 
-  /// [returns] a map with pubkey and relays
+  /// Decodes the given [bech32] nprofile id to a map with pubkey and relays.
+  /// You can encode a map to a nprofile id with [encodeNProfile].
+  ///
+  /// Example:
+  /// ```dart
+  /// final nProfileDecodedMap = Nostr.instance.utilsService.decodeNprofileToMap(
+  ///  "nprofile1:..."
+  /// );
+  ///
+  /// print(nProfileDecodedMap); // ...
+  /// ```
   @override
   Map<String, dynamic> decodeNprofileToMap(String bech32) {
     final List<String> decodedBech32 =
@@ -186,8 +232,19 @@ class NostrUtils implements NostrUtilsBase {
     return resultMap;
   }
 
-  /// [returns] a map with pubkey and relays
-
+  /// Decodes the given [bech32] nprofile id to a map with pubkey and relays.
+  /// You can encode a map to a nprofile id with [encodeNProfile].
+  ///
+  ///
+  /// Example:
+  /// ```dart
+  /// final nEventDecodedMap = Nostr.instance.utilsService.decodeNeventToMap(
+  /// "nevent1:..."
+  /// );
+  ///
+  /// print(nEventDecodedMap); // ...
+  /// ```
+  @override
   Map<String, dynamic> decodeNeventToMap(String bech32) {
     final List<String> decodedBech32 =
         Nostr.instance.keysService.decodeBech32(bech32);
@@ -205,7 +262,6 @@ class NostrUtils implements NostrUtilsBase {
     return resultMap;
   }
 
-  /// [returns] a short version nprofile1:sdf54e:ewfd54
   String _convertBech32toHr(String bech32, {int cutLength = 15}) {
     final int length = bech32.length;
     final String first = bech32.substring(0, cutLength);
