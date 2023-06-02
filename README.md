@@ -16,11 +16,11 @@ Some NIPs have a custom implementation in this package like the NIP-05, which yo
 
 Some other implementations are not intended to work in the Dart environment, so they are not implemented in this package, such as NIP-07 which is based on the `window` object of a browser. that being said it can be implemented separately if there is a use of Flutter web, but for now, it is not implemented.
 
-NIP-01, NIP-02, NIP-03, NIP-04 (TODO: make the encryption part automated by the package), NIP-05, NIP-06, NIP-09, NIP-10, NIP-11, NIP-12, NIP-13, NIP-14, NIP-16, NIP-18, NIP-20, NIP-23, NIP-25, NIP-27, NIP-28, NIP-33, NIP-36, NIP-39, NIP-40, NIP-56, NIP-65.
+NIP-01, NIP-02, NIP-03, NIP-04 (TODO: make the encryption part automated by the package), NIP-05, NIP-06, NIP-09, NIP-10, NIP-11, NIP-12, NIP-13, NIP-14, NIP-16, NIP-18, NIP-19, NIP-20, NIP-23, NIP-25, NIP-27, NIP-28, NIP-33, NIP-36, NIP-39, NIP-40, NIP-56, NIP-65.
 
 ## TODO (if you want to contribute, please feel free to implement any of the following NIPS and make a pull request, I will be happy to review it and merge it.)
  
-NIP-19, NIP-26, NIP-42, NIP-45, NIP-50, NIP-51, NIP-57, NIP-58
+NIP-26, NIP-42, NIP-45, NIP-50, NIP-51, NIP-57, NIP-58
 
 # Usage:
 
