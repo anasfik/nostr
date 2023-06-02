@@ -57,6 +57,27 @@ class NostrEvent extends Equatable {
     };
   }
 
+  factory NostrEvent.deleteEvent({
+    required NostrKeyPairs keyPairs,
+    required List<String> eventIdsToBeDeleted,
+    String reasonOfDeletion = "",
+    DateTime? createdAt,
+  }) {
+    assert(
+      eventIdsToBeDeleted.isNotEmpty,
+      "the list of event ids is empty, "
+      "you must provide at least one event id to be deleted.",
+    );
+
+    return NostrEvent.fromPartialData(
+      kind: 5,
+      content: reasonOfDeletion,
+      keyPairs: keyPairs,
+      tags: eventIdsToBeDeleted.map((eventId) => ["e", eventId]).toList(),
+      createdAt: createdAt,
+    );
+  }
+
   factory NostrEvent.fromPartialData({
     required int kind,
     required String content,

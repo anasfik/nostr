@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dart_nostr/dart_nostr.dart';
 import 'package:dart_nostr/nostr/model/notice.dart';
 import 'package:dart_nostr/nostr/model/request/request.dart';
 
