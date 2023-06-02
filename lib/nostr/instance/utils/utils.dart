@@ -261,6 +261,36 @@ class NostrUtils implements NostrUtilsBase {
     return resultMap;
   }
 
+  /// Counts the difficulty of the given [hexString], this wis intebded t be used in the NIP 13 with this package.
+  ///
+  /// Example:
+  /// ```dart
+  /// final difficulty = Nostr.instance.utilsService.countDifficultyOfHex("002f");
+  /// print(difficulty); // 36
+  /// ```
+  ///
+  @override
+  int countDifficultyOfHex(String hexString) {
+    List<String> idChars = hexString.split('');
+
+    // encode to bits.
+    List<String> idCharsBinary = idChars.map((char) {
+      int charCode = int.parse(char, radix: 16);
+      String charBinary = charCode.toRadixString(2);
+      return charBinary;
+    }).toList();
+
+    idCharsBinary = idCharsBinary.map((charBinary) {
+      int charBinaryLength = charBinary.length;
+      int charBinaryLengthDiff = 4 - charBinaryLength;
+      String charBinaryPadded =
+          charBinary.padLeft(charBinaryLength + charBinaryLengthDiff, '0');
+      return charBinaryPadded;
+    }).toList();
+
+    return idCharsBinary.join('').split("1").first.length;
+  }
+
   String _convertBech32toHr(String bech32, {int cutLength = 15}) {
     final int length = bech32.length;
     final String first = bech32.substring(0, cutLength);

@@ -32,4 +32,6 @@ abstract class NostrUtilsBase {
   String encodeBech32(String hex, String hrp);
 
   List<String> decodeBech32(String bech32String);
+
+  int countDifficultyOfHex(String hexString);
 }
