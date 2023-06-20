@@ -8,6 +8,8 @@ import '../dart_nostr.dart';
 /// It is used by the [NostrClient] to sign messages.
 /// {@endtemplate}
 class NostrKeyPairs extends Equatable {
+  static const keyPairsCache = <String, NostrKeyPairs>{};
+
   // This is the private generate Key, hex-encoded (64 chars)
   final String private;
 
@@ -15,7 +17,7 @@ class NostrKeyPairs extends Equatable {
   late final String public;
 
   /// {@macro nostr_key_pairs}
-  NostrKeyPairs({
+  NostrKeyPairs._({
     required this.private,
   }) {
     assert(
@@ -24,6 +26,22 @@ class NostrKeyPairs extends Equatable {
     );
 
     public = bip340.getPublicKey(private);
+  }
+
+  factory NostrKeyPairs({
+    required String private,
+  }) {
+    final possibleKeyPair = keyPairsCache[private];
+
+    if (keyPairsCache[possibleKeyPair] != null) {
+      return possibleKeyPair!;
+    } else {
+      final keyPair = NostrKeyPairs._(private: private);
+
+      keyPairsCache[private] = keyPair;
+
+      return keyPair;
+    }
   }
 
   /// {@macro nostr_key_pairs}

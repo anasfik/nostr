@@ -3,24 +3,26 @@ import 'package:dart_nostr/nostr/model/event.dart';
 import 'package:meta/meta.dart';
 
 import 'exceptions.dart';
+import 'utils.dart';
+
+@protected
 
 /// This is responsible for registering and retrieving relays [WebSocket]s that are connected to the app.
-@protected
 abstract class NostrRegistry {
   /// This is the registry which will have all relays [WebSocket]s.
-  static final Map<String, WebSocket> _relaysWebSocketsRegistry = {};
+  static final _relaysWebSocketsRegistry = <String, WebSocket>{};
 
   ///  This is the registry which will have all events.
-  static final Map<String, NostrEvent> _eventsRegistry = {};
+  static final _eventsRegistry = <String, NostrEvent>{};
 
   /// Registers a [WebSocket] to the registry with the given [relayUrl].
   /// If a [WebSocket] is already registered with the given [relayUrl], it will be replaced.
-  static void registerRelayWebSocket({
+  static WebSocket registerRelayWebSocket({
     required String relayUrl,
     required WebSocket webSocket,
   }) {
     _relaysWebSocketsRegistry[relayUrl] = webSocket;
-    return;
+    return _relaysWebSocketsRegistry[relayUrl]!;
   }
 
   /// Returns the [WebSocket] registered with the given [relayUrl].
@@ -30,10 +32,14 @@ abstract class NostrRegistry {
     final targetWebSocket = _relaysWebSocketsRegistry[relayUrl];
 
     if (targetWebSocket != null) {
-      final relay = _relaysWebSocketsRegistry[relayUrl]!;
+      final relay = targetWebSocket;
 
       return relay;
     } else {
+      NostrClientUtils.log(
+        "No relay is registered with the given url: $relayUrl, did you forget to register it?",
+      );
+
       throw RelayNotFoundException(relayUrl);
     }
   }
@@ -45,7 +51,7 @@ abstract class NostrRegistry {
 
   /// Clears all registries.
   static void clearAllRegistries() {
-    _relaysWebSocketsRegistry.clear();
+    return _relaysWebSocketsRegistry.clear();
   }
 
   /// Wether a [WebSocket] is registered with the given [relayUrl].
@@ -57,16 +63,21 @@ abstract class NostrRegistry {
     return _eventsRegistry.containsKey(eventUniqueId(event));
   }
 
-  static void registerEvent(NostrEvent event) {
+  static NostrEvent registerEvent(NostrEvent event) {
     _eventsRegistry[eventUniqueId(event)] = event;
+
+    return _eventsRegistry[eventUniqueId(event)]!;
   }
 
   static String eventUniqueId(NostrEvent event) {
-    return event.id + event.subscriptionId.toString();
+    final eventUniqueId = event.id + event.subscriptionId.toString();
+
+    return eventUniqueId;
   }
 
   static bool unregisterRelay(String relay) {
     final isUnregistered = _relaysWebSocketsRegistry.remove(relay) != null;
+
     return isUnregistered;
   }
 }

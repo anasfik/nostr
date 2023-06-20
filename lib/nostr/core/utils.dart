@@ -1,4 +1,3 @@
-
 import 'dart:developer' as dev;
 
 abstract class NostrClientUtils {
