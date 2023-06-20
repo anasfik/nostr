@@ -1,3 +1,7 @@
+# 3.3.1
+ - Bug fixes.
+ - Added more docs
+ - More optimizations for the use of the keypair class for quickeer constructions after the first time (caching)
 # 3.0.0
  
  - Added new utils methods to the utils service.
