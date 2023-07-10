@@ -21,6 +21,7 @@ void main() async {
   Timer.periodic(Duration(milliseconds: 200), (timer) {
     // Then we create the request.
     final notesKindList = <int>[1];
+    // ignore: unused_local_variable
     final tTags = ["nostr"];
     final sinceDateTime = DateTime.now().subtract(Duration(days: 2));
     final request = NostrRequest(
@@ -33,6 +34,7 @@ void main() async {
     );
 
     // Now we create the stream of that request.
+    // ignore: unused_local_variable
     final requestStream =
         Nostr.instance.relaysService.startEventsSubscription(request: request);
   });

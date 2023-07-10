@@ -10,7 +10,6 @@ import 'package:convert/convert.dart';
 
 import '../../core/constants.dart';
 import '../../core/utils.dart';
-import '../../dart_nostr.dart';
 import '../../model/tlv.dart';
 import '../tlv/tlv_utils.dart';
 import 'base/base.dart';
@@ -291,17 +290,17 @@ class NostrUtils implements NostrUtilsBase {
     return idCharsBinary.join('').split("1").first.length;
   }
 
-  String _convertBech32toHr(String bech32, {int cutLength = 15}) {
-    final int length = bech32.length;
-    final String first = bech32.substring(0, cutLength);
-    final String last = bech32.substring(length - cutLength, length);
-    return "$first:$last";
-  }
+  // String _convertBech32toHr(String bech32, {int cutLength = 15}) {
+  //   final int length = bech32.length;
+  //   final String first = bech32.substring(0, cutLength);
+  //   final String last = bech32.substring(length - cutLength, length);
+  //   return "$first:$last";
+  // }
 
   /// [returns] a short version nprofile1:sdf54e:ewfd54
-  String _nProfileMapToBech32Hr(Map<String, dynamic> map) {
-    return _convertBech32toHr(_nProfileMapToBech32(map));
-  }
+  // String _nProfileMapToBech32Hr(Map<String, dynamic> map) {
+  //   return _convertBech32toHr(_nProfileMapToBech32(map));
+  // }
 
   /// expects a map with pubkey and relays and [returns] a bech32 encoded nprofile
   String _nProfileMapToBech32(Map<String, dynamic> map) {
@@ -327,6 +326,7 @@ class NostrUtils implements NostrUtilsBase {
   /// final npubString = Nostr.instance.keysService.encodeBech32(yourHexString, 'npub');
   /// print(npubString); // ...
   /// ```
+  @override
   String encodeBech32(String hex, String hrp) {
     final bytes = HEX.decode(hex);
     final fiveBitWords = _convertBits(bytes, 8, 5, true);
@@ -340,6 +340,7 @@ class NostrUtils implements NostrUtilsBase {
   /// final decodedHexString = Nostr.instance.keysService.decodeBech32(npubString);
   /// print(decodedHexString); // ...
   /// ```
+  @override
   List<String> decodeBech32(String bech32String) {
     final Bech32Codec codec = const Bech32Codec();
     final Bech32 bech32 = codec.decode(bech32String, bech32String.length);

@@ -3,17 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_nostr/dart_nostr.dart';
-import 'package:dart_nostr/nostr/model/notice.dart';
-import 'package:dart_nostr/nostr/model/request/request.dart';
 
-import 'package:dart_nostr/nostr/model/event.dart';
 
 import '../../core/registry.dart';
-import '../../core/utils.dart';
-import '../../model/nostr_events_stream.dart';
 import '../../model/relay.dart';
 import '../../model/relay_informations.dart';
-import '../../model/request/close.dart';
 import 'base/relays.dart';
 
 import 'package:http/http.dart' as http;

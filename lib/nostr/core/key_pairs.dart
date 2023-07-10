@@ -8,7 +8,7 @@ import '../dart_nostr.dart';
 /// It is used by the [NostrClient] to sign messages.
 /// {@endtemplate}
 class NostrKeyPairs extends Equatable {
-  static const keyPairsCache = <String, NostrKeyPairs>{};
+  static final keyPairsCache = <String, NostrKeyPairs>{};
 
   // This is the private generate Key, hex-encoded (64 chars)
   final String private;
@@ -33,8 +33,8 @@ class NostrKeyPairs extends Equatable {
   }) {
     final possibleKeyPair = keyPairsCache[private];
 
-    if (keyPairsCache[possibleKeyPair] != null) {
-      return possibleKeyPair!;
+    if (possibleKeyPair != null) {
+      return possibleKeyPair;
     } else {
       final keyPair = NostrKeyPairs._(private: private);
 

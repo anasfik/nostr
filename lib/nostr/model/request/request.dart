@@ -10,6 +10,8 @@ import 'filter.dart';
 /// {@template nostr_request}
 /// NostrRequest is a request to subscribe to a set of events that match a set of filters with a given [subscriptionId].
 /// {@endtemplate}
+
+// ignore: must_be_immutable
 class NostrRequest extends Equatable {
   /// The subscription ID of the request.
   String? subscriptionId;
