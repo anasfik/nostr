@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:dart_nostr/dart_nostr.dart';
 
@@ -9,11 +10,12 @@ void main() async {
   // We initialize the Nostr Relays Service with relays.
   await Nostr.instance.relaysService.init(
     relaysUrl: <String>["wss://nos.lol"],
-    onRelayError: (relay, error) {
+    onRelayConnectionError: (relay, error, webSocket) {
       print("Relay error: $error");
     },
-    onRelayDone: (relayUrl) => print("Relay done: $relayUrl"),
-    onRelayListening: (relayUrl, receivedData) {
+    onRelayConnectionDone: (relayUrl, webSocket) =>
+        print("Relay done: $relayUrl"),
+    onRelayListening: (relayUrl, receivedData, webSocket) {
       // print("Relay listening: $relayUrl");
       // print("Relay listening data: $receivedData");
     },
@@ -35,8 +37,9 @@ void main() async {
 
     // Now we create the stream of that request.
     // ignore: unused_local_variable
-    final requestStream =
-        Nostr.instance.relaysService.startEventsSubscription(request: request);
+    final requestStream = Nostr.instance.relaysService.startEventsSubscription(
+      request: request,
+    );
   });
   // We listen to the stream and print the events.
   // requestStream.listen((event) {

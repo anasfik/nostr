@@ -3,19 +3,32 @@ import 'dart:io';
 import '../../../model/event.dart';
 import '../../../model/nostr_event_key.dart';
 import '../../../model/nostr_events_stream.dart';
+import '../../../model/notice.dart';
 import '../../../model/relay_informations.dart';
 import '../../../model/request/request.dart';
 
 abstract class NostrRelaysBase {
-  Stream<NostrEvent> get stream;
+  Stream<NostrEvent> get eventsStream;
   Map<String, WebSocket> get relaysWebSocketsRegistry;
   Map<NostrEventKey, NostrEvent> get eventsRegistry;
+  Stream<NostrNotice> get noticesStream;
 
   init({
     required List<String> relaysUrl,
-    void Function(String relayUrl, dynamic receivedData)? onRelayListening,
-    void Function(String relayUrl, Object? error)? onRelayConnectionError,
-    void Function(String relayUrl)? onRelayConnectionDone,
+    void Function(
+      String relayUrl,
+      dynamic receivedData,
+      WebSocket? relayWebSocket,
+    )? onRelayListening,
+    void Function(
+      String relayUrl,
+      Object? error,
+      WebSocket? relayWebSocket,
+    )? onRelayConnectionError,
+    void Function(
+      String relayUrl,
+      WebSocket? relayWebSocket,
+    )? onRelayConnectionDone,
     bool lazyListeningToRelays = false,
     bool retryOnError = false,
     bool retryOnClose = false,
@@ -23,17 +36,22 @@ abstract class NostrRelaysBase {
 
   void sendEventToRelays(NostrEvent event);
 
-  NostrEventsStream startEventsSubscription({required NostrRequest request});
+  NostrEventsStream startEventsSubscription({
+    required NostrRequest request,
+  });
 
   void closeEventsSubscription(String subscriptionId);
 
   void startListeningToRelay({
     required String relay,
-    required void Function(String relayUrl, dynamic receivedData)?
+    required void Function(
+            String relayUrl, dynamic receivedData, WebSocket? relayWebSocket)?
         onRelayListening,
-    required void Function(String relayUrl, Object? error)?
+    required void Function(
+            String relayUrl, Object? error, WebSocket? relayWebSocket)?
         onRelayConnectionError,
-    required void Function(String relayUrl)? onRelayConnectionDone,
+    required void Function(String relayUrl, WebSocket? relayWebSocket)?
+        onRelayConnectionDone,
     required bool retryOnError,
     required bool retryOnClose,
     required bool shouldReconnectToRelayOnNotice,
