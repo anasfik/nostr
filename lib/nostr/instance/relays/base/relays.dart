@@ -14,8 +14,8 @@ abstract class NostrRelaysBase {
   init({
     required List<String> relaysUrl,
     void Function(String relayUrl, dynamic receivedData)? onRelayListening,
-    void Function(String relayUrl, Object? error)? onRelayError,
-    void Function(String relayUrl)? onRelayDone,
+    void Function(String relayUrl, Object? error)? onRelayConnectionError,
+    void Function(String relayUrl)? onRelayConnectionDone,
     bool lazyListeningToRelays = false,
     bool retryOnError = false,
     bool retryOnClose = false,
@@ -27,12 +27,13 @@ abstract class NostrRelaysBase {
 
   void closeEventsSubscription(String subscriptionId);
 
-  void startListeningToRelays({
+  void startListeningToRelay({
     required String relay,
     required void Function(String relayUrl, dynamic receivedData)?
         onRelayListening,
-    required void Function(String relayUrl, Object? error)? onRelayError,
-    required void Function(String relayUrl)? onRelayDone,
+    required void Function(String relayUrl, Object? error)?
+        onRelayConnectionError,
+    required void Function(String relayUrl)? onRelayConnectionDone,
     required bool retryOnError,
     required bool retryOnClose,
     required bool shouldReconnectToRelayOnNotice,
