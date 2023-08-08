@@ -6,6 +6,7 @@ import 'package:dart_nostr/dart_nostr.dart';
 import 'package:dart_nostr/nostr/model/nostr_event_key.dart';
 
 import '../../core/registry.dart';
+import '../../model/ok.dart';
 import '../../model/relay.dart';
 import '../../model/relay_informations.dart';
 import 'base/relays.dart';
@@ -138,9 +139,12 @@ class NostrRelays implements NostrRelaysBase {
   /// Nostr.instance.relays.sendEventToRelays(event);
   /// ```
   @override
-  void sendEventToRelays(NostrEvent event) {
+  void sendEventToRelays(
+    NostrEvent event, {
+    void Function(NostrEventOkCommand ok)? onOk,
+  }) {
     final serialized = event.serialized();
-
+    _registerOnOlCallBack(event.id, onOk);
     _runFunctionOverRelationIteration((relay) {
       relay.socket.add(serialized);
       NostrClientUtils.log(
@@ -264,9 +268,7 @@ class NostrRelays implements NostrRelaysBase {
         );
       } else if (NostrNotice.canBeDeserializedNotice(d)) {
         final notice = NostrNotice.fromRelayMessage(d);
-
         onNoticeMessageFromRelay?.call(relay, relayWebSocket, notice);
-
         _handleNoticeFromRelay(
           notice: notice,
           relay: relay,
@@ -280,6 +282,14 @@ class NostrRelays implements NostrRelaysBase {
           retryOnClose: retryOnClose,
           shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
         );
+      } else if (NostrEventOkCommand.canBeDeserializedNotice(d)) {
+        final okCommand = NostrEventOkCommand.fromRelayMessage(d);
+
+        final okCallBack =
+            NostrRegistry.getOkCommandCallBack(okCommand.eventId);
+        if (okCallBack != null) {
+          okCallBack.call(okCommand);
+        }
       } else {
         NostrClientUtils.log(
           "received non-event message from relay: $relay, message: $d",
@@ -621,5 +631,12 @@ class NostrRelays implements NostrRelaysBase {
         );
       });
     }
+  }
+
+  void _registerOnOlCallBack(
+    String associatedEventId,
+    void Function(NostrEventOkCommand ok)? onOk,
+  ) {
+    NostrRegistry.registerOkCommandCallBack(associatedEventId, onOk);
   }
 }

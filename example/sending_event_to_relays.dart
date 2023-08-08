@@ -12,12 +12,19 @@ void main() async {
   // generate a key pair.
   final keyPair = Nostr.instance.keysService.generateKeyPair();
 
+  final event = NostrEvent.fromPartialData(
+    kind: 0,
+    content: "test ",
+    keyPairs: keyPair,
+  );
+
   Nostr.instance.relaysService.sendEventToRelays(
-    NostrEvent.fromPartialData(
-      kind: 0,
-      content: "test ",
-      keyPairs: keyPair,
-    ),
+    event,
+    onOk: (ok) {
+      print(ok.eventId);
+      print(ok.isEventAccepted);
+      print(ok.message);
+    },
   );
 
 // ! check logs and run this code.

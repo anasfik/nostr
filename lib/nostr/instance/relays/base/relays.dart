@@ -4,6 +4,7 @@ import '../../../model/event.dart';
 import '../../../model/nostr_event_key.dart';
 import '../../../model/nostr_events_stream.dart';
 import '../../../model/notice.dart';
+import '../../../model/ok.dart';
 import '../../../model/relay_informations.dart';
 import '../../../model/request/request.dart';
 
@@ -34,7 +35,10 @@ abstract class NostrRelaysBase {
     bool retryOnClose = false,
   });
 
-  void sendEventToRelays(NostrEvent event);
+  void sendEventToRelays(
+    NostrEvent event, {
+    required void Function(NostrEventOkCommand ok) onOk,
+  });
 
   NostrEventsStream startEventsSubscription({
     required NostrRequest request,

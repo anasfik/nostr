@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:dart_nostr/nostr/model/event.dart';
+import 'package:dart_nostr/nostr/model/ok.dart';
 import 'package:meta/meta.dart';
 
 import '../model/nostr_event_key.dart';
@@ -15,6 +16,11 @@ abstract class NostrRegistry {
 
   ///  This is the registry which will have all events.
   static final eventsRegistry = <NostrEventKey, NostrEvent>{};
+
+  static final okCommandCallBacks = <String,
+      void Function(
+    NostrEventOkCommand ok,
+  )?>{};
 
   /// Registers a [WebSocket] to the registry with the given [relayUrl].
   /// If a [WebSocket] is already registered with the given [relayUrl], it will be replaced.
@@ -78,5 +84,18 @@ abstract class NostrRegistry {
     final isUnregistered = relaysWebSocketsRegistry.remove(relay) != null;
 
     return isUnregistered;
+  }
+
+  static void registerOkCommandCallBack(
+    String associatedEventId,
+    void Function(NostrEventOkCommand ok)? onOk,
+  ) {
+    okCommandCallBacks[associatedEventId] = onOk;
+  }
+
+  static void Function(
+    NostrEventOkCommand ok,
+  )? getOkCommandCallBack(String associatedEventIdWithOkCommand) {
+    return okCommandCallBacks[associatedEventIdWithOkCommand];
   }
 }
