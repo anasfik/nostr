@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_nostr/dart_nostr.dart';
-
+import 'package:dart_nostr/nostr/model/nostr_event_key.dart';
 
 import '../../core/registry.dart';
 import '../../model/relay.dart';
@@ -19,6 +19,14 @@ import 'package:http/http.dart' as http;
 class NostrRelays implements NostrRelaysBase {
   /// This is the controller which will receive all events from all relays.
   final _streamController = StreamController<NostrEvent>.broadcast();
+
+  @override
+  Map<String, WebSocket> get relaysWebSocketsRegistry =>
+      NostrRegistry.relaysWebSocketsRegistry;
+
+  @override
+  Map<NostrEventKey, NostrEvent> get eventsRegistry =>
+      NostrRegistry.eventsRegistry;
 
   /// This is the stream which will have all events from all relays, all your sent requests will be included in this stream, and so in order to filter them, you will need to use the [Stream.where] method.
   /// ```dart

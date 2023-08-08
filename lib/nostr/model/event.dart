@@ -7,18 +7,42 @@ import 'package:dart_nostr/nostr/core/constants.dart';
 import 'package:equatable/equatable.dart';
 
 import '../core/key_pairs.dart';
+import 'nostr_event_key.dart';
 
+/// {@template nostr_event}
+/// This represents a low level Nostr event that requires setting all fields manually, which requires you to doo all encodings...
+/// You can use [NostrEvent.fromPartialData] to create an event with less fields and lower complexity..
+/// {@endtemplate}
 class NostrEvent extends Equatable {
+  /// The id of the event.
   final String id;
+
+  /// The kind of the event.
   final int kind;
+
+  /// The content of the event.
   final String content;
+
+  /// The signature of the event.
   final String sig;
+
+  /// The public key of the event creator.
   final String pubkey;
+
+  /// The creation date of the event.
   final DateTime createdAt;
+
+  /// The tags of the event.
   final List<List<String>> tags;
+
+  /// The subscription id of the event
+  /// This is meant for events that are got from the relays, and not for events that are created by you.
   final String? subscriptionId;
+
+  /// The ots of the event.
   final String? ots;
 
+  /// {@macro nostr_event}
   const NostrEvent({
     required this.id,
     required this.kind,
@@ -44,6 +68,7 @@ class NostrEvent extends Equatable {
         ots,
       ];
 
+  /// Returns a map representation of this event.
   Map<String, dynamic> _toMap() {
     return {
       'id': id,
@@ -57,6 +82,7 @@ class NostrEvent extends Equatable {
     };
   }
 
+  /// Creates a new [NostrEvent] with the given [content].
   factory NostrEvent.deleteEvent({
     required NostrKeyPairs keyPairs,
     required List<String> eventIdsToBeDeleted,
@@ -78,6 +104,8 @@ class NostrEvent extends Equatable {
     );
   }
 
+  /// Creates a new [NostrEvent] with less fields and lower complexity.
+  /// it requires only to set the fields which can be used
   factory NostrEvent.fromPartialData({
     required int kind,
     required String content,
@@ -112,6 +140,8 @@ class NostrEvent extends Equatable {
     );
   }
 
+  /// This represents a nostr event that is received from the relays,
+  /// it takes directly the relay message which is serialized, and handles all internally
   factory NostrEvent.fromRelayMessage(String data) {
     assert(canBeDeserializedEvent(data));
     final decoded = jsonDecode(data) as List;
@@ -145,6 +175,7 @@ class NostrEvent extends Equatable {
     return decoded.first == NostrConstants.event;
   }
 
+  /// Creates the [id] of an event, based on Nostr specs.
   static String getEventId({
     required int kind,
     required String content,
@@ -169,20 +200,32 @@ class NostrEvent extends Equatable {
     return id;
   }
 
+  /// Returns a serialized [NostrEvent] from this event.
   String serialized() {
     return jsonEncode(["EVENT", _toMap()]);
   }
 
+  /// Returns a deserialized [NostrEvent] from the given [serialized] string.
   static NostrEvent deserialized(String serialized) {
     return NostrEvent.fromRelayMessage(serialized);
   }
 
-  String uniqueTag() {
-    // make a unique tag for this event.
+  /// Returns a unique tag for this event that you can use to identify it.
+  NostrEventKey uniqueKey() {
+    assert(
+        subscriptionId != null,
+        "This event is created by you, "
+        "so it doesn't have a subscription id, "
+        "this ùmethod is meant for events that are received from the relays.");
 
-    return "$id$createdAt$subscriptionId$pubkey";
+    return NostrEventKey(
+      eventId: id,
+      sourceSubscriptionId: subscriptionId!,
+      originalSourceEvent: this,
+    );
   }
 
+  /// {@macro nostr_event}
   NostrEvent copyWith({
     String? id,
     int? kind,

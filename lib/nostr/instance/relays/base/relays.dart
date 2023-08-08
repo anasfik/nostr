@@ -1,10 +1,16 @@
+import 'dart:io';
+
 import '../../../model/event.dart';
+import '../../../model/nostr_event_key.dart';
 import '../../../model/nostr_events_stream.dart';
 import '../../../model/relay_informations.dart';
 import '../../../model/request/request.dart';
 
 abstract class NostrRelaysBase {
   Stream<NostrEvent> get stream;
+  Map<String, WebSocket> get relaysWebSocketsRegistry;
+  Map<NostrEventKey, NostrEvent> get eventsRegistry;
+
   init({
     required List<String> relaysUrl,
     void Function(String relayUrl, dynamic receivedData)? onRelayListening,
