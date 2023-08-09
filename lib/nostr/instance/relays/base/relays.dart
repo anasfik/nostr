@@ -10,10 +10,10 @@ import '../../../model/relay_informations.dart';
 import '../../../model/request/request.dart';
 
 abstract class NostrRelaysBase {
-  Stream<NostrEvent> get eventsStream;
+  // Stream<NostrEvent> get eventsStream;
+  // Stream<NostrNotice> get noticesStream;
   Map<String, WebSocket> get relaysWebSocketsRegistry;
   Map<NostrEventKey, NostrEvent> get eventsRegistry;
-  Stream<NostrNotice> get noticesStream;
 
   init({
     required List<String> relaysUrl,

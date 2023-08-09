@@ -11,6 +11,7 @@ import '../../model/ease.dart';
 import '../../model/ok.dart';
 import '../../model/relay.dart';
 import '../../model/relay_informations.dart';
+import '../../service/streams.dart';
 import 'base/relays.dart';
 
 import 'package:http/http.dart' as http;
@@ -20,12 +21,6 @@ import 'package:http/http.dart' as http;
 /// {@endtemplate}
 
 class NostrRelays implements NostrRelaysBase {
-  /// This is the controller which will receive all events from all relays.
-  final _eventsStreamController = StreamController<NostrEvent>.broadcast();
-
-  /// This is the controller which will receive all notices from all relays.
-  final _noticeStreamController = StreamController<NostrNotice>.broadcast();
-
   /// Represents a registry of all relays that you did registered with the [init] method.
   @override
   Map<String, WebSocket> get relaysWebSocketsRegistry =>
@@ -35,21 +30,6 @@ class NostrRelays implements NostrRelaysBase {
   @override
   Map<NostrEventKey, NostrEvent> get eventsRegistry =>
       NostrRegistry.eventsRegistry;
-
-  /// This is the stream which will have all events from all relays, all your sent requests will be included in this stream, and so in order to filter them, you will need to use the [Stream.where] method.
-  /// ```dart
-  /// Nostr.instance.relays.stream.where((event) {
-  ///  return event.subscriptionId == "your_subscription_id";
-  /// });
-  /// ```
-  ///
-  /// You can also use the [Nostr.startEventsSubscription] method to get a stream of events that will be filtered by the [subscriptionId] that you passed to it automatically.
-  @override
-  Stream<NostrEvent> get eventsStream => _eventsStreamController.stream;
-
-  /// This is the stream which will have all notices from all relays, all of them will be included in this stream, and so in order to filter them, you will need to use the [Stream.where] method.
-  @override
-  Stream<NostrNotice> get noticesStream => _noticeStreamController.stream;
 
   /// This method is responsible for initializing the connection to all relays.
   /// It takes a [List<String>] of relays urls, then it connects to each relay and registers it for future use, if [relayUrl] is empty, it will throw an [AssertionError] since it doesn't make sense to connect to an empty list of relays.
@@ -186,7 +166,7 @@ class NostrRelays implements NostrRelaysBase {
     });
 
     final requestSubId = request.subscriptionId;
-    final subStream = eventsStream.where(
+    final subStream = NostrStreamsControllers.instance.events.where(
       (event) => _filterNostrEventsWithId(event, requestSubId),
     );
 
@@ -552,7 +532,7 @@ class NostrRelays implements NostrRelaysBase {
     );
 
     if (!NostrRegistry.isEventRegistered(event)) {
-      _eventsStreamController.sink.add(event);
+      NostrStreamsControllers.instance.eventsController.sink.add(event);
       NostrRegistry.registerEvent(event);
     }
   }
