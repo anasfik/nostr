@@ -4,6 +4,7 @@ import 'package:dart_nostr/nostr/instance/relays/relays.dart';
 import 'base/nostr.dart';
 import 'core/utils.dart';
 import 'instance/keys/keys.dart';
+import 'instance/tlv/tlv_utils.dart';
 import 'instance/utils/utils.dart';
 
 /// {@template nostr_service}
@@ -39,4 +40,7 @@ class Nostr implements NostrServiceBase {
 
   /// {@macro nostr_utils}
   final utilsService = NostrUtils();
+
+  /// {@macro nostr_tlv}
+  final tlv = NostrTLV();
 }

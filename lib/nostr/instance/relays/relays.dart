@@ -25,10 +25,12 @@ class NostrRelays implements NostrRelaysBase {
   /// This is the controller which will receive all notices from all relays.
   final _noticeStreamController = StreamController<NostrNotice>.broadcast();
 
+  /// Represents a registry of all relays that you did registered with the [init] method.
   @override
   Map<String, WebSocket> get relaysWebSocketsRegistry =>
       NostrRegistry.relaysWebSocketsRegistry;
 
+  /// Represents a registry of all events you received from all relays so far.
   @override
   Map<NostrEventKey, NostrEvent> get eventsRegistry =>
       NostrRegistry.eventsRegistry;

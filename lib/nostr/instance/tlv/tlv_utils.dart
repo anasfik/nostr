@@ -3,6 +3,9 @@ import 'package:dart_nostr/nostr/model/tlv.dart';
 
 import 'base/base.dart';
 
+/// {@template nostr_tlv}
+/// This class is responsible for handling the tlv.
+/// {@endtemplate}
 class NostrTLV implements TLVBase {
   /// Decode list bytes to list tlv model
   @override
