@@ -34,6 +34,10 @@ void main() async {
       request: request,
       onEose: (ease) {
         print("ease received for subscription id: ${ease.subscriptionId}");
+
+        Nostr.instance.relaysService.closeEventsSubscription(
+          ease.subscriptionId,
+        );
       });
 
   // We listen to the stream and print the events.
