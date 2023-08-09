@@ -9,7 +9,6 @@ import 'package:dart_nostr/nostr/core/constants.dart';
 import 'package:dart_nostr/nostr/model/event/send_event.dart';
 
 import '../../core/key_pairs.dart';
-import '../base.dart';
 import '../nostr_event_key.dart';
 import 'event.dart';
 
