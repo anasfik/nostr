@@ -9,8 +9,6 @@ import 'package:dart_nostr/nostr/service/web_sockets.dart';
 
 import '../../core/registry.dart';
 import '../../model/ease.dart';
-import '../../model/event/event.dart';
-import '../../model/notice.dart';
 import '../../model/ok.dart';
 import '../../model/relay.dart';
 import '../../model/relay_informations.dart';

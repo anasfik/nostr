@@ -1,14 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
-import 'package:convert/convert.dart';
-import 'package:crypto/crypto.dart';
-import 'package:equatable/equatable.dart';
 
-import 'package:dart_nostr/nostr/core/constants.dart';
 import 'package:dart_nostr/nostr/model/event/send_event.dart';
 
-import '../../core/key_pairs.dart';
 import '../nostr_event_key.dart';
 import 'event.dart';
 
@@ -69,6 +64,7 @@ class ReceivedNostrEvent extends SentNostrEvent {
   }
 
   /// {@macro nostr_event}
+  @override
   ReceivedNostrEvent copyWith({
     String? id,
     int? kind,

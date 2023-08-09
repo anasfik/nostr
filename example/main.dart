@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dart_nostr/dart_nostr.dart';
-import 'package:dart_nostr/nostr/model/event/event.dart';
 
 Future<void> main() async {
   // This method will enable the logs of the library.

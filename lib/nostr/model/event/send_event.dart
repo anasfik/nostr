@@ -1,10 +1,6 @@
 import 'dart:convert';
 
-import 'package:convert/convert.dart';
-import 'package:crypto/crypto.dart';
-import 'package:equatable/equatable.dart';
 
-import '../../core/constants.dart';
 import '../../core/key_pairs.dart';
 import 'event.dart';
 

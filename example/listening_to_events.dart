@@ -1,5 +1,3 @@
-import 'dart:async';
-import 'dart:io';
 
 import 'package:dart_nostr/dart_nostr.dart';
 

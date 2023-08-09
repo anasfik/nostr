@@ -1,10 +1,7 @@
 import 'dart:async';
-import 'dart:io';
 
 import '../core/registry.dart';
 import '../model/export.dart';
-import '../model/nostr_event_key.dart';
-import '../model/notice.dart';
 
 final class NostrStreamsControllers {
   NostrStreamsControllers._();
