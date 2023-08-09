@@ -31,14 +31,14 @@ class NostrEventOkCommand extends Equatable {
         message,
       ];
 
-  static bool canBeDeserializedNotice(String dataFromRelay) {
+  static bool canBeDeserialized(String dataFromRelay) {
     final decoded = jsonDecode(dataFromRelay) as List;
 
     return decoded.first == NostrConstants.ok;
   }
 
   factory NostrEventOkCommand.fromRelayMessage(String data) {
-    assert(canBeDeserializedNotice(data));
+    assert(canBeDeserialized(data));
 
     final decoded = jsonDecode(data) as List;
     final eventId = decoded[1] as String;

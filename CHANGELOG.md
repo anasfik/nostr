@@ -1,62 +1,74 @@
-# 3.3.1
- - Bug fixes.
- - Added more docs
- - More optimizations for the use of the keypair class for quickeer constructions after the first time (caching)
-# 3.0.0
- 
- - Added new utils methods to the utils service.
- - Exposed and modifed some implmentation source service class.
- - Minor modifications for better maintainence of code.
- - Commented out more APIs of the package.
+# Changlog
 
-# 2.1.1
+## 4.0.0
+
+- Breaking changes
+- Exposed more APIs to the package interface.
+- Offered more control over the events sending/receiving.
+
+## 3.3.1
+
+- Bug fixes.
+- Added more docs
+- More optimizations for the use of the keypair class for quickeer constructions after the first time (caching).
+
+## 3.0.0
+
+- Added new utils methods to the utils service.
+- Exposed and modifed some implmentation source service class.
+- Minor modifications for better maintainence of code.
+- Commented out more APIs of the package.
+
+## 2.1.1
 
 - Changes the dart_bip32_bip44 with bip32_bip44 so it works with dart packages and projects and not Flutter ones sonce it breaks pana scoring system.
 
-# 2.1.0
- 
- - Added nprofile & tlv services
-# 2.0.1
- 
- - Minor changes in the docs.
- - Added more docs to memebers that miss it. 
-# 2.0.0
- 
- - Exposed new APIs with new documentation for more developer experience use of this package.
- - Addition of utils service.
- - Addition of more nostr NIPs in the package.
- - Added more examples.
+## 2.1.0
 
-# 1.5.1
+- Added nprofile & tlv services
+
+## 2.0.1
+
+- Minor changes in the docs.
+- Added more docs to memebers that miss it.
+
+## 2.0.0
+
+- Exposed new APIs with new documentation for more developer experience use of this package.
+- Addition of utils service.
+- Addition of more nostr NIPs in the package.
+- Added more examples.
+
+## 1.5.1
 
 - Exported the `NostrEventsStream` model class
 
-# 1.5.0
+## 1.5.0
 
 - Added implementation of bech32 encoder in general.
 - Added implementation of npub & nsec encoder.
 - Added example for generating npub & nsec keys.
 - Added more documentation and documenttaion-example for some memebers that miss it in the keys service.
 
-# 1.4.0
+## 1.4.0
 
 - Added the reconnecting option when a relay sent's a notice message.
 
-# 1.3.3
+## 1.3.3
 
 - refactored the optional memebers to requests in the internal library packages.
 - ( experiental ) Implementation of a work around over the relays subscrition limits.
 
-# 1.3.2
+## 1.3.2
 
 - Added a main example.
 
-# 1.3.0
+## 1.3.0
 
 - Add more helper methods.
 - Minor fixes.
 
-# 1.2.0
+## 1.2.0
 
 - Added example of litening to events.
 - Fixing the subscription id that turns null when not se

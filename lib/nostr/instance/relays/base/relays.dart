@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import '../../../model/ease.dart';
 import '../../../model/event.dart';
 import '../../../model/nostr_event_key.dart';
 import '../../../model/nostr_events_stream.dart';
@@ -42,6 +43,7 @@ abstract class NostrRelaysBase {
 
   NostrEventsStream startEventsSubscription({
     required NostrRequest request,
+    void Function(NostrRequestEoseCommand ease)? onEose,
   });
 
   void closeEventsSubscription(String subscriptionId);

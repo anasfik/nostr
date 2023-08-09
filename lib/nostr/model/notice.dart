@@ -15,14 +15,15 @@ class NostrNotice extends Equatable {
   @override
   List<Object?> get props => [message];
 
-  static bool canBeDeserializedNotice(String dataFromRelay) {
+  static bool canBeDeserialized(String dataFromRelay) {
     final decoded = jsonDecode(dataFromRelay) as List;
 
     return decoded.first == NostrConstants.notice;
   }
 
   factory NostrNotice.fromRelayMessage(String data) {
-    assert(canBeDeserializedNotice(data));
+    assert(canBeDeserialized(data));
+
     final decoded = jsonDecode(data) as List;
     assert(decoded.first == NostrConstants.notice);
     final message = decoded[1] as String;

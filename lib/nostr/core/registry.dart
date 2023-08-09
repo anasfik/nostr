@@ -3,6 +3,7 @@ import 'package:dart_nostr/nostr/model/event.dart';
 import 'package:dart_nostr/nostr/model/ok.dart';
 import 'package:meta/meta.dart';
 
+import '../model/ease.dart';
 import '../model/nostr_event_key.dart';
 import 'exceptions.dart';
 import 'utils.dart';
@@ -20,6 +21,11 @@ abstract class NostrRegistry {
   static final okCommandCallBacks = <String,
       void Function(
     NostrEventOkCommand ok,
+  )?>{};
+
+  static final eoseCommandCallBacks = <String,
+      void Function(
+    NostrRequestEoseCommand eose,
   )?>{};
 
   /// Registers a [WebSocket] to the registry with the given [relayUrl].
@@ -97,5 +103,18 @@ abstract class NostrRegistry {
     NostrEventOkCommand ok,
   )? getOkCommandCallBack(String associatedEventIdWithOkCommand) {
     return okCommandCallBacks[associatedEventIdWithOkCommand];
+  }
+
+  static void registerEoseCommandCallBack(
+    String subscriptionId,
+    void Function(NostrRequestEoseCommand eose)? onEose,
+  ) {
+    eoseCommandCallBacks[subscriptionId] = onEose;
+  }
+
+  static void Function(
+    NostrRequestEoseCommand eose,
+  )? getEoseCommandCallBack(String subscriptionId) {
+    return eoseCommandCallBacks[subscriptionId];
   }
 }

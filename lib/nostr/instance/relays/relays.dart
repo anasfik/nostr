@@ -7,6 +7,7 @@ import 'package:dart_nostr/nostr/model/nostr_event_key.dart';
 import 'package:dart_nostr/nostr/service/web_sockets.dart';
 
 import '../../core/registry.dart';
+import '../../model/ease.dart';
 import '../../model/ok.dart';
 import '../../model/relay.dart';
 import '../../model/relay_informations.dart';
@@ -171,8 +172,11 @@ class NostrRelays implements NostrRelaysBase {
   @override
   NostrEventsStream startEventsSubscription({
     required NostrRequest request,
+    void Function(NostrRequestEoseCommand ease)? onEose,
   }) {
     final serialized = request.serialized();
+
+    _registerOnEoselCallBack(request.subscriptionId!, onEose);
 
     _runFunctionOverRelationIteration((relay) {
       relay.socket.add(serialized);
@@ -273,7 +277,7 @@ class NostrRelays implements NostrRelaysBase {
           event: NostrEvent.fromRelayMessage(d),
           relay: relay,
         );
-      } else if (NostrNotice.canBeDeserializedNotice(d)) {
+      } else if (NostrNotice.canBeDeserialized(d)) {
         final notice = NostrNotice.fromRelayMessage(d);
 
         onNoticeMessageFromRelay?.call(relay, relayWebSocket, notice);
@@ -291,9 +295,13 @@ class NostrRelays implements NostrRelaysBase {
           retryOnClose: retryOnClose,
           shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
         );
-      } else if (NostrEventOkCommand.canBeDeserializedNotice(d)) {
+      } else if (NostrEventOkCommand.canBeDeserialized(d)) {
         _handleOkCommandMessageFromRelay(
           okCommand: NostrEventOkCommand.fromRelayMessage(d),
+        );
+      } else if (NostrRequestEoseCommand.canBeDeserialized(d)) {
+        _handleEoseCommandMessageFromRelay(
+          eoseCommand: NostrRequestEoseCommand.fromRelayMessage(d),
         );
       } else {
         NostrClientUtils.log(
@@ -607,6 +615,24 @@ class NostrRelays implements NostrRelaysBase {
     final okCallBack = NostrRegistry.getOkCommandCallBack(okCommand.eventId);
     if (okCallBack != null) {
       okCallBack.call(okCommand);
+    }
+  }
+
+  void _registerOnEoselCallBack(
+    String subscriptionId,
+    void Function(NostrRequestEoseCommand eose)? onEose,
+  ) {
+    NostrRegistry.registerEoseCommandCallBack(subscriptionId, onEose);
+  }
+
+  void _handleEoseCommandMessageFromRelay({
+    required NostrRequestEoseCommand eoseCommand,
+  }) {
+    final eoseCallBack =
+        NostrRegistry.getEoseCommandCallBack(eoseCommand.subscriptionId);
+
+    if (eoseCallBack != null) {
+      eoseCallBack.call(eoseCommand);
     }
   }
 }
