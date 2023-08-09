@@ -1,5 +1,6 @@
 import 'package:dart_nostr/nostr/dart_nostr.dart';
-import 'package:dart_nostr/nostr/model/event.dart';
+import 'package:dart_nostr/nostr/model/event/event.dart';
+import 'package:dart_nostr/nostr/model/event/received_event.dart';
 
 void main() {
   final newKeyPair = Nostr.instance.keysService.generateKeyPair();

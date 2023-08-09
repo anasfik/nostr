@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:dart_nostr/nostr/model/event.dart';
+import 'package:dart_nostr/nostr/model/event/received_event.dart';
 import 'package:dart_nostr/nostr/model/ok.dart';
 import 'package:meta/meta.dart';
 
@@ -16,7 +16,7 @@ abstract class NostrRegistry {
   static final relaysWebSocketsRegistry = <String, WebSocket>{};
 
   ///  This is the registry which will have all events.
-  static final eventsRegistry = <NostrEventKey, NostrEvent>{};
+  static final eventsRegistry = <NostrEventKey, ReceivedNostrEvent>{};
 
   static final okCommandCallBacks = <String,
       void Function(
@@ -72,17 +72,17 @@ abstract class NostrRegistry {
     return relaysWebSocketsRegistry.containsKey(relayUrl);
   }
 
-  static bool isEventRegistered(NostrEvent event) {
+  static bool isEventRegistered(ReceivedNostrEvent event) {
     return eventsRegistry.containsKey(eventUniqueId(event));
   }
 
-  static NostrEvent registerEvent(NostrEvent event) {
+  static ReceivedNostrEvent registerEvent(ReceivedNostrEvent event) {
     eventsRegistry[eventUniqueId(event)] = event;
 
     return eventsRegistry[eventUniqueId(event)]!;
   }
 
-  static NostrEventKey eventUniqueId(NostrEvent event) {
+  static NostrEventKey eventUniqueId(ReceivedNostrEvent event) {
     return event.uniqueKey();
   }
 

@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import '../../../model/ease.dart';
-import '../../../model/event.dart';
+import '../../../model/event/received_event.dart';
 import '../../../model/nostr_event_key.dart';
 import '../../../model/nostr_events_stream.dart';
 import '../../../model/notice.dart';
@@ -13,7 +13,7 @@ abstract class NostrRelaysBase {
   // Stream<NostrEvent> get eventsStream;
   // Stream<NostrNotice> get noticesStream;
   Map<String, WebSocket> get relaysWebSocketsRegistry;
-  Map<NostrEventKey, NostrEvent> get eventsRegistry;
+  Map<NostrEventKey, ReceivedNostrEvent> get eventsRegistry;
 
   init({
     required List<String> relaysUrl,
@@ -37,7 +37,7 @@ abstract class NostrRelaysBase {
   });
 
   void sendEventToRelays(
-    NostrEvent event, {
+    ReceivedNostrEvent event, {
     required void Function(NostrEventOkCommand ok) onOk,
   });
 

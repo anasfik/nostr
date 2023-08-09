@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 import '../dart_nostr.dart';
-import 'event.dart';
+import 'event/received_event.dart';
 import 'request/request.dart';
 
 /// {@template nostr_events_stream}
@@ -9,7 +9,7 @@ import 'request/request.dart';
 /// {@endtemplate}
 class NostrEventsStream extends Equatable {
   /// This the stream of nostr events that you can listen to and get the events.
-  final Stream<NostrEvent> stream;
+  final Stream<ReceivedNostrEvent> stream;
 
   /// This is the subscription id of the stream. You can use this to unsubscribe from the stream.
   final String subscriptionId;

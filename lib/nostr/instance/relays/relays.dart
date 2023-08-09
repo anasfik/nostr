@@ -3,11 +3,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_nostr/dart_nostr.dart';
+import 'package:dart_nostr/nostr/model/event/send_event.dart';
 import 'package:dart_nostr/nostr/model/nostr_event_key.dart';
 import 'package:dart_nostr/nostr/service/web_sockets.dart';
 
 import '../../core/registry.dart';
 import '../../model/ease.dart';
+import '../../model/event/event.dart';
 import '../../model/ok.dart';
 import '../../model/relay.dart';
 import '../../model/relay_informations.dart';
@@ -28,7 +30,7 @@ class NostrRelays implements NostrRelaysBase {
 
   /// Represents a registry of all events you received from all relays so far.
   @override
-  Map<NostrEventKey, NostrEvent> get eventsRegistry =>
+  Map<NostrEventKey, ReceivedNostrEvent> get eventsRegistry =>
       NostrRegistry.eventsRegistry;
 
   /// This method is responsible for initializing the connection to all relays.
@@ -126,7 +128,7 @@ class NostrRelays implements NostrRelaysBase {
   /// ```
   @override
   void sendEventToRelays(
-    NostrEvent event, {
+    SentNostrEvent event, {
     void Function(NostrEventOkCommand ok)? onOk,
   }) {
     final serialized = event.serialized();
@@ -252,9 +254,9 @@ class NostrRelays implements NostrRelaysBase {
     relayWebSocket!.listen((d) {
       onRelayListening?.call(relay, d, relayWebSocket);
 
-      if (NostrEvent.canBeDeserializedEvent(d)) {
+      if (NostrEvent.canBeDeserialized(d)) {
         _handleAddingEventToSink(
-          event: NostrEvent.fromRelayMessage(d),
+          event: ReceivedNostrEvent.deserialized(d),
           relay: relay,
         );
       } else if (NostrNotice.canBeDeserialized(d)) {
@@ -515,7 +517,7 @@ class NostrRelays implements NostrRelaysBase {
   }
 
   bool _filterNostrEventsWithId(
-    NostrEvent event,
+    ReceivedNostrEvent event,
     String? requestSubId,
   ) {
     final eventSubId = event.subscriptionId;
@@ -525,7 +527,7 @@ class NostrRelays implements NostrRelaysBase {
 
   void _handleAddingEventToSink({
     required String? relay,
-    required NostrEvent event,
+    required ReceivedNostrEvent event,
   }) {
     NostrClientUtils.log(
       "received event with content: ${event.content} from relay: $relay",
@@ -593,9 +595,8 @@ class NostrRelays implements NostrRelaysBase {
     required NostrEventOkCommand okCommand,
   }) {
     final okCallBack = NostrRegistry.getOkCommandCallBack(okCommand.eventId);
-    if (okCallBack != null) {
-      okCallBack.call(okCommand);
-    }
+
+    okCallBack?.call(okCommand);
   }
 
   void _registerOnEoselCallBack(
@@ -611,8 +612,6 @@ class NostrRelays implements NostrRelaysBase {
     final eoseCallBack =
         NostrRegistry.getEoseCommandCallBack(eoseCommand.subscriptionId);
 
-    if (eoseCallBack != null) {
-      eoseCallBack.call(eoseCommand);
-    }
+    eoseCallBack?.call(eoseCommand);
   }
 }
