@@ -1,5 +1,5 @@
 ---
-position: 4
+sidebar_position: 4
 ---
 
 # Sign and verify a pice of data

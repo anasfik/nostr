@@ -21,49 +21,7 @@ The relays service is responsible for anything related to the actual interaction
 
 #### Connecting to relay(s):
 
-As I already said, this package exposes only one main instance, which is `Nostr.instance`, you will need to initialize/connect to your relay(s) only one time in your Dart/Flutter app with:
-
-```dart
-Nostr.instance.relaysService.init(
-  
-  relaysUrl: ['wss://relay.damus.io'],
-  
-  onRelayListening: (String relayUrl, receivedData) {}, // will be called once a relay is connected and listening to events.
-  
-  onRelayError: (String relayUrl, Object? error) {}, // will be called once a relay is disconnected or an error occurred.
-  
-  onRelayDone: (String relayUrl) {}, // will be called once a relay is disconnected, finished.
-  
-  lazyListeningToRelays: false, // if true, the relays will not start listening to events until you call `Nostr.instance.relaysService.startListeningToRelays()`, if false, the relays will start listening to events as soon as they are connected.
-
-  retryOnError: false, // Weither to ro retry connecting to relay(s) if an error occurred to them .
-  
-  retryOnClose: false, // Weither to ro retry connecting to relay(s) if they are closed.
-  
-  bool ensureToClearRegistriesBeforeStarting = true, // Weither to clear the registries of the relays before starting to listen to them, this is useful if you want to implmenta  reconnecting feature, so that you will totally clear previous connections and start a new one.
-
-  bool ignoreConnectionException: true, // Weither to ignore any exception that occurs while connecting to relay(s) or not (if false, the exception will be thrown and you will have to catch it).
-
-  bool shouldReconnectToRelayOnNotice = false, // Weither to reconnect to relay(s) if they sent a [NOTICE, ...] message.
-  
-  Duration connectionTimeout = const Duration(seconds: 5), // The timeout of the connection to relay(s).
-  
-);
-```
-
-The only required field here is `relaysUrl`, which accepts a `List<String>` that contains the URLs of your relays web sockets, you can pass as many relays as you want.
-
-I personally recommend initializing the relays service in the `main()` function of your app, so that it will be initialized as soon as the app starts, and then it will be available to be used anywhere and anytime in your app.
-
-```dart
-void main() {
-Nostr.instance.relaysService.init(...);
-
-// if it is a flutter app: runApp(MyApp());
-//...
- }
-```
-
+As I already said, this package exposes only one main instance, which is `Nostr.instance`, 
 #### Listening to events from relay(s):
 
 For listening to events from relay(s), you will need to create a `NostrRequest` first with the specify your request type and filters = that you wanna apply as example:
