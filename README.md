@@ -4,41 +4,8 @@
 <img src="https://imgur.com/KqnGsN2.png" width="70%" placeholder="Nostr protocol" />
 </p>
 
-**help this gets discovered and noticed by other developers with a star ⭐**
-
-This package is a client for the [Nostr protocol](https://github.com/nostr-protocol/). It is a wrapper that lets you interact with the Nostr protocol in an easier, faster and more organized way.
-
-## NIPS that you can expect to implement and use with this package:
-
-**What this means?**, it means that you can check the official Nostr documentation and their NIPs, and then you can expect an implementation of it in this package so you can get your things done faster and easier.
-
-Some NIPs have a custom implementation in this package like the NIP-05, which you can check from here.
-
-Some other implementations are not intended to work in the Dart environment, so they are not implemented in this package, such as NIP-07 which is based on the `window` object of a browser. that being said it can be implemented separately if there is a use of Flutter web, but for now, it is not implemented.
-
-NIP-01, NIP-02, NIP-03, NIP-04 (TODO: make the encryption part automated by the package), NIP-05, NIP-06, NIP-09, NIP-10, NIP-11, NIP-12, NIP-13, NIP-14, NIP-16, NIP-18, NIP-19, NIP-20, NIP-23, NIP-25, NIP-27, NIP-28, NIP-33, NIP-36, NIP-39, NIP-40, NIP-56, NIP-65.
-
-## TODO (if you want to contribute, please feel free to implement any of the following NIPS and make a pull request, I will be happy to review it and merge it.)
- 
-NIP-26, NIP-42, NIP-45, NIP-50, NIP-51, NIP-57, NIP-58
 
 # Usage:
-
-The main and only singleton instance that you need to use to access all other services of this package is:
-
-```dart
-Nostr.instance;
-```
-
-`Nostr.instance` offers access to all services of this package which they-self offer many other members/functions to get your things done:
-
-```dart
-Nostr.instance.keysService; // access to the keys service, which will provide methods to handle user key pairs, private keys, public keys, etc.
-
-Nostr.instance.relaysService; // access to the relays service, which will provide methods to interact with your own relays such as sending events, listening to events, etc.
-
-Nostr.instance.utilsService; // access the utils service, which provides many handy utils that you will need to use in your app, such as encoding, getting random hex strings to use with requests, etc.
-```
 
 <br>
 
@@ -46,56 +13,9 @@ Nostr.instance.utilsService; // access the utils service, which provides many ha
 
 This service is responsible for handling anything that is related to the nostr keys including generating and deriving private & public keys, signing and verifying messages, etc.
 
-#### Generate a new key pair:
 
-In order to generate a new key pair of a private and a public keys, you will need to call the `generateKeyPair()` method, which will return a `NostrKeyPairs` object that contains them:
 
-```dart
-NostrKeyPairs keyPair = Nostr.instance.keysService.generateKeyPair();
 
-print(keyPair.private); // ...
-print(keyPair.public); // ...
-
-// or maybe give it to your user so he owns it.
-```
-
-#### Get a key pair from an existent private key:
-
-when you have an existent private key, you can get it's key pair directly by calling the `generateKeyPairFromExistingPrivateKey()` method, which will return a `NostrKeyPairs` object that contains that private key and it's associated public key.
-
-```dart
-NostrKeyPairs keyPair = Nostr.instance.keysService.generateKeyPairFromExistingPrivateKey(privateKey);
-```
-
-#### generate and get a new private key directly:
-
-Sometimes, you will need to only generate a private key and not a key pair, in this case, you can call the `generatePrivateKey()` method, which will return a `String` that contains the generated private key directly.
-
-```dart
-String privateKey = await Nostr.instance.keysService.generatePrivateKey();
-```
-
-#### Sign and verify a message:
-
-To sign a message, you will need to call the `sign()` method, which will return a `String` that contains the signature of the message, then if you want to verify that message, you can call the `verify()` method, which will return a `bool` that indicates if the message is verified or not.
-
-```dart
-String message = ...;
-String signature = await Nostr.instance.keysService.sign(
-  privateKey: privateKey,
-  message: message,
-);
-print(signature); // ...
-
-bool isVerified = await Nostr.instance.keysService.verify(
-  publicKey: publicKey,
-  message: message,
-  signature: signature,
-);
-print(isMessageVerified); // ...
-```
-
-<br>
 
 ## Relays Service:
 
