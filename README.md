@@ -11,60 +11,12 @@
 
 ## Keys Service:
 
-This service is responsible for handling anything that is related to the nostr keys including generating and deriving private & public keys, signing and verifying messages, etc.
-
-
-
-
 
 ## Relays Service:
 
 The relays service is responsible for anything related to the actual interaction with relays such connecting to them, sending events to them, listening to events from them, etc.
 
 #### Creating and signing Nostr events:
-
-You can get the final events that you will send to your relays by either creating a raw `NostrEvent` object and then you will need to generate and set literally all its properties by yourself using the Nostr protocol specifications which you will need to have a basic [understanding of it](https://github.com/nostr-protocol/nips/blob/master/01.md) :
-
-```dart
-
-  final event = NostrEvent(
-    pubkey: '<THE-PUBKEY-OF-THE-EVENT-CREATOR>',
-    kind: 0,
-    content: 'This is a test event content',
-    createdAt: DateTime.now(),
-    id: '<THE-ID-OF-THE-EVENT>', // you will need to generate and set the id of the event manually by hashing other event fields, please refer to the official Nostr protocol documentation to learn how to do it yourself.
-    tags: [],
-    sig: '<THE-SIGNATURE-OF-THE-EVENT>', // you will need to generate and set the signature of the event manually by signing the event's id, please refer to the official Nostr protocol documentation to learn how to do it yourself.
-  );
-```
-
-As it is explained, this will require you to set every single value of the event properties manually, including the `id` and `sig` values.
-
-Well, we al lve easy things right? This package offers the option to handle all this internally and covers you in this part with the  `NostrEvent.fromPartialData(...)` which requires you to only set the direct necessary fields and the rest will be handled internally so you don't need to worry about it:
-
-```dart
-final pair = Nostr.instance.keysService.generateKeyPair();
-
-  final event = NostrEvent.fromPartialData(
-    kind: 0,
-    keyPairs: pair,
-    content: 'This is a test event content',
-    tags: [],
-    createdAt: DateTime.parse('...'),,
-  );
-```
-
-The only required fields here are `kind`, `keyPairs` and `content`.
-
-- if `tags` is ignored, it will be set to an empty list `[]`.
-
-- if `createdAt` is ignored, it will be set to the current date `DateTime.now()` .
-
-- other fields like `id`, `sign` and pubkey is what you don't need to worry about, they will be generated and set internally.
-
-
-`NostrEvent.fromPartialData` requires the `keyPairs` because it needs to get the private key to sign the event and assign to the `sign` field, and it needs to get the public key to use it as the `pubkey` of the event.
-
 
 
 #### Connecting to relay(s):
