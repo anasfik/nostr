@@ -6,15 +6,13 @@ import 'package:dart_nostr/dart_nostr.dart';
 import 'package:dart_nostr/nostr/model/event/send_event.dart';
 import 'package:dart_nostr/nostr/model/nostr_event_key.dart';
 import 'package:dart_nostr/nostr/service/web_sockets.dart';
-
-import '../../core/registry.dart';
 import '../../model/ease.dart';
 import '../../model/ok.dart';
 import '../../model/relay.dart';
 import '../../model/relay_informations.dart';
+import '../../service/registry.dart';
 import '../../service/streams.dart';
 import 'base/relays.dart';
-
 import 'package:http/http.dart' as http;
 
 /// {@template nostr_relays}

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import '../core/registry.dart';
 import '../model/export.dart';
 
 final class NostrStreamsControllers {

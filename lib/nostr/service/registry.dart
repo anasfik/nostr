@@ -3,10 +3,10 @@ import 'package:dart_nostr/nostr/model/event/received_event.dart';
 import 'package:dart_nostr/nostr/model/ok.dart';
 import 'package:meta/meta.dart';
 
+import '../core/exceptions.dart';
+import '../core/utils.dart';
 import '../model/ease.dart';
 import '../model/nostr_event_key.dart';
-import 'exceptions.dart';
-import 'utils.dart';
 
 @protected
 
