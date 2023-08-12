@@ -1,4 +1,4 @@
-# Nostr Dart
+# 🌐 Nostr Dart
 
 <p align="center">
 <img src="https://imgur.com/GvrrVdZ" width="300" placeholder="Nostr protocol" />
@@ -8,7 +8,8 @@ A Dart implementation of the [Nostr](https://nostr.com) protocol, a decentralize
 
 Thsi package sis itended to be used in bothe Dart & Flutter apps, and provides a simple API to connect to the Nostr network and send and receive messages.
 
-## Key Features:
+## 🔑 Key Features
+
 - Develoepr friendly.
 - Easy to use, all complexity is abstracted away.
 - Supports both Dart & Flutter.
@@ -24,19 +25,19 @@ dependencies:
   nostr: any
 ```
 
-## Documentation & Usage
+## 📚 Documentation & Usage
 
 I made a fully detailed documentation for this package and it's usage, you can find it [here](#).
 
 
-## Issues & Bugs
+## 🐞 Issues & Bugs
 
 If you find any issues or bugs, please report them [here](https://github.com/anasfik/nostr/issues), I will be happy to have a look at them and fix them as soon as possible.
 
-## Contributing
+## 🤝 Contributing
 
 If you want to contribute to this project, you can do so by forking this repository, making your changes, and then creating a pull request, I will be grateful for the help, and will be happy to merge your changes into the main project.
 
-## License
+## 📜 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
