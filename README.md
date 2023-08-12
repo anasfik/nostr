@@ -1,7 +1,7 @@
 # 🌐 Nostr Dart
 
 <p align="center">
-<img src="https://imgur.com/GvrrVdZ" width="300" placeholder="Nostr protocol" />
+<img src="https://imgur.com/GvrrVdZ.png" width="300" placeholder="Nostr protocol" />
 </p>
 
 A Dart implementation of the [Nostr](https://nostr.com) protocol, a decentralized, peer-to-peer, real-time, event-based communication protocol.
@@ -29,7 +29,7 @@ dependencies:
 
 I made a fully detailed documentation for this package and it's usage, you can find it [here](#).
 
-I think it is better to explain some things so you can't go wrong using it, I hope it helps.
+I think it is better to explain some things so you can't go wrong using it, I hope it helps.git
 ## 🐞 Issues & Bugs
 
 If you find any issues or bugs, please report them [here](https://github.com/anasfik/nostr/issues), I will be happy to have a look at them and fix them as soon as possible.
