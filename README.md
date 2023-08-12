@@ -1,7 +1,7 @@
 # 🌐 Nostr Dart
 
 <p align="center">
-<img src="https://i.imgur.com/GvrrVdZ.png" width="300" placeholder="Dart Nostr" />
+<img src="https://i.imgur.com/GvrrVdZ.png" width="150" placeholder="Dart Nostr" />
 </p>
 
 A Dart implementation of the [Nostr](https://nostr.com) protocol, a decentralized, peer-to-peer, real-time, event-based communication protocol.
