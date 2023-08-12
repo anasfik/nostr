@@ -29,7 +29,7 @@ dependencies:
 
 I made a fully detailed documentation for this package and it's usage, you can find it [here](#).
 
-
+I think it is better to explain some things so you can't go wrong using it, I hope it helps.
 ## 🐞 Issues & Bugs
 
 If you find any issues or bugs, please report them [here](https://github.com/anasfik/nostr/issues), I will be happy to have a look at them and fix them as soon as possible.
