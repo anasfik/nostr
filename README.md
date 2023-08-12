@@ -29,7 +29,7 @@ dependencies:
 
 I made a fully detailed documentation for this package and it's usage, you can find it below:
 
-[**Documanttaion Website.**](#)
+[**Documanttaion Website.**](https://anasfik.github.io/nostr/)
 
 I think it is better to explain some things so you can't go wrong using it, I hope it helps.git
 

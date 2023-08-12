@@ -1,5 +1,11 @@
 # Changlog
 
+## 5.0.0
+
+- Fully Breaking changes.
+- Adidtion of callbacks triggeres for events, notices...
+- Adidtion of more features.
+
 ## 4.0.0
 
 - Breaking changes
