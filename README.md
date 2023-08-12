@@ -1,37 +1,42 @@
-# Nostr Dart Client for Nostr protocol.
+# Nostr Dart
 
 <p align="center">
-<img src="https://imgur.com/KqnGsN2.png" width="70%" placeholder="Nostr protocol" />
+<img src="https://imgur.com/GvrrVdZ" width="300" placeholder="Nostr protocol" />
 </p>
 
+A Dart implementation of the [Nostr](https://nostr.com) protocol, a decentralized, peer-to-peer, real-time, event-based communication protocol.
 
-# Usage:
+Thsi package sis itended to be used in bothe Dart & Flutter apps, and provides a simple API to connect to the Nostr network and send and receive messages.
 
-<br>
+## Key Features:
+- Develoepr friendly.
+- Easy to use, all complexity is abstracted away.
+- Supports both Dart & Flutter.
+- Provides handy utilities to work with Nostr in general.
+- Much more!
 
-## Keys Service:
+## Installation
 
+Add the following to your `pubspec.yaml` file:
 
-## Relays Service:
-
-The relays service is responsible for anything related to the actual interaction with relays such connecting to them, sending events to them, listening to events from them, etc.
-
-#### Creating and signing Nostr events:
-
-
-#### Connecting to relay(s):
-
-As I already said, this package exposes only one main instance, which is `Nostr.instance`, 
+```yaml
+dependencies:
+  nostr: any
 ```
 
-#### Sending events to relay(s):
+## Documentation & Usage
 
-When you have an event that is ready to be sent to your relay(s) as exmaple the [previous event](#creating-and-signing-nostr-events) that we did created, you can call the `sendEventToRelays()` method with it and send it to relays:
+I made a fully detailed documentation for this package and it's usage, you can find it [here](#).
 
-```dart
-Nostr.instance.relaysService.sendEventToRelays(event);
-```
 
-The event will be sent now to all the connected relays now, and if you're already openeing a subsciption to your relays, you will start receiving it in your stream.
+## Issues & Bugs
 
-<br>
+If you find any issues or bugs, please report them [here](https://github.com/anasfik/nostr/issues), I will be happy to have a look at them and fix them as soon as possible.
+
+## Contributing
+
+If you want to contribute to this project, you can do so by forking this repository, making your changes, and then creating a pull request, I will be grateful for the help, and will be happy to merge your changes into the main project.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
