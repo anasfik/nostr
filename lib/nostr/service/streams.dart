@@ -21,10 +21,8 @@ final class NostrStreamsControllers {
   /// ```
   ///
   /// You can also use the [Nostr.startEventsSubscription] method to get a stream of events that will be filtered by the [subscriptionId] that you passed to it automatically.
-  @override
   Stream<ReceivedNostrEvent> get events => eventsController.stream;
 
   /// This is the stream which will have all notices from all relays, all of them will be included in this stream, and so in order to filter them, you will need to use the [Stream.where] method.
-  @override
   Stream<NostrNotice> get notices => noticesController.stream;
 }
