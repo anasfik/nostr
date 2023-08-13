@@ -39,6 +39,7 @@ class NostrKeys implements NostrKeysBase {
   @override
   NostrKeyPairs generateKeyPair() {
     final nostrKeyPairs = NostrKeyPairs.generate();
+
     NostrClientUtils.log(
       "generated key pairs, with it's public key is: ${nostrKeyPairs.public}",
     );
