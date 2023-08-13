@@ -1,5 +1,6 @@
 ---
 sidebar_position: 3
+description: Master the Nostr protocol with dart_nostr. Effortlessly handle events and operations, except for specific exceptions. Navigate the code structure and access robust functionalities, all guided by a single maintainer.
 ---
 
 # Must Know ?

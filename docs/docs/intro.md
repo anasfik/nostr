@@ -1,6 +1,7 @@
 ---
 sidebar_position: 1
 slug: /
+description: Jumpstart your journey with the dart_nostr package documentation, your go-to resource for mastering this Dart/Flutter SDK. Created by Mohamed Anas, this package simplifies intricate tasks related to the Nostr protocol. Enjoy developer-friendly APIs, save time, and explore the decentralized world of Nostr. Dive in today!
 ---
 
 

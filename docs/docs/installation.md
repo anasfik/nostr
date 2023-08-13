@@ -1,5 +1,6 @@
 ---
 sidebar_position: 2
+description: Seamlessly integrate dart_nostr into your project with simple terminal commands. Manage dependencies, streamline assets, and elevate your project's capabilities in minutes.
 ---
 
 # Installation
