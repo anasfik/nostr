@@ -33,3 +33,13 @@ import 'package:dart_nostr/dart_nostr.dart';
 ```
 
 Cool, you can pass to next sections in this documentation.
+
+:::tip
+ You can install the package from its [remote repository](https://github.com/anasfik/nostr) directly, follow [these instructions](https://dart.dev/tools/pub/dependencies#git-packages) for more detail.
+:::
+
+## Whats Next ?
+
+Now that you have it installed in your project, you can check the next section to learn some stuff that you need to know before starting to use it.
+
+- [General Overview](./must-know)

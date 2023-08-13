@@ -1,5 +1,9 @@
 # Changlog
 
+## 5.0.1
+
+- Added documentation config to pubspec.yaml
+
 ## 5.0.0
 
 - Fully Breaking changes.

@@ -2,9 +2,11 @@
 sidebar_position: 3
 ---
 
-# Must Know?
+# Must Know ?
 
-With `dart_nostr`, you can achieve almost anything that relate to the Nostr protocol, there is some exception that are out of my hand currently such as adapting web-based Chrome extensions to work with Flutter, but I am working on it.but all the operations of sending events & listening to them.. will be so easy for easy.
+With `dart_nostr`, you can achieve almost anything that relate to the Nostr protocol, there is some exceptions that are out of my hand currently such as adapting web-based extensions such [ably](https://chrome.google.com/webstore/detail/alby-bitcoin-lightning-wa/iokeahhehimjnekafflcihljlcjccdbe). In the other side, all other operations of sending events & listening to them.. will be like a piece of cake with this package.
+
+This maintained by one individual, so if you opened any issue or a pull request, please be patient, I will try to respond as soon as possible.
 
 ## Code structure
 
@@ -24,4 +26,10 @@ final relaysService = Nostr.instance.relaysService; // access to the relays serv
 final utilsService = Nostr.instance.utilsService; // access the utils service, which provides many handy utils that you will need to use in your app, such as encoding, getting random hex strings to use with requests, etc.
 ```
 
-And so on, in the usage section, you will get to learn every single one and it's functionality & utils.
+so basically, this approach allows for the term of using the package in the whole application with the same singleton, this mean that as example, you can connect to your relays in the `main.dart` file, and you can create a new event from `myCubit.dart` file, you don't have to worry about this, just use & enjoy.
+
+## Whats next ?
+
+You're know ready to start learning how to use it in action, see the next section for more.
+
+- [Usage](./usage/)
