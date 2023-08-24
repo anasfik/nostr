@@ -46,7 +46,7 @@ nostrEventsSubscription.stream.listen((event) {
 in order to trigger an action when the eose command is sent from a relay to our client app, you can pass a callback to the `onEose` parameter.
 
 ## Closing A subscription
-
+s
 in order to close & end aspecific subscription that is created, you can call the `closeEventsSubscription` method
 
 ```dart
