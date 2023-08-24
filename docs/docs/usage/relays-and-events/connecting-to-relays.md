@@ -18,12 +18,29 @@ Before sending any event to your relays, you will need to initialize/connect to 
 if you have a Flutter app, I personally recommend you to call this method in the `main()` before the `runApp` is called, so you ensure that the relays are connected before the app starts.
 
 ```dart
-void main() {
-// TODO: add the code here.
+void main() async {
+  await Nostr.instance.relaysService.init(
+    relaysUrl: <String>["wss://eden.nostr.land"],
+    connectionTimeout: Duration(seconds: 5),
+    ensureToClearRegistriesBeforeStarting: true,
+    ignoreConnectionException: true,
+    lazyListeningToRelays: false,
+    onRelayConnectionDone: (relayUrl, relayWebSocket) {
+      print("Connected to relay: $relayUrl");
+    },
+    onRelayListening: (relayUrl, receivedEvent, relayWebSocket) {
+      print("Listening to relay: $relayUrl");
+    },
+    onRelayConnectionError: (relayUrl, error, relayWebSocket) {},
+    retryOnClose: true,
+    retryOnError: true,
+    shouldReconnectToRelayOnNotice: true,
+);
 
-// if it is a flutter app: runApp(MyApp());
-//...
+// ...
 
+// if it is a flutter app:
+// runApp(MyApp());
  }
 ```
 
@@ -32,7 +49,21 @@ void main() {
 if you already connected to your relays, and you want to reconnect to them again, you can call the `reconnectToRelays()` method:
 
 ```dart
-// TODO: add the code here.
+await Nostr.instance.relaysService.reconnectToRelays(
+  connectionTimeout: Duration(seconds: 5),
+  ignoreConnectionException: true,
+  lazyListeningToRelays: false,
+  onRelayConnectionDone: (relayUrl, relayWebSocket) {
+    print("Connected to relay: $relayUrl");
+  },
+  onRelayListening: (relayUrl, receivedEvent, relayWebSocket) {
+    print("Listening to relay: $relayUrl");
+  },
+  onRelayConnectionError: (relayUrl, error, relayWebSocket) {},
+  retryOnClose: true,
+  retryOnError: true,
+  shouldReconnectToRelayOnNotice: true,
+);
 ```
 
 ## Disconnecting from relays

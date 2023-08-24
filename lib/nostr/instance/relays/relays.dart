@@ -31,6 +31,8 @@ class NostrRelays implements NostrRelaysBase {
   Map<NostrEventKey, ReceivedNostrEvent> get eventsRegistry =>
       NostrRegistry.eventsRegistry;
 
+  List<String>? _relaysList;
+
   /// This method is responsible for initializing the connection to all relays.
   /// It takes a [List<String>] of relays urls, then it connects to each relay and registers it for future use, if [relayUrl] is empty, it will throw an [AssertionError] since it doesn't make sense to connect to an empty list of relays.
   ///
@@ -99,6 +101,7 @@ class NostrRelays implements NostrRelaysBase {
       relaysUrl.isNotEmpty,
       "initiating relays with an empty list doesn't make sense, please provide at least one relay url.",
     );
+    _relaysList = List.of(relaysUrl);
 
     _clearRegistriesIf(ensureToClearRegistriesBeforeStarting);
 
@@ -413,6 +416,52 @@ class NostrRelays implements NostrRelaysBase {
     if (ensureToClearRegistriesBeforeStarting) {
       NostrRegistry.clearAllRegistries();
     }
+  }
+
+  Future<void> reconnectToRelays({
+    required void Function(
+            String relayUrl, dynamic receivedData, WebSocket? relayWebSocket)?
+        onRelayListening,
+    required void Function(
+            String relayUrl, Object? error, WebSocket? relayWebSocket)?
+        onRelayConnectionError,
+    required void Function(String relayUrl, WebSocket? relayWebSocket)?
+        onRelayConnectionDone,
+    required bool retryOnError,
+    required bool retryOnClose,
+    required bool shouldReconnectToRelayOnNotice,
+    required Duration connectionTimeout,
+    required bool ignoreConnectionException,
+    required bool lazyListeningToRelays,
+    bool relayUnregistered = true,
+  }) async {
+    final completer = Completer();
+
+    if (_relaysList == null || _relaysList!.isEmpty) {
+      throw Exception(
+        "you need to call the init method before calling this method.",
+      );
+    }
+
+    for (var relay in _relaysList!) {
+      await _reconnectToRelay(
+        relayUnregistered: relayUnregistered,
+        relay: relay,
+        onRelayListening: onRelayListening,
+        onRelayConnectionError: onRelayConnectionError,
+        onRelayConnectionDone: onRelayConnectionDone,
+        retryOnError: retryOnError,
+        retryOnClose: retryOnClose,
+        shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
+        connectionTimeout: connectionTimeout,
+        ignoreConnectionException: ignoreConnectionException,
+        lazyListeningToRelays: lazyListeningToRelays,
+      );
+    }
+
+    completer.complete();
+
+    return completer.future;
   }
 
   Future<void> _reconnectToRelay({
