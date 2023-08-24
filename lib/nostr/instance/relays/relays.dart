@@ -500,6 +500,30 @@ class NostrRelays implements NostrRelaysBase {
     }
   }
 
+  Future<bool> disconnectFromRelays({
+    int Function(String relayUrl)? closeCode,
+    String Function(String relayUrl)? closeReason,
+    void Function(String relayUrl, WebSocket relayWebSOcket,
+            dynamic webSocketDisconnectionMessage)?
+        onRelayDisconnect,
+  }) async {
+    final webSockets = NostrRegistry.relaysWebSocketsRegistry;
+    for (final MapEntry(key: relayUrl, value: relayWebSocket)
+        in webSockets.entries) {
+      final returnedMessage = await relayWebSocket.close(
+        closeCode?.call(relayUrl),
+        closeReason?.call(relayUrl),
+      );
+
+      onRelayDisconnect?.call(relayUrl, relayWebSocket, returnedMessage);
+    }
+
+    NostrRegistry.clearWebSocketsRegistry();
+    _relaysList = [];
+
+    return true;
+  }
+
   Future<void> _startConnectingAndRegisteringRelay({
     required String relayUrl,
     required void Function(

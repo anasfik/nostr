@@ -23,6 +23,8 @@ Future<void> main() async {
     shouldReconnectToRelayOnNotice: true,
   );
 
+  await Future.delayed(Duration(seconds: 5));
+
   await Nostr.instance.relaysService.reconnectToRelays(
     connectionTimeout: Duration(seconds: 5),
     ignoreConnectionException: true,
@@ -37,5 +39,19 @@ Future<void> main() async {
     retryOnClose: true,
     retryOnError: true,
     shouldReconnectToRelayOnNotice: true,
+  );
+
+  await Future.delayed(Duration(seconds: 5));
+
+  Nostr.instance.relaysService.disconnectFromRelays(
+    closeCode: (relayUrl) {
+      return WebSocketStatus.normalClosure;
+    },
+    closeReason: (relayUrl) {
+      return "Bye";
+    },
+    onRelayDisconnect: (relayUrl, relayWebSocket, returnedMessage) {
+      print("Disconnected from relay: $relayUrl, $returnedMessage");
+    },
   );
 }

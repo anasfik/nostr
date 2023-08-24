@@ -139,4 +139,8 @@ abstract class NostrRegistry {
   )? getCountResponseCallBack(String subscriptionId) {
     return countResponseCallBacks[subscriptionId];
   }
+
+  static void clearWebSocketsRegistry() {
+    relaysWebSocketsRegistry.clear();
+  }
 }

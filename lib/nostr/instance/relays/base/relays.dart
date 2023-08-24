@@ -76,4 +76,21 @@ abstract class NostrRelaysBase {
     required String relayUrl,
     bool throwExceptionIfExists,
   });
+  Future<void> reconnectToRelays({
+    required void Function(
+            String relayUrl, dynamic receivedData, WebSocket? relayWebSocket)?
+        onRelayListening,
+    required void Function(
+            String relayUrl, Object? error, WebSocket? relayWebSocket)?
+        onRelayConnectionError,
+    required void Function(String relayUrl, WebSocket? relayWebSocket)?
+        onRelayConnectionDone,
+    required bool retryOnError,
+    required bool retryOnClose,
+    required bool shouldReconnectToRelayOnNotice,
+    required Duration connectionTimeout,
+    required bool ignoreConnectionException,
+    required bool lazyListeningToRelays,
+    bool relayUnregistered = true,
+  });
 }

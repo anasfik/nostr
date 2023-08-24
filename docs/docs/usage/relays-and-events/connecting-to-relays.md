@@ -71,5 +71,16 @@ await Nostr.instance.relaysService.reconnectToRelays(
 if you want to disconnect from your relays, you can call the `disconnectFromRelays()` method:
 
 ```dart
-// TODO: add the code here.
+await Nostr.instance.relaysService.disconnectFromRelays(
+  closeCode: (relayUrl) {
+    return WebSocketStatus.normalClosure;
+  },
+  closeReason: (relayUrl) {
+    return "Bye";
+  },
+  onRelayDisconnect: (relayUrl, relayWebSocket, returnedMessage) {
+    print("Disconnected from relay: $relayUrl, $returnedMessage");
+  },
+);
+
 ```
