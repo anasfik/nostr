@@ -1,4 +1,3 @@
-
 import 'package:dart_nostr/dart_nostr.dart';
 
 void main() async {

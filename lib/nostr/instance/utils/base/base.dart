@@ -34,4 +34,6 @@ abstract class NostrUtilsBase {
   List<String> decodeBech32(String bech32String);
 
   int countDifficultyOfHex(String hexString);
+
+  String consistent64HexChars(String input);
 }

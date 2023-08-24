@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:bech32/bech32.dart';
+import 'package:crypto/crypto.dart';
 import 'package:hex/hex.dart';
 import 'package:http/http.dart' as http;
 import 'dart:math';
@@ -67,6 +68,15 @@ class NostrUtils implements NostrUtilsBase {
     final randomBytes = List<int>.generate(32, (i) => random.nextInt(256));
 
     return hex.encode(randomBytes);
+  }
+
+  /// Generates a random 64 length hexadecimal string that is consistent with the given [input].
+  @override
+  String consistent64HexChars(String input) {
+    final randomBytes = utf8.encode(input);
+    final hashed = sha256.convert(randomBytes);
+
+    return hex.encode(hashed.bytes);
   }
 
   /// This method will verify the [internetIdentifier] with a [pubKey] using the NIP05 implementation, and simply will return a [Future] with a [bool] that indicates if the verification was successful or not.
