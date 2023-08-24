@@ -33,4 +33,4 @@ so basically, this approach allows for the term of using the package in the whol
 
 You're know ready to start learning how to use it in action, see the next section for more.
 
-- [Usage](./usage/)
+- [Usage](/usage/key-pairs/generate-key-pair)

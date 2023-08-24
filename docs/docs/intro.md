@@ -60,7 +60,7 @@ If you want to contribute to this project, you can do so by forking this reposit
 
 This project is licensed under the MIT License - see the [LICENSE](https://github.com/anasfik/nostr/blob/main/LICENSE) file for details.
 
-<br>
+<br />
 
 ## Whats Next ?
 
