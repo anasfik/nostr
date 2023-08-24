@@ -74,4 +74,24 @@ The `NostrEvent.fromPartialData` requires the `keyPairs` because it needs to get
 
 ### Delete Event
 
-// TODO: add docs for delete event.
+You can create & send a delete event like this:
+
+```dart
+
+// assuming you have other receivedEvents
+NostrEvent originalEvent = ...
+
+// create a delete event
+  final deleteEvent = NostrEvent.deleteEvent(
+    reasonOfDeletion: "As example, the user decided to delete his created note events.",
+    keyPairs: newKeyPair,
+    eventIdsToBeDeleted: [
+      // this is just an example event id.
+      originalEvent.id,
+    ],
+  );
+
+  // send the delete event.
+  Nostr.instance.relaysService.sendEventToRelays(deleteEvent);
+
+```
