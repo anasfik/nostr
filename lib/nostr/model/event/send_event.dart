@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:dart_nostr/nostr/core/constants.dart';
 
 import '../../core/key_pairs.dart';
 import 'event.dart';
@@ -112,7 +113,7 @@ class SentNostrEvent extends NostrEvent {
 
   /// Returns a serialized [NostrEvent] from this event.
   String serialized() {
-    return jsonEncode(["EVENT", _toMap()]);
+    return jsonEncode([NostrConstants.event, _toMap()]);
   }
 
   @override

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import '../../../model/count.dart';
 import '../../../model/ease.dart';
 import '../../../model/event/received_event.dart';
 import '../../../model/nostr_event_key.dart';
@@ -40,6 +41,12 @@ abstract class NostrRelaysBase {
     required void Function(NostrEventOkCommand ok) onOk,
   });
 
+  void sendCountEventToRelays(
+    NostrCountEvent countEvent, {
+    required void Function(NostrCountResponse NostrCountResponse)
+        onCountResponse,
+  });
+
   NostrEventsStream startEventsSubscription({
     required NostrRequest request,
     void Function(NostrRequestEoseCommand ease)? onEose,
@@ -65,7 +72,8 @@ abstract class NostrRelaysBase {
     required bool lazyListeningToRelays,
   });
 
-  Future<RelayInformations> relayInformationsDocumentNip11({
+  Future<RelayInformations?> relayInformationsDocumentNip11({
     required String relayUrl,
+    bool throwExceptionIfExists,
   });
 }

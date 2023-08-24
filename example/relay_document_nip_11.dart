@@ -6,5 +6,5 @@ void main() async {
     relayUrl: "wss://relay.damus.io",
   );
 
-  print(relayDocument.software);
+  print(relayDocument?.name);
 }

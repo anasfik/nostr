@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:dart_nostr/nostr/model/count.dart';
 import 'package:dart_nostr/nostr/model/event/received_event.dart';
 import 'package:dart_nostr/nostr/model/ok.dart';
 import 'package:meta/meta.dart';
@@ -18,15 +19,23 @@ abstract class NostrRegistry {
   ///  This is the registry which will have all events.
   static final eventsRegistry = <NostrEventKey, ReceivedNostrEvent>{};
 
+  /// This is the registry which will have all ok commands callbacks.
   static final okCommandCallBacks = <String,
       void Function(
     NostrEventOkCommand ok,
   )?>{};
 
+  /// This is the registry which will have all eose responses callbacks.
   static final eoseCommandCallBacks = <String,
       void Function(
     NostrRequestEoseCommand eose,
   )?>{};
+
+  /// This is the registry which will have all count responses callbacks.
+  static final countResponseCallBacks = <String,
+      void Function(
+    NostrCountResponse countResponse,
+  )>{};
 
   /// Registers a [WebSocket] to the registry with the given [relayUrl].
   /// If a [WebSocket] is already registered with the given [relayUrl], it will be replaced.
@@ -116,5 +125,18 @@ abstract class NostrRegistry {
     NostrRequestEoseCommand eose,
   )? getEoseCommandCallBack(String subscriptionId) {
     return eoseCommandCallBacks[subscriptionId];
+  }
+
+  static void registerCountResponseCallBack(
+    String subscriptionId,
+    void Function(NostrCountResponse countResponse) onCountResponse,
+  ) {
+    countResponseCallBacks[subscriptionId] = onCountResponse;
+  }
+
+  static void Function(
+    NostrCountResponse countResponse,
+  )? getCountResponseCallBack(String subscriptionId) {
+    return countResponseCallBacks[subscriptionId];
   }
 }

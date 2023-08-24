@@ -6,6 +6,7 @@ import 'package:dart_nostr/dart_nostr.dart';
 import 'package:dart_nostr/nostr/model/event/send_event.dart';
 import 'package:dart_nostr/nostr/model/nostr_event_key.dart';
 import 'package:dart_nostr/nostr/service/web_sockets.dart';
+import '../../model/count.dart';
 import '../../model/ease.dart';
 import '../../model/ok.dart';
 import '../../model/relay.dart';
@@ -136,6 +137,21 @@ class NostrRelays implements NostrRelaysBase {
       NostrClientUtils.log(
         "event with id: ${event.id} is sent to relay with url: ${relay.url}",
       );
+    });
+  }
+
+  @override
+  void sendCountEventToRelays(
+    NostrCountEvent countEvent, {
+    required void Function(NostrCountResponse countResponse) onCountResponse,
+  }) {
+    final serialized = countEvent.serialized();
+
+    _registerOnCountCallBack(countEvent.subscriptionId, onCountResponse);
+    _runFunctionOverRelationIteration((relay) {
+      relay.socket.add(serialized);
+      NostrClientUtils.log(
+          "Count Event with subscription id: ${countEvent.subscriptionId} is sent to relay with url: ${relay.url}");
     });
   }
 
@@ -282,6 +298,12 @@ class NostrRelays implements NostrRelaysBase {
         _handleEoseCommandMessageFromRelay(
           eoseCommand: NostrRequestEoseCommand.fromRelayMessage(d),
         );
+      } else if (NostrCountResponse.canBeDeserialized(d)) {
+        final countResponse = NostrCountResponse.deserialized(d);
+
+        _handleCountResponseMessageFromRelay(
+          countResponse: countResponse,
+        );
       } else {
         NostrClientUtils.log(
           "received unknown message from relay: $relay, message: $d",
@@ -342,8 +364,9 @@ class NostrRelays implements NostrRelaysBase {
   /// );
   /// ```
   @override
-  Future<RelayInformations> relayInformationsDocumentNip11({
+  Future<RelayInformations?> relayInformationsDocumentNip11({
     required String relayUrl,
+    bool throwExceptionIfExists = true,
   }) async {
     try {
       final relayHttpUri =
@@ -364,7 +387,9 @@ class NostrRelays implements NostrRelaysBase {
         e,
       );
 
-      rethrow;
+      if (throwExceptionIfExists) {
+        rethrow;
+      }
     }
   }
 
@@ -610,5 +635,24 @@ class NostrRelays implements NostrRelaysBase {
         NostrRegistry.getEoseCommandCallBack(eoseCommand.subscriptionId);
 
     eoseCallBack?.call(eoseCommand);
+  }
+
+  void _registerOnCountCallBack(
+    String subscriptionId,
+    void Function(NostrCountResponse countResponse) onCountResponse,
+  ) {
+    NostrRegistry.registerCountResponseCallBack(
+      subscriptionId,
+      onCountResponse,
+    );
+  }
+
+  void _handleCountResponseMessageFromRelay({
+    required NostrCountResponse countResponse,
+  }) {
+    final countCallBack =
+        NostrRegistry.getCountResponseCallBack(countResponse.subscriptionId);
+
+    countCallBack?.call(countResponse);
   }
 }
