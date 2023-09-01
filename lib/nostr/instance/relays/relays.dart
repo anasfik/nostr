@@ -171,8 +171,13 @@ class NostrRelays implements NostrRelaysBase {
   NostrEventsStream startEventsSubscription({
     required NostrRequest request,
     void Function(NostrRequestEoseCommand ease)? onEose,
+    bool useConsistentSubscriptionIdBasedOnRequestData = false,
   }) {
-    final serialized = request.serialized();
+    final serialized = request.serialized(
+      subscriptionId: useConsistentSubscriptionIdBasedOnRequestData
+          ? null
+          : Nostr.instance.utilsService.random64HexChars(),
+    );
 
     _registerOnEoselCallBack(request.subscriptionId!, onEose);
 
