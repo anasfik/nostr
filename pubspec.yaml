@@ -6,7 +6,7 @@ issue_tracker: https://github.com/anasfik/nostr/issues
 documentation: https://anasfik.github.io/nostr/
 
 environment:
-  sdk: ">=2.19.6 <3.1.0"
+  sdk: ">=2.19.6 <=2.19.7"
 
 dependencies:
   bip340: ^0.1.0

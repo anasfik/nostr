@@ -513,8 +513,11 @@ class NostrRelays implements NostrRelaysBase {
         onRelayDisconnect,
   }) async {
     final webSockets = NostrRegistry.relaysWebSocketsRegistry;
-    for (final MapEntry(key: relayUrl, value: relayWebSocket)
-        in webSockets.entries) {
+    for (int index = 0; index < webSockets.length; index++) {
+      final current = webSockets.entries.elementAt(index);
+      final relayUrl = current.key;
+      final relayWebSocket = current.value;
+
       final returnedMessage = await relayWebSocket.close(
         closeCode?.call(relayUrl),
         closeReason?.call(relayUrl),

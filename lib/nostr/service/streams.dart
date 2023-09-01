@@ -2,7 +2,7 @@ import 'dart:async';
 
 import '../model/export.dart';
 
-final class NostrStreamsControllers {
+class NostrStreamsControllers {
   NostrStreamsControllers._();
   static final _instance = NostrStreamsControllers._();
   static NostrStreamsControllers get instance => _instance;

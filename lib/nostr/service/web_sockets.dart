@@ -2,7 +2,7 @@ import 'dart:io';
 
 import '../core/utils.dart';
 
-final class NostrWebSocketsService {
+class NostrWebSocketsService {
   static final _instance = NostrWebSocketsService._();
   static NostrWebSocketsService get instance => _instance;
 

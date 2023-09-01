@@ -1,4 +1,4 @@
-abstract interface class NostrServiceBase {
+abstract class NostrServiceBase {
   void disableLogs();
   void enableLogs();
 }
