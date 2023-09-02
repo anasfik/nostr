@@ -17,22 +17,25 @@ abstract class NostrRegistry {
   static final relaysWebSocketsRegistry = <String, WebSocket>{};
 
   ///  This is the registry which will have all events.
-  static final eventsRegistry = <NostrEventKey, ReceivedNostrEvent>{};
+  static final eventsRegistry = <String, ReceivedNostrEvent>{};
 
   /// This is the registry which will have all ok commands callbacks.
-  static final okCommandCallBacks = <String,
+  static final okCommandCallBacks = <
+      String,
       void Function(
     NostrEventOkCommand ok,
   )?>{};
 
   /// This is the registry which will have all eose responses callbacks.
-  static final eoseCommandCallBacks = <String,
+  static final eoseCommandCallBacks = <
+      String,
       void Function(
     NostrRequestEoseCommand eose,
   )?>{};
 
   /// This is the registry which will have all count responses callbacks.
-  static final countResponseCallBacks = <String,
+  static final countResponseCallBacks = <
+      String,
       void Function(
     NostrCountResponse countResponse,
   )>{};
@@ -91,8 +94,8 @@ abstract class NostrRegistry {
     return eventsRegistry[eventUniqueId(event)]!;
   }
 
-  static NostrEventKey eventUniqueId(ReceivedNostrEvent event) {
-    return event.uniqueKey();
+  static String eventUniqueId(ReceivedNostrEvent event) {
+    return event.uniqueKey().toString();
   }
 
   static bool unregisterRelay(String relay) {

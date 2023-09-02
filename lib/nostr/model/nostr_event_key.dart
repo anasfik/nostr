@@ -27,4 +27,9 @@ class NostrEventKey extends Equatable {
         sourceSubscriptionId,
         originalSourceEvent,
       ];
+
+  @override
+  String toString() {
+    return 'NostrEventKey{eventId: $eventId, sourceSubscriptionId: $sourceSubscriptionId, originalSourceEvent: $originalSourceEvent}';
+  }
 }
