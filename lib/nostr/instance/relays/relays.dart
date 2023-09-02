@@ -174,10 +174,10 @@ class NostrRelays implements NostrRelaysBase {
     bool useConsistentSubscriptionIdBasedOnRequestData = false,
   }) {
     final serialized = request.serialized(
-      subscriptionId: useConsistentSubscriptionIdBasedOnRequestData
-          ? null
-          : Nostr.instance.utilsService.random64HexChars(),
-    );
+        // subscriptionId: useConsistentSubscriptionIdBasedOnRequestData
+        //     ? null
+        //     : Nostr.instance.utilsService.random64HexChars(),
+        );
 
     _registerOnEoselCallBack(request.subscriptionId!, onEose);
 
