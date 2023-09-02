@@ -13,7 +13,7 @@ abstract class NostrRelaysBase {
   // Stream<NostrEvent> get eventsStream;
   // Stream<NostrNotice> get noticesStream;
   Map<String, WebSocket> get relaysWebSocketsRegistry;
-  Map<NostrEventKey, ReceivedNostrEvent> get eventsRegistry;
+  Map<String, ReceivedNostrEvent> get eventsRegistry;
 
   init({
     required List<String> relaysUrl,
@@ -21,16 +21,19 @@ abstract class NostrRelaysBase {
       String relayUrl,
       dynamic receivedData,
       WebSocket? relayWebSocket,
-    )? onRelayListening,
+    )?
+        onRelayListening,
     void Function(
       String relayUrl,
       Object? error,
       WebSocket? relayWebSocket,
-    )? onRelayConnectionError,
+    )?
+        onRelayConnectionError,
     void Function(
       String relayUrl,
       WebSocket? relayWebSocket,
-    )? onRelayConnectionDone,
+    )?
+        onRelayConnectionDone,
     bool lazyListeningToRelays = false,
     bool retryOnError = false,
     bool retryOnClose = false,

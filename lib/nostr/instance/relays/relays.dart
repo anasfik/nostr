@@ -28,7 +28,7 @@ class NostrRelays implements NostrRelaysBase {
 
   /// Represents a registry of all events you received from all relays so far.
   @override
-  Map<NostrEventKey, ReceivedNostrEvent> get eventsRegistry =>
+  Map<String, ReceivedNostrEvent> get eventsRegistry =>
       NostrRegistry.eventsRegistry;
 
   List<String>? _relaysList;
