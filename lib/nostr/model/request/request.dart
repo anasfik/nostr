@@ -29,13 +29,13 @@ class NostrRequest extends Equatable {
   String serialized({
     String? subscriptionId,
   }) {
-    subscriptionId = subscriptionId ??
-        this.subscriptionId ??
-        Nostr.instance.utilsService.consistent64HexChars(
-          filters
-              .map((e) => e.toMap().toString())
-              .reduce((value, element) => value + element),
-        );
+    // subscriptionId = subscriptionId ??
+    //     this.subscriptionId ??
+    //     Nostr.instance.utilsService.consistent64HexChars(
+    //       filters
+    //           .map((e) => e.toMap().toString())
+    //           .reduce((value, element) => value + element),
+    //     );
 
     String decodedFilters =
         jsonEncode(filters.map((item) => item.toMap()).toList());
