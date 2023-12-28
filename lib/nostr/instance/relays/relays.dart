@@ -153,6 +153,42 @@ class NostrRelays implements NostrRelaysBase {
     });
   }
 
+  Future<NostrEventOkCommand> sendEventToRelaysAsync(
+    NostrEvent event, {
+    required Duration timeout,
+    void Function(NostrEventOkCommand ok)? onOk,
+  }) {
+    final completer = Completer<NostrEventOkCommand>();
+    bool okTriggered = false;
+
+    Future.delayed(timeout, () {
+      if (!okTriggered) {
+        throw TimeoutException(
+          "the event with id: ${event.id} has timed out after: ${timeout.inSeconds} seconds",
+        );
+      }
+    });
+
+    final serialized = event.serialized();
+
+    _registerOnOklCallBack(
+      event.id,
+      (ok) {
+        okTriggered = true;
+        completer.complete(ok);
+      },
+    );
+
+    _runFunctionOverRelationIteration((relay) {
+      relay.socket.add(serialized);
+      utils.log(
+        "event with id: ${event.id} is sent to relay with url: ${relay.url}",
+      );
+    });
+
+    return completer.future;
+  }
+
   @override
   void sendCountEventToRelays(
     NostrCountEvent countEvent, {

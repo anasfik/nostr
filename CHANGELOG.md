@@ -1,5 +1,9 @@
 # Changlog
 
+## 6.0.1
+
+- Fixed the Stack overflow issue in the event model .
+
 ## 6.0.0
 
 - Added ability to create standalone instances of the package services, useful if you want to target Flutter web so you can use only one service for routes and not all of them...

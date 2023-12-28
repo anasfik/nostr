@@ -39,7 +39,7 @@ class NostrEvent extends Equatable {
 
   /// The subscription id of the event
   /// This is meant for events that are got from the relays, and not for events that are created by you.
-  final String subscriptionId;
+  final String? subscriptionId;
 
   /// Wether the given [dataFromRelay] can be deserialized into a [NostrEvent].
   static bool canBeDeserialized(String dataFromRelay) {
@@ -49,7 +49,6 @@ class NostrEvent extends Equatable {
   }
 
   NostrEvent({
-    required this.subscriptionId,
     required this.content,
     required this.createdAt,
     required this.id,
@@ -58,6 +57,7 @@ class NostrEvent extends Equatable {
     required this.pubkey,
     required this.sig,
     required this.tags,
+    this.subscriptionId,
   });
 
   /// Creates the [id] of an event, based on Nostr specs.
@@ -85,9 +85,6 @@ class NostrEvent extends Equatable {
     return id;
   }
 
-  /// {@macro nostr_event_from_partial_data}
-  ///
-  /// This requires only to set the fields which can be used & showed to the user directly.
   static NostrEvent fromPartialData({
     required int kind,
     required String content,
@@ -96,13 +93,29 @@ class NostrEvent extends Equatable {
     DateTime? createdAt,
     String? ots,
   }) {
-    return NostrEvent.fromPartialData(
+    final pubkey = keyPairs.public;
+    final tagsToUse = tags ?? [];
+    final createdAtToUse = createdAt ?? DateTime.now();
+
+    final id = NostrEvent.getEventId(
       kind: kind,
       content: content,
-      keyPairs: keyPairs,
-      createdAt: createdAt,
+      createdAt: createdAtToUse,
+      tags: tagsToUse,
+      pubkey: pubkey,
+    );
+
+    final sig = keyPairs.sign(id);
+
+    return NostrEvent(
+      id: id,
+      kind: kind,
+      content: content,
+      sig: sig,
+      pubkey: pubkey,
+      createdAt: createdAtToUse,
+      tags: tagsToUse,
       ots: ots,
-      tags: tags,
     );
   }
 
@@ -113,19 +126,26 @@ class NostrEvent extends Equatable {
     String reasonOfDeletion = "",
     DateTime? createdAt,
   }) {
-    return NostrEvent.deleteEvent(
+    return fromPartialData(
+      kind: 5,
+      content: reasonOfDeletion,
       keyPairs: keyPairs,
-      eventIdsToBeDeleted: eventIdsToBeDeleted,
+      tags: eventIdsToBeDeleted.map((eventId) => ["e", eventId]).toList(),
       createdAt: createdAt,
-      reasonOfDeletion: reasonOfDeletion,
     );
   }
 
   /// Returns a unique tag for this event that you can use to identify it.
   NostrEventKey uniqueKey() {
+    if (subscriptionId == null) {
+      throw Exception(
+        "You can't get a unique key for an event that you created, you can only get a unique key for an event that you got from the relays",
+      );
+    }
+
     return NostrEventKey(
       eventId: id,
-      sourceSubscriptionId: subscriptionId,
+      sourceSubscriptionId: subscriptionId!,
       originalSourceEvent: this,
     );
   }
