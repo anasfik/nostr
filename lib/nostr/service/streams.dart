@@ -3,10 +3,6 @@ import 'dart:async';
 import '../model/export.dart';
 
 class NostrStreamsControllers {
-  NostrStreamsControllers._();
-  static final _instance = NostrStreamsControllers._();
-  static NostrStreamsControllers get instance => _instance;
-
   /// This is the controller which will receive all events from all relays.
   final eventsController = StreamController<ReceivedNostrEvent>.broadcast();
 

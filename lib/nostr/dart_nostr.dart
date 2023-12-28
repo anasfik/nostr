@@ -17,29 +17,45 @@ class Nostr implements NostrServiceBase {
   /// {@macro nostr_service}
   static Nostr get instance => _instance;
 
+  late final utils;
+
   /// {@macro nostr_service}
-  Nostr._();
+  factory Nostr() {
+    //  utils.log("A Nostr instance created successfully.");
+    return Nostr._();
+  }
+
+  /// {@macro nostr_service}
+  Nostr._() {
+    utils = NostrClientUtils();
+  }
 
   /// This method will disable the logs of the library.
   @override
   void disableLogs() {
-    NostrClientUtils.disableLogs();
+    utils.disableLogs();
   }
 
   /// This method will enable the logs of the library.
   @override
   void enableLogs() {
-    NostrClientUtils.enableLogs();
+    utils.enableLogs();
   }
 
   /// {@macro nostr_keys}
-  final keysService = NostrKeys();
+  late final keysService = NostrKeys(
+    utils: utils,
+  );
 
   /// {@macro nostr_relays}
-  final relaysService = NostrRelays();
+  late final relaysService = NostrRelays(
+    utils: utils,
+  );
 
   /// {@macro nostr_utils}
-  final utilsService = NostrUtils();
+  late final utilsService = NostrUtils(
+    utils: utils,
+  );
 
   /// {@macro nostr_tlv}
   final tlv = NostrTLV();

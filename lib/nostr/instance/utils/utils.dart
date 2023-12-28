@@ -19,6 +19,10 @@ import 'base/base.dart';
 /// This class is responsible for handling some of the helper utils of the library.
 /// {@endtemplate}
 class NostrUtils implements NostrUtilsBase {
+  final NostrClientUtils utils;
+
+  NostrUtils({required this.utils});
+
   /// {@macro nostr_utils}
   final _tlvService = NostrTLV();
 
@@ -117,7 +121,7 @@ class NostrUtils implements NostrUtilsBase {
 
       return pubKey == pubKeyFromResponse;
     } catch (e) {
-      NostrClientUtils.log(
+      utils.log(
         "error while verifying nip05 for internet identifier: $internetIdentifier",
         e,
       );
@@ -153,7 +157,7 @@ class NostrUtils implements NostrUtilsBase {
 
       return pubKeyFromResponse;
     } catch (e) {
-      NostrClientUtils.log(
+      utils.log(
         "error while verifying nip05 for internet identifier: $internetIdentifier",
         e,
       );

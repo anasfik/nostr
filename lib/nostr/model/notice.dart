@@ -21,7 +21,7 @@ class NostrNotice extends Equatable {
     return decoded.first == NostrConstants.notice;
   }
 
-  factory NostrNotice.fromRelayMessage(String data) {
+  static NostrNotice fromRelayMessage(String data) {
     assert(canBeDeserialized(data));
 
     final decoded = jsonDecode(data) as List;

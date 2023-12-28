@@ -24,14 +24,28 @@ class NostrRelays implements NostrRelaysBase {
   /// Represents a registry of all relays that you did registered with the [init] method.
   @override
   Map<String, WebSocket> get relaysWebSocketsRegistry =>
-      NostrRegistry.relaysWebSocketsRegistry;
+      nostrRegistry.relaysWebSocketsRegistry;
 
   /// Represents a registry of all events you received from all relays so far.
   @override
   Map<String, ReceivedNostrEvent> get eventsRegistry =>
-      NostrRegistry.eventsRegistry;
+      nostrRegistry.eventsRegistry;
 
   List<String>? _relaysList;
+
+final streamsController = NostrStreamsControllers();
+
+late final webSocketsService = NostrWebSocketsService(
+  utils: utils, 
+);
+
+late final NostrRegistry nostrRegistry;
+
+final NostrClientUtils utils;
+
+NostrRelays({required this.utils}) {
+  nostrRegistry = NostrRegistry(utils: utils);
+}
 
   /// This method is responsible for initializing the connection to all relays.
   /// It takes a [List<String>] of relays urls, then it connects to each relay and registers it for future use, if [relayUrl] is empty, it will throw an [AssertionError] since it doesn't make sense to connect to an empty list of relays.
@@ -137,7 +151,7 @@ class NostrRelays implements NostrRelaysBase {
 
     _runFunctionOverRelationIteration((relay) {
       relay.socket.add(serialized);
-      NostrClientUtils.log(
+      utils.log(
         "event with id: ${event.id} is sent to relay with url: ${relay.url}",
       );
     });
@@ -153,7 +167,7 @@ class NostrRelays implements NostrRelaysBase {
     _registerOnCountCallBack(countEvent.subscriptionId, onCountResponse);
     _runFunctionOverRelationIteration((relay) {
       relay.socket.add(serialized);
-      NostrClientUtils.log(
+      utils.log(
           "Count Event with subscription id: ${countEvent.subscriptionId} is sent to relay with url: ${relay.url}");
     });
   }
@@ -174,22 +188,22 @@ class NostrRelays implements NostrRelaysBase {
     bool useConsistentSubscriptionIdBasedOnRequestData = false,
   }) {
     final serialized = request.serialized(
-        // subscriptionId: useConsistentSubscriptionIdBasedOnRequestData
-        //     ? null
-        //     : Nostr.instance.utilsService.random64HexChars(),
+        subscriptionId: useConsistentSubscriptionIdBasedOnRequestData
+            ? null
+            : Nostr.instance.utilsService.random64HexChars(),
         );
 
     _registerOnEoselCallBack(request.subscriptionId!, onEose);
 
     _runFunctionOverRelationIteration((relay) {
       relay.socket.add(serialized);
-      NostrClientUtils.log(
+      utils.log(
         "request with subscription id: ${request.subscriptionId} is sent to relay with url: ${relay.url}",
       );
     });
 
     final requestSubId = request.subscriptionId;
-    final subStream = NostrStreamsControllers.instance.events.where(
+    final subStream = streamsController.events.where(
       (event) => _filterNostrEventsWithId(event, requestSubId),
     );
 
@@ -222,7 +236,7 @@ class NostrRelays implements NostrRelaysBase {
     _runFunctionOverRelationIteration(
       (relay) {
         relay.socket.add(serialized);
-        NostrClientUtils.log(
+        utils.log(
           "Close request with subscription id: $subscriptionId is sent to relay with url: ${relay.url}",
         );
       },
@@ -270,7 +284,7 @@ class NostrRelays implements NostrRelaysBase {
     void Function(String relay, WebSocket? relayWebSocket, NostrNotice notice)?
         onNoticeMessageFromRelay,
   }) {
-    final relayWebSocket = NostrRegistry.getRelayWebSocket(relayUrl: relay);
+    final relayWebSocket = nostrRegistry.getRelayWebSocket(relayUrl: relay);
 
     relayWebSocket!.listen((d) {
       onRelayListening?.call(relay, d, relayWebSocket);
@@ -313,7 +327,7 @@ class NostrRelays implements NostrRelaysBase {
           countResponse: countResponse,
         );
       } else {
-        NostrClientUtils.log(
+        utils.log(
           "received unknown message from relay: $relay, message: $d",
         );
       }
@@ -337,7 +351,7 @@ class NostrRelays implements NostrRelaysBase {
         onRelayConnectionError(relay, error, relayWebSocket);
       }
 
-      NostrClientUtils.log(
+      utils.log(
         "web socket of relay with $relay had an error: $error",
         error,
       );
@@ -378,7 +392,7 @@ class NostrRelays implements NostrRelaysBase {
   }) async {
     try {
       final relayHttpUri =
-          NostrWebSocketsService.instance.getHttpUrlFromWebSocketUrl(relayUrl);
+          webSocketsService.getHttpUrlFromWebSocketUrl(relayUrl);
 
       final res = await http.get(
         relayHttpUri,
@@ -390,7 +404,7 @@ class NostrRelays implements NostrRelaysBase {
 
       return RelayInformations.fromNip11Response(decoded);
     } catch (e) {
-      NostrClientUtils.log(
+      utils.log(
         "error while getting relay informations from nip11 for relay url: $relayUrl",
         e,
       );
@@ -404,7 +418,7 @@ class NostrRelays implements NostrRelaysBase {
   void _runFunctionOverRelationIteration(
     void Function(NostrRelay) relayCallback,
   ) {
-    final entries = NostrRegistry.allRelaysEntries();
+    final entries = nostrRegistry.allRelaysEntries();
 
     for (int index = 0; index < entries.length; index++) {
       final current = entries[index];
@@ -419,7 +433,7 @@ class NostrRelays implements NostrRelaysBase {
 
   void _clearRegistriesIf(bool ensureToClearRegistriesBeforeStarting) {
     if (ensureToClearRegistriesBeforeStarting) {
-      NostrRegistry.clearAllRegistries();
+      nostrRegistry.clearAllRegistries();
     }
   }
 
@@ -487,7 +501,7 @@ class NostrRelays implements NostrRelaysBase {
     required bool lazyListeningToRelays,
     bool relayUnregistered = true,
   }) async {
-    NostrClientUtils.log("retrying to listen to relay with url: $relay...");
+    utils.log("retrying to listen to relay with url: $relay...");
 
     if (relayUnregistered) {
       await _startConnectingAndRegisteringRelay(
@@ -512,7 +526,7 @@ class NostrRelays implements NostrRelaysBase {
             dynamic webSocketDisconnectionMessage)?
         onRelayDisconnect,
   }) async {
-    final webSockets = NostrRegistry.relaysWebSocketsRegistry;
+    final webSockets = nostrRegistry.relaysWebSocketsRegistry;
     for (int index = 0; index < webSockets.length; index++) {
       final current = webSockets.entries.elementAt(index);
       final relayUrl = current.key;
@@ -526,7 +540,7 @@ class NostrRelays implements NostrRelaysBase {
       onRelayDisconnect?.call(relayUrl, relayWebSocket, returnedMessage);
     }
 
-    NostrRegistry.clearWebSocketsRegistry();
+    nostrRegistry.clearWebSocketsRegistry();
     _relaysList = [];
 
     return true;
@@ -583,17 +597,17 @@ class NostrRelays implements NostrRelaysBase {
     Completer completer = Completer();
 
     for (String relay in relaysUrl) {
-      await NostrWebSocketsService.instance.connectRelay(
+      await webSocketsService.connectRelay(
           relay: relay,
           onConnectionSuccess: (relayWebSocket) {
-            NostrRegistry.registerRelayWebSocket(
+            nostrRegistry.registerRelayWebSocket(
               relayUrl: relay,
               webSocket: relayWebSocket,
             );
-            NostrClientUtils.log(
+            utils.log(
               "the websocket for the relay with url: $relay, is registered.",
             );
-            NostrClientUtils.log(
+            utils.log(
               "listening to the websocket for the relay with url: $relay...",
             );
 
@@ -632,13 +646,13 @@ class NostrRelays implements NostrRelaysBase {
     required String? relay,
     required ReceivedNostrEvent event,
   }) {
-    NostrClientUtils.log(
+    utils.log(
       "received event with content: ${event.content} from relay: $relay",
     );
 
-    if (!NostrRegistry.isEventRegistered(event)) {
-      NostrStreamsControllers.instance.eventsController.sink.add(event);
-      NostrRegistry.registerEvent(event);
+    if (!nostrRegistry.isEventRegistered(event)) {
+      streamsController.eventsController.sink.add(event);
+      nostrRegistry.registerEvent(event);
     }
   }
 
@@ -660,15 +674,15 @@ class NostrRelays implements NostrRelaysBase {
     required bool ignoreConnectionException,
     required bool lazyListeningToRelays,
   }) {
-    NostrClientUtils.log(
+    utils.log(
       "received notice with message: ${notice.message} from relay: $relay",
     );
 
-    if (NostrRegistry.isRelayRegistered(relay)) {
-      final registeredRelay = NostrRegistry.getRelayWebSocket(relayUrl: relay);
+    if (nostrRegistry.isRelayRegistered(relay)) {
+      final registeredRelay = nostrRegistry.getRelayWebSocket(relayUrl: relay);
 
       registeredRelay?.close().then((value) {
-        final relayUnregistered = NostrRegistry.unregisterRelay(relay);
+        final relayUnregistered = nostrRegistry.unregisterRelay(relay);
 
         _reconnectToRelay(
           relayUnregistered: relayUnregistered,
@@ -691,13 +705,13 @@ class NostrRelays implements NostrRelaysBase {
     String associatedEventId,
     void Function(NostrEventOkCommand ok)? onOk,
   ) {
-    NostrRegistry.registerOkCommandCallBack(associatedEventId, onOk);
+    nostrRegistry.registerOkCommandCallBack(associatedEventId, onOk);
   }
 
   void _handleOkCommandMessageFromRelay({
     required NostrEventOkCommand okCommand,
   }) {
-    final okCallBack = NostrRegistry.getOkCommandCallBack(okCommand.eventId);
+    final okCallBack = nostrRegistry.getOkCommandCallBack(okCommand.eventId);
 
     okCallBack?.call(okCommand);
   }
@@ -706,14 +720,14 @@ class NostrRelays implements NostrRelaysBase {
     String subscriptionId,
     void Function(NostrRequestEoseCommand eose)? onEose,
   ) {
-    NostrRegistry.registerEoseCommandCallBack(subscriptionId, onEose);
+    nostrRegistry.registerEoseCommandCallBack(subscriptionId, onEose);
   }
 
   void _handleEoseCommandMessageFromRelay({
     required NostrRequestEoseCommand eoseCommand,
   }) {
     final eoseCallBack =
-        NostrRegistry.getEoseCommandCallBack(eoseCommand.subscriptionId);
+        nostrRegistry.getEoseCommandCallBack(eoseCommand.subscriptionId);
 
     eoseCallBack?.call(eoseCommand);
   }
@@ -722,7 +736,7 @@ class NostrRelays implements NostrRelaysBase {
     String subscriptionId,
     void Function(NostrCountResponse countResponse) onCountResponse,
   ) {
-    NostrRegistry.registerCountResponseCallBack(
+    nostrRegistry.registerCountResponseCallBack(
       subscriptionId,
       onCountResponse,
     );
@@ -732,7 +746,7 @@ class NostrRelays implements NostrRelaysBase {
     required NostrCountResponse countResponse,
   }) {
     final countCallBack =
-        NostrRegistry.getCountResponseCallBack(countResponse.subscriptionId);
+        nostrRegistry.getCountResponseCallBack(countResponse.subscriptionId);
 
     countCallBack?.call(countResponse);
   }

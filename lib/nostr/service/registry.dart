@@ -12,37 +12,40 @@ import '../model/nostr_event_key.dart';
 @protected
 
 /// This is responsible for registering and retrieving relays [WebSocket]s that are connected to the app.
-abstract class NostrRegistry {
+class NostrRegistry {
+  NostrRegistry({
+    required this.utils,
+  });
+
+  final NostrClientUtils utils;
+
   /// This is the registry which will have all relays [WebSocket]s.
-  static final relaysWebSocketsRegistry = <String, WebSocket>{};
+  final relaysWebSocketsRegistry = <String, WebSocket>{};
 
   ///  This is the registry which will have all events.
-  static final eventsRegistry = <String, ReceivedNostrEvent>{};
+  final eventsRegistry = <String, ReceivedNostrEvent>{};
 
   /// This is the registry which will have all ok commands callbacks.
-  static final okCommandCallBacks = <
-      String,
+  final okCommandCallBacks = <String,
       void Function(
     NostrEventOkCommand ok,
   )?>{};
 
   /// This is the registry which will have all eose responses callbacks.
-  static final eoseCommandCallBacks = <
-      String,
+  final eoseCommandCallBacks = <String,
       void Function(
     NostrRequestEoseCommand eose,
   )?>{};
 
   /// This is the registry which will have all count responses callbacks.
-  static final countResponseCallBacks = <
-      String,
+  final countResponseCallBacks = <String,
       void Function(
     NostrCountResponse countResponse,
   )>{};
 
   /// Registers a [WebSocket] to the registry with the given [relayUrl].
   /// If a [WebSocket] is already registered with the given [relayUrl], it will be replaced.
-  static WebSocket registerRelayWebSocket({
+  WebSocket registerRelayWebSocket({
     required String relayUrl,
     required WebSocket webSocket,
   }) {
@@ -51,7 +54,7 @@ abstract class NostrRegistry {
   }
 
   /// Returns the [WebSocket] registered with the given [relayUrl].
-  static WebSocket? getRelayWebSocket({
+  WebSocket? getRelayWebSocket({
     required String relayUrl,
   }) {
     final targetWebSocket = relaysWebSocketsRegistry[relayUrl];
@@ -61,7 +64,7 @@ abstract class NostrRegistry {
 
       return relay;
     } else {
-      NostrClientUtils.log(
+      utils.log(
         "No relay is registered with the given url: $relayUrl, did you forget to register it?",
       );
 
@@ -70,80 +73,80 @@ abstract class NostrRegistry {
   }
 
   /// Returns all [WebSocket]s registered in the registry.
-  static List<MapEntry<String, WebSocket>> allRelaysEntries() {
+  List<MapEntry<String, WebSocket>> allRelaysEntries() {
     return relaysWebSocketsRegistry.entries.toList();
   }
 
   /// Clears all registries.
-  static void clearAllRegistries() {
+  void clearAllRegistries() {
     return relaysWebSocketsRegistry.clear();
   }
 
   /// Wether a [WebSocket] is registered with the given [relayUrl].
-  static bool isRelayRegistered(String relayUrl) {
+  bool isRelayRegistered(String relayUrl) {
     return relaysWebSocketsRegistry.containsKey(relayUrl);
   }
 
-  static bool isEventRegistered(ReceivedNostrEvent event) {
+  bool isEventRegistered(ReceivedNostrEvent event) {
     return eventsRegistry.containsKey(eventUniqueId(event));
   }
 
-  static ReceivedNostrEvent registerEvent(ReceivedNostrEvent event) {
+  ReceivedNostrEvent registerEvent(ReceivedNostrEvent event) {
     eventsRegistry[eventUniqueId(event)] = event;
 
     return eventsRegistry[eventUniqueId(event)]!;
   }
 
-  static String eventUniqueId(ReceivedNostrEvent event) {
+  String eventUniqueId(ReceivedNostrEvent event) {
     return event.uniqueKey().toString();
   }
 
-  static bool unregisterRelay(String relay) {
+  bool unregisterRelay(String relay) {
     final isUnregistered = relaysWebSocketsRegistry.remove(relay) != null;
 
     return isUnregistered;
   }
 
-  static void registerOkCommandCallBack(
+  void registerOkCommandCallBack(
     String associatedEventId,
     void Function(NostrEventOkCommand ok)? onOk,
   ) {
     okCommandCallBacks[associatedEventId] = onOk;
   }
 
-  static void Function(
+  void Function(
     NostrEventOkCommand ok,
   )? getOkCommandCallBack(String associatedEventIdWithOkCommand) {
     return okCommandCallBacks[associatedEventIdWithOkCommand];
   }
 
-  static void registerEoseCommandCallBack(
+  void registerEoseCommandCallBack(
     String subscriptionId,
     void Function(NostrRequestEoseCommand eose)? onEose,
   ) {
     eoseCommandCallBacks[subscriptionId] = onEose;
   }
 
-  static void Function(
+  void Function(
     NostrRequestEoseCommand eose,
   )? getEoseCommandCallBack(String subscriptionId) {
     return eoseCommandCallBacks[subscriptionId];
   }
 
-  static void registerCountResponseCallBack(
+  void registerCountResponseCallBack(
     String subscriptionId,
     void Function(NostrCountResponse countResponse) onCountResponse,
   ) {
     countResponseCallBacks[subscriptionId] = onCountResponse;
   }
 
-  static void Function(
+  void Function(
     NostrCountResponse countResponse,
   )? getCountResponseCallBack(String subscriptionId) {
     return countResponseCallBacks[subscriptionId];
   }
 
-  static void clearWebSocketsRegistry() {
+  void clearWebSocketsRegistry() {
     relaysWebSocketsRegistry.clear();
   }
 }

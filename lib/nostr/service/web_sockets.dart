@@ -3,12 +3,13 @@ import 'dart:io';
 import '../core/utils.dart';
 
 class NostrWebSocketsService {
-  static final _instance = NostrWebSocketsService._();
-  static NostrWebSocketsService get instance => _instance;
+  final NostrClientUtils utils;
+
+  NostrWebSocketsService({
+    required this.utils,
+  });
 
   Duration _connectionTimeout = Duration(seconds: 5);
-
-  NostrWebSocketsService._();
 
   void set(Duration newDur) {
     _connectionTimeout = newDur;
@@ -34,13 +35,13 @@ class NostrWebSocketsService {
 
       onConnectionSuccess?.call(webSocket);
     } catch (e) {
-      NostrClientUtils.log(
+      utils.log(
         "error while connecting to the relay with url: $relay",
         e,
       );
 
       if (shouldIgnoreConnectionException ?? true) {
-        NostrClientUtils.log(
+        utils.log(
           "The error related to relay: $relay is ignored, because to the ignoreConnectionException parameter is set to true.",
         );
       } else {
@@ -61,7 +62,7 @@ class NostrWebSocketsService {
           removeWebsocketSign.replaceFirst("wss://", "https://");
       return Uri.parse(removeWebsocketSign);
     } catch (e) {
-      NostrClientUtils.log(
+      utils.log(
         "error while getting http url from websocket url: $relayUrl",
         e,
       );

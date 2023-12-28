@@ -24,7 +24,7 @@ class NostrTLV implements TLVBase {
   }
 
   /// Decode length from list bytes
-  static int _decodeLength(Uint8List buffer, int offset) {
+  int _decodeLength(Uint8List buffer, int offset) {
     int length = buffer[offset] & 255;
     if ((length & 128) == 128) {
       int numberOfBytes = length & 127;
@@ -39,7 +39,7 @@ class NostrTLV implements TLVBase {
     return length;
   }
 
-  static int _getLengthBytes(int length) {
+  int _getLengthBytes(int length) {
     return (length & 128) == 128 ? 1 + (length & 127) : 1;
   }
 
@@ -56,7 +56,7 @@ class NostrTLV implements TLVBase {
   }
 
   /// Encode length to list bytes
-  static Uint8List _encodeLength(int length) {
+  Uint8List _encodeLength(int length) {
     if (length < 128) {
       return Uint8List.fromList([length]);
     }
@@ -65,7 +65,7 @@ class NostrTLV implements TLVBase {
   }
 
   /// concatenate/chain list bytes
-  static Uint8List _concatenateUint8List(List<Uint8List> lists) {
+  Uint8List _concatenateUint8List(List<Uint8List> lists) {
     int totalLength = lists.map((list) => list.length).reduce((a, b) => a + b);
     var result = Uint8List(totalLength);
     int offset = 0;

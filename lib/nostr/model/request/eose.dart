@@ -10,13 +10,13 @@ class NostrEOSE extends Equatable {
   @override
   List<Object?> get props => [subscriptionId];
 
-  static canBeDeserialized(String message) {
+  canBeDeserialized(String message) {
     final decoded = jsonDecode(message) as List;
 
     return decoded.first == NostrConstants.eose;
   }
 
-  factory NostrEOSE.fromRelayMessage(String message) {
+  NostrEOSE fromRelayMessage(String message) {
     final decoded = jsonDecode(message) as List;
 
     return NostrEOSE(

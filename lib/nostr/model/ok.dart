@@ -37,7 +37,7 @@ class NostrEventOkCommand extends Equatable {
     return decoded.first == NostrConstants.ok;
   }
 
-  factory NostrEventOkCommand.fromRelayMessage(String data) {
+  static NostrEventOkCommand fromRelayMessage(String data) {
     assert(canBeDeserialized(data));
 
     final decoded = jsonDecode(data) as List;

@@ -11,6 +11,10 @@ import 'package:bip39/bip39.dart' as bip39;
 /// This class is responsible for generating key pairs and deriving public keys from private keys..
 /// {@endtemplate}
 class NostrKeys implements NostrKeysBase {
+  final NostrClientUtils utils;
+
+  NostrKeys({required this.utils});
+
   /// Derives a public key from a [privateKey] directly, use this if you want a quick way to get a public key from a private key.
   ///
   ///
@@ -21,7 +25,7 @@ class NostrKeys implements NostrKeysBase {
   @override
   String derivePublicKey({required String privateKey}) {
     final nostrKeyPairs = NostrKeyPairs(private: privateKey);
-    NostrClientUtils.log(
+    utils.log(
       "derived public key from private key, with it's value is: ${nostrKeyPairs.public}",
     );
 
@@ -40,7 +44,7 @@ class NostrKeys implements NostrKeysBase {
   NostrKeyPairs generateKeyPair() {
     final nostrKeyPairs = NostrKeyPairs.generate();
 
-    NostrClientUtils.log(
+    utils.log(
       "generated key pairs, with it's public key is: ${nostrKeyPairs.public}",
     );
 
@@ -144,7 +148,7 @@ class NostrKeys implements NostrKeysBase {
     final hexEncodedMessage =
         Nostr.instance.utilsService.hexEncodeString(message);
     final signature = nostrKeyPairs.sign(hexEncodedMessage);
-    NostrClientUtils.log(
+    utils.log(
       "signed message with private key, with it's value is: $signature",
     );
 
@@ -172,7 +176,7 @@ class NostrKeys implements NostrKeysBase {
         Nostr.instance.utilsService.hexEncodeString(message);
     final isVerified =
         NostrKeyPairs.verify(publicKey, hexEncodedMessage, signature);
-    NostrClientUtils.log(
+    utils.log(
       "verified message with public key: $publicKey, with it's value is: $isVerified",
     );
 

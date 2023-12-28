@@ -14,7 +14,7 @@ class NostrCountEvent extends Equatable {
     required this.subscriptionId,
   });
 
-  factory NostrCountEvent.fromPartialData({
+  static NostrCountEvent fromPartialData({
     required NostrFilter eventsFilter,
   }) {
     final createdSubscriptionId =
@@ -27,6 +27,7 @@ class NostrCountEvent extends Equatable {
       subscriptionId: createdSubscriptionId,
     );
   }
+
   String serialized() {
     return jsonEncode([
       NostrConstants.count,
