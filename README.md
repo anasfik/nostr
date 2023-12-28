@@ -22,7 +22,7 @@ Add the following to your `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  nostr: any
+  dart_nostr: any
 ```
 
 ## 📚 Documentation & Usage
