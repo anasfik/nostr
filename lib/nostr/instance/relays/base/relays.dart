@@ -2,7 +2,7 @@ import 'dart:io';
 
 import '../../../model/count.dart';
 import '../../../model/ease.dart';
-import '../../../model/event/received_event.dart';
+import '../../../model/event/event.dart';
 import '../../../model/nostr_event_key.dart';
 import '../../../model/nostr_events_stream.dart';
 import '../../../model/ok.dart';
@@ -13,7 +13,7 @@ abstract class NostrRelaysBase {
   // Stream<NostrEvent> get eventsStream;
   // Stream<NostrNotice> get noticesStream;
   Map<String, WebSocket> get relaysWebSocketsRegistry;
-  Map<String, ReceivedNostrEvent> get eventsRegistry;
+  Map<String, NostrEvent> get eventsRegistry;
 
   init({
     required List<String> relaysUrl,
@@ -21,26 +21,23 @@ abstract class NostrRelaysBase {
       String relayUrl,
       dynamic receivedData,
       WebSocket? relayWebSocket,
-    )?
-        onRelayListening,
+    )? onRelayListening,
     void Function(
       String relayUrl,
       Object? error,
       WebSocket? relayWebSocket,
-    )?
-        onRelayConnectionError,
+    )? onRelayConnectionError,
     void Function(
       String relayUrl,
       WebSocket? relayWebSocket,
-    )?
-        onRelayConnectionDone,
+    )? onRelayConnectionDone,
     bool lazyListeningToRelays = false,
     bool retryOnError = false,
     bool retryOnClose = false,
   });
 
   void sendEventToRelays(
-    ReceivedNostrEvent event, {
+    NostrEvent event, {
     required void Function(NostrEventOkCommand ok) onOk,
   });
 

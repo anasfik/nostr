@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_nostr/dart_nostr.dart';
-import 'package:dart_nostr/nostr/model/event/send_event.dart';
 import 'package:dart_nostr/nostr/model/nostr_event_key.dart';
 import 'package:dart_nostr/nostr/service/web_sockets.dart';
 import '../../model/count.dart';
@@ -28,7 +27,7 @@ class NostrRelays implements NostrRelaysBase {
 
   /// Represents a registry of all events you received from all relays so far.
   @override
-  Map<String, ReceivedNostrEvent> get eventsRegistry =>
+  Map<String, NostrEvent> get eventsRegistry =>
       nostrRegistry.eventsRegistry;
 
   List<String>? _relaysList;
@@ -143,7 +142,7 @@ NostrRelays({required this.utils}) {
   /// ```
   @override
   void sendEventToRelays(
-    SentNostrEvent event, {
+    NostrEvent event, {
     void Function(NostrEventOkCommand ok)? onOk,
   }) {
     final serialized = event.serialized();
@@ -291,7 +290,7 @@ NostrRelays({required this.utils}) {
 
       if (NostrEvent.canBeDeserialized(d)) {
         _handleAddingEventToSink(
-          event: ReceivedNostrEvent.deserialized(d),
+          event: NostrEvent.deserialized(d),
           relay: relay,
         );
       } else if (NostrNotice.canBeDeserialized(d)) {
@@ -634,7 +633,7 @@ NostrRelays({required this.utils}) {
   }
 
   bool _filterNostrEventsWithId(
-    ReceivedNostrEvent event,
+    NostrEvent event,
     String? requestSubId,
   ) {
     final eventSubId = event.subscriptionId;
@@ -644,7 +643,7 @@ NostrRelays({required this.utils}) {
 
   void _handleAddingEventToSink({
     required String? relay,
-    required ReceivedNostrEvent event,
+    required NostrEvent event,
   }) {
     utils.log(
       "received event with content: ${event.content} from relay: $relay",

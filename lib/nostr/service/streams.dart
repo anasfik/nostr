@@ -4,7 +4,7 @@ import '../model/export.dart';
 
 class NostrStreamsControllers {
   /// This is the controller which will receive all events from all relays.
-  final eventsController = StreamController<ReceivedNostrEvent>.broadcast();
+  final eventsController = StreamController<NostrEvent>.broadcast();
 
   /// This is the controller which will receive all notices from all relays.
   final noticesController = StreamController<NostrNotice>.broadcast();
@@ -17,7 +17,7 @@ class NostrStreamsControllers {
   /// ```
   ///
   /// You can also use the [Nostr.startEventsSubscription] method to get a stream of events that will be filtered by the [subscriptionId] that you passed to it automatically.
-  Stream<ReceivedNostrEvent> get events => eventsController.stream;
+  Stream<NostrEvent> get events => eventsController.stream;
 
   /// This is the stream which will have all notices from all relays, all of them will be included in this stream, and so in order to filter them, you will need to use the [Stream.where] method.
   Stream<NostrNotice> get notices => noticesController.stream;

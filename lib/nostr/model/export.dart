@@ -1,4 +1,3 @@
-export 'event/received_event.dart';
 export 'event/event.dart';
 export './request/filter.dart';
 export './request/request.dart';

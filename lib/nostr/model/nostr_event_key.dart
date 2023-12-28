@@ -12,7 +12,7 @@ class NostrEventKey extends Equatable {
   final String sourceSubscriptionId;
 
   /// The source original event.
-  final ReceivedNostrEvent originalSourceEvent;
+  final NostrEvent originalSourceEvent;
 
   /// {@macro nostr_event_key}
   NostrEventKey({

@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'package:dart_nostr/nostr/model/count.dart';
-import 'package:dart_nostr/nostr/model/event/received_event.dart';
 import 'package:dart_nostr/nostr/model/ok.dart';
 import 'package:meta/meta.dart';
 
 import '../core/exceptions.dart';
 import '../core/utils.dart';
 import '../model/ease.dart';
+import '../model/event/event.dart';
 import '../model/nostr_event_key.dart';
 
 @protected
@@ -23,7 +23,7 @@ class NostrRegistry {
   final relaysWebSocketsRegistry = <String, WebSocket>{};
 
   ///  This is the registry which will have all events.
-  final eventsRegistry = <String, ReceivedNostrEvent>{};
+  final eventsRegistry = <String, NostrEvent>{};
 
   /// This is the registry which will have all ok commands callbacks.
   final okCommandCallBacks = <String,
@@ -87,17 +87,17 @@ class NostrRegistry {
     return relaysWebSocketsRegistry.containsKey(relayUrl);
   }
 
-  bool isEventRegistered(ReceivedNostrEvent event) {
+  bool isEventRegistered(NostrEvent event) {
     return eventsRegistry.containsKey(eventUniqueId(event));
   }
 
-  ReceivedNostrEvent registerEvent(ReceivedNostrEvent event) {
+  NostrEvent registerEvent(NostrEvent event) {
     eventsRegistry[eventUniqueId(event)] = event;
 
     return eventsRegistry[eventUniqueId(event)]!;
   }
 
-  String eventUniqueId(ReceivedNostrEvent event) {
+  String eventUniqueId(NostrEvent event) {
     return event.uniqueKey().toString();
   }
 
