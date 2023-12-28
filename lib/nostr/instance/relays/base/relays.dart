@@ -3,7 +3,6 @@ import 'dart:io';
 import '../../../model/count.dart';
 import '../../../model/ease.dart';
 import '../../../model/event/event.dart';
-import '../../../model/nostr_event_key.dart';
 import '../../../model/nostr_events_stream.dart';
 import '../../../model/ok.dart';
 import '../../../model/relay_informations.dart';

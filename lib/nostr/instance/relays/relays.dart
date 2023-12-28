@@ -3,9 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_nostr/dart_nostr.dart';
-import 'package:dart_nostr/nostr/model/nostr_event_key.dart';
 import 'package:dart_nostr/nostr/service/web_sockets.dart';
-import '../../model/count.dart';
 import '../../model/ease.dart';
 import '../../model/ok.dart';
 import '../../model/relay.dart';
@@ -27,24 +25,23 @@ class NostrRelays implements NostrRelaysBase {
 
   /// Represents a registry of all events you received from all relays so far.
   @override
-  Map<String, NostrEvent> get eventsRegistry =>
-      nostrRegistry.eventsRegistry;
+  Map<String, NostrEvent> get eventsRegistry => nostrRegistry.eventsRegistry;
 
   List<String>? _relaysList;
 
-final streamsController = NostrStreamsControllers();
+  final streamsController = NostrStreamsControllers();
 
-late final webSocketsService = NostrWebSocketsService(
-  utils: utils, 
-);
+  late final webSocketsService = NostrWebSocketsService(
+    utils: utils,
+  );
 
-late final NostrRegistry nostrRegistry;
+  late final NostrRegistry nostrRegistry;
 
-final NostrClientUtils utils;
+  final NostrClientUtils utils;
 
-NostrRelays({required this.utils}) {
-  nostrRegistry = NostrRegistry(utils: utils);
-}
+  NostrRelays({required this.utils}) {
+    nostrRegistry = NostrRegistry(utils: utils);
+  }
 
   /// This method is responsible for initializing the connection to all relays.
   /// It takes a [List<String>] of relays urls, then it connects to each relay and registers it for future use, if [relayUrl] is empty, it will throw an [AssertionError] since it doesn't make sense to connect to an empty list of relays.
@@ -187,10 +184,10 @@ NostrRelays({required this.utils}) {
     bool useConsistentSubscriptionIdBasedOnRequestData = false,
   }) {
     final serialized = request.serialized(
-        subscriptionId: useConsistentSubscriptionIdBasedOnRequestData
-            ? null
-            : Nostr.instance.utilsService.random64HexChars(),
-        );
+      subscriptionId: useConsistentSubscriptionIdBasedOnRequestData
+          ? null
+          : Nostr.instance.utilsService.random64HexChars(),
+    );
 
     _registerOnEoselCallBack(request.subscriptionId!, onEose);
 
@@ -412,6 +409,7 @@ NostrRelays({required this.utils}) {
         rethrow;
       }
     }
+    return null;
   }
 
   void _runFunctionOverRelationIteration(
@@ -436,6 +434,7 @@ NostrRelays({required this.utils}) {
     }
   }
 
+  @override
   Future<void> reconnectToRelays({
     required void Function(
             String relayUrl, dynamic receivedData, WebSocket? relayWebSocket)?

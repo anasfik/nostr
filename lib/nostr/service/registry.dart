@@ -7,7 +7,6 @@ import '../core/exceptions.dart';
 import '../core/utils.dart';
 import '../model/ease.dart';
 import '../model/event/event.dart';
-import '../model/nostr_event_key.dart';
 
 @protected
 
