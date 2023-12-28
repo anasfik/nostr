@@ -220,7 +220,7 @@ class NostrRelays implements NostrRelaysBase {
   /// ```dart
   /// Nostr.instance.relays.closeEventsSubscription("<subscriptionId>");
   /// ```
-  /// {endtemplate}
+  /// {@endtemplate}
   @override
   void closeEventsSubscription(String subscriptionId) {
     final close = NostrRequestClose(

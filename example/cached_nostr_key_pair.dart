@@ -5,4 +5,6 @@ void main() {
 
   final existentKeyPair = Nostr.instance.keysService
       .generateKeyPairFromExistingPrivateKey(keyPair.private);
+
+  print(existentKeyPair.private);
 }

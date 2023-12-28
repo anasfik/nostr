@@ -1,5 +1,10 @@
 # Changlog
 
+## 6.0.0
+
+- Added ability to create standalone instances of the package services, useful if you want to target Flutter web so you can use only one service for routes and not all of them...
+- Break changes in events types, in favor of possible collisions when working with replacable events.
+
 ## 5.0.1
 
 - Added documentation config to pubspec.yaml

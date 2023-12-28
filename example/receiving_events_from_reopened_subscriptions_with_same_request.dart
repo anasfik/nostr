@@ -46,17 +46,14 @@ void main() async {
   await Future.delayed(Duration(seconds: 5));
 
   for (int index = 0; index < 50; index++) {
-    final concurrentSubToForceRelaysReconnection =
-        Nostr.instance.relaysService.startEventsSubscription(
+    Nostr.instance.relaysService.startEventsSubscription(
       request: req,
     );
   }
 
   await Future.delayed(Duration(seconds: 5));
 
-  final reqTwo = req;
-
-  final subTwo = Nostr.instance.relaysService.startEventsSubscription(
+  Nostr.instance.relaysService.startEventsSubscription(
     request: req,
   );
 
