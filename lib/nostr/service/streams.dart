@@ -2,6 +2,9 @@ import 'dart:async';
 
 import '../model/export.dart';
 
+/// {@template nostr_streams_controllers}
+/// A service that manages the relays streams messages
+/// {@endtemplate}
 class NostrStreamsControllers {
   /// This is the controller which will receive all events from all relays.
   final eventsController = StreamController<NostrEvent>.broadcast();

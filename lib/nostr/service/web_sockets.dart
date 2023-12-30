@@ -2,21 +2,28 @@ import 'dart:io';
 
 import '../core/utils.dart';
 
+/// {@template nostr_web_sockets_service}
+/// A service that manages the relays web sockets connections
+/// {@endtemplate}
 class NostrWebSocketsService {
   final NostrClientUtils utils;
 
+  /// {@macro nostr_web_sockets_service}
   NostrWebSocketsService({
     required this.utils,
   });
 
+  /// The connection timeout for the web sockets.
   Duration _connectionTimeout = Duration(seconds: 5);
 
   void set(Duration newDur) {
     _connectionTimeout = newDur;
   }
 
+  /// THe custom http client that will be used to connect to the relay.
   HttpClient? _client;
 
+  /// Connects to a [relay] web socket, and trigger the [onConnectionSuccess] callback if the connection is successful, or the [onConnectionError] callback if the connection fails.
   Future<void> connectRelay({
     required String relay,
     HttpClient? customHttpClient,
@@ -50,6 +57,7 @@ class NostrWebSocketsService {
     }
   }
 
+  /// Changes the protocol of a websocket url to http.
   Uri getHttpUrlFromWebSocketUrl(String relayUrl) {
     assert(
       relayUrl.startsWith("ws://") || relayUrl.startsWith("wss://"),
@@ -71,6 +79,7 @@ class NostrWebSocketsService {
     }
   }
 
+  /// Creates a custom http client.
   HttpClient _createCustomHttpClient() {
     HttpClient client = HttpClient();
     client.badCertificateCallback =

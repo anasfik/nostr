@@ -27,18 +27,23 @@ class NostrRelays implements NostrRelaysBase {
   @override
   Map<String, NostrEvent> get eventsRegistry => nostrRegistry.eventsRegistry;
 
-  List<String>? _relaysList;
+  /// The list of relays urls that you did registered with the [init] method.
+  @override
+  List<String>? relaysList;
 
+  /// {@macro nostr_streams_controllers}
   final streamsController = NostrStreamsControllers();
 
-  late final webSocketsService = NostrWebSocketsService(
-    utils: utils,
-  );
+  /// {@macro nostr_web_sockets_service}
 
+  late final webSocketsService = NostrWebSocketsService(utils: utils);
+
+  /// {@macro nostr_registry}
   late final NostrRegistry nostrRegistry;
 
   final NostrClientUtils utils;
 
+  /// {@macro nostr_relays}
   NostrRelays({required this.utils}) {
     nostrRegistry = NostrRegistry(utils: utils);
   }
@@ -111,7 +116,7 @@ class NostrRelays implements NostrRelaysBase {
       relaysUrl.isNotEmpty,
       "initiating relays with an empty list doesn't make sense, please provide at least one relay url.",
     );
-    _relaysList = List.of(relaysUrl);
+    relaysList = List.of(relaysUrl);
 
     _clearRegistriesIf(ensureToClearRegistriesBeforeStarting);
 
@@ -153,6 +158,10 @@ class NostrRelays implements NostrRelaysBase {
     });
   }
 
+  /// {@template send_event_to_relays_async}
+  /// This method is responsible for sending an event to all relays that you did registered with the [init] method, and gets you a [Future] of [NostrEventOkCommand] that will be triggered when the event is accepted by the relays.
+  /// {@endtemplate}
+  @override
   Future<NostrEventOkCommand> sendEventToRelaysAsync(
     NostrEvent event, {
     required Duration timeout,
@@ -244,6 +253,57 @@ class NostrRelays implements NostrRelaysBase {
       stream: subStream,
       subscriptionId: request.subscriptionId!,
     );
+  }
+
+  /// {@template start_events_subscription_async}
+  /// Retuens a [Future] of [List<NostrEvent>] that will be triggered when the [onEose] callback is triggered of the subscription created by your [request].
+  /// {@endtemplate}
+  @override
+  Future<List<NostrEvent>> startEventsSubscriptionAsync({
+    required NostrRequest request,
+    required Duration timeout,
+    void Function(NostrRequestEoseCommand ease)? onEose,
+    bool useConsistentSubscriptionIdBasedOnRequestData = false,
+    bool shouldThrowErrorOnTimeoutWithoutEose = true,
+  }) {
+    final completer = Completer<List<NostrEvent>>();
+
+    final subscription = startEventsSubscription(
+      request: request,
+      onEose: onEose,
+      useConsistentSubscriptionIdBasedOnRequestData:
+          useConsistentSubscriptionIdBasedOnRequestData,
+    );
+
+    final subId = subscription.subscriptionId;
+
+    final events = <NostrEvent>[];
+
+    _registerOnEoselCallBack(subId, (eose) {
+      if (!completer.isCompleted) {
+        subscription.close();
+        completer.complete(events);
+      }
+    });
+
+    subscription.stream.listen((event) {
+      events.add(event);
+    });
+
+    Future.delayed(timeout, () {
+      if (!completer.isCompleted) {
+        if (shouldThrowErrorOnTimeoutWithoutEose) {
+          throw TimeoutException(
+            "the subscription with id: $subId has timed out after: ${timeout.inSeconds} seconds",
+          );
+        } else {
+          subscription.close();
+          completer.complete(events);
+        }
+      }
+    });
+
+    return completer.future;
   }
 
   /// {@template close_events_subscription}
@@ -448,28 +508,6 @@ class NostrRelays implements NostrRelaysBase {
     return null;
   }
 
-  void _runFunctionOverRelationIteration(
-    void Function(NostrRelay) relayCallback,
-  ) {
-    final entries = nostrRegistry.allRelaysEntries();
-
-    for (int index = 0; index < entries.length; index++) {
-      final current = entries[index];
-      final relay = NostrRelay(
-        url: current.key,
-        socket: current.value,
-      );
-
-      relayCallback.call(relay);
-    }
-  }
-
-  void _clearRegistriesIf(bool ensureToClearRegistriesBeforeStarting) {
-    if (ensureToClearRegistriesBeforeStarting) {
-      nostrRegistry.clearAllRegistries();
-    }
-  }
-
   @override
   Future<void> reconnectToRelays({
     required void Function(
@@ -490,13 +528,13 @@ class NostrRelays implements NostrRelaysBase {
   }) async {
     final completer = Completer();
 
-    if (_relaysList == null || _relaysList!.isEmpty) {
+    if (relaysList == null || relaysList!.isEmpty) {
       throw Exception(
         "you need to call the init method before calling this method.",
       );
     }
 
-    for (var relay in _relaysList!) {
+    for (var relay in relaysList!) {
       await _reconnectToRelay(
         relayUnregistered: relayUnregistered,
         relay: relay,
@@ -515,6 +553,33 @@ class NostrRelays implements NostrRelaysBase {
     completer.complete();
 
     return completer.future;
+  }
+
+  Future<bool> disconnectFromRelays({
+    int Function(String relayUrl)? closeCode,
+    String Function(String relayUrl)? closeReason,
+    void Function(String relayUrl, WebSocket relayWebSOcket,
+            dynamic webSocketDisconnectionMessage)?
+        onRelayDisconnect,
+  }) async {
+    final webSockets = nostrRegistry.relaysWebSocketsRegistry;
+    for (int index = 0; index < webSockets.length; index++) {
+      final current = webSockets.entries.elementAt(index);
+      final relayUrl = current.key;
+      final relayWebSocket = current.value;
+
+      final returnedMessage = await relayWebSocket.close(
+        closeCode?.call(relayUrl),
+        closeReason?.call(relayUrl),
+      );
+
+      onRelayDisconnect?.call(relayUrl, relayWebSocket, returnedMessage);
+    }
+
+    nostrRegistry.clearWebSocketsRegistry();
+    relaysList = [];
+
+    return true;
   }
 
   Future<void> _reconnectToRelay({
@@ -551,33 +616,6 @@ class NostrRelays implements NostrRelaysBase {
         lazyListeningToRelays: lazyListeningToRelays,
       );
     }
-  }
-
-  Future<bool> disconnectFromRelays({
-    int Function(String relayUrl)? closeCode,
-    String Function(String relayUrl)? closeReason,
-    void Function(String relayUrl, WebSocket relayWebSOcket,
-            dynamic webSocketDisconnectionMessage)?
-        onRelayDisconnect,
-  }) async {
-    final webSockets = nostrRegistry.relaysWebSocketsRegistry;
-    for (int index = 0; index < webSockets.length; index++) {
-      final current = webSockets.entries.elementAt(index);
-      final relayUrl = current.key;
-      final relayWebSocket = current.value;
-
-      final returnedMessage = await relayWebSocket.close(
-        closeCode?.call(relayUrl),
-        closeReason?.call(relayUrl),
-      );
-
-      onRelayDisconnect?.call(relayUrl, relayWebSocket, returnedMessage);
-    }
-
-    nostrRegistry.clearWebSocketsRegistry();
-    _relaysList = [];
-
-    return true;
   }
 
   Future<void> _startConnectingAndRegisteringRelay({
@@ -690,7 +728,7 @@ class NostrRelays implements NostrRelaysBase {
     }
   }
 
-  _handleNoticeFromRelay({
+  void _handleNoticeFromRelay({
     required NostrNotice notice,
     required String relay,
     required void Function(
@@ -783,5 +821,27 @@ class NostrRelays implements NostrRelaysBase {
         nostrRegistry.getCountResponseCallBack(countResponse.subscriptionId);
 
     countCallBack?.call(countResponse);
+  }
+
+  void _runFunctionOverRelationIteration(
+    void Function(NostrRelay) relayCallback,
+  ) {
+    final entries = nostrRegistry.allRelaysEntries();
+
+    for (int index = 0; index < entries.length; index++) {
+      final current = entries[index];
+      final relay = NostrRelay(
+        url: current.key,
+        socket: current.value,
+      );
+
+      relayCallback.call(relay);
+    }
+  }
+
+  void _clearRegistriesIf(bool ensureToClearRegistriesBeforeStarting) {
+    if (ensureToClearRegistriesBeforeStarting) {
+      nostrRegistry.clearAllRegistries();
+    }
   }
 }

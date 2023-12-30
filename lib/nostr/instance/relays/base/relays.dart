@@ -14,6 +14,8 @@ abstract class NostrRelaysBase {
   Map<String, WebSocket> get relaysWebSocketsRegistry;
   Map<String, NostrEvent> get eventsRegistry;
 
+  List<String>? relaysList;
+
   init({
     required List<String> relaysUrl,
     void Function(
@@ -35,6 +37,12 @@ abstract class NostrRelaysBase {
     bool retryOnClose = false,
   });
 
+  Future<NostrEventOkCommand> sendEventToRelaysAsync(
+    NostrEvent event, {
+    required Duration timeout,
+    void Function(NostrEventOkCommand ok)? onOk,
+  });
+
   void sendEventToRelays(
     NostrEvent event, {
     required void Function(NostrEventOkCommand ok) onOk,
@@ -49,6 +57,14 @@ abstract class NostrRelaysBase {
   NostrEventsStream startEventsSubscription({
     required NostrRequest request,
     void Function(NostrRequestEoseCommand ease)? onEose,
+  });
+
+  Future<List<NostrEvent>> startEventsSubscriptionAsync({
+    required NostrRequest request,
+    required Duration timeout,
+    void Function(NostrRequestEoseCommand ease)? onEose,
+    bool useConsistentSubscriptionIdBasedOnRequestData = false,
+    bool shouldThrowErrorOnTimeoutWithoutEose = true,
   });
 
   void closeEventsSubscription(String subscriptionId);
