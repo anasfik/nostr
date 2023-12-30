@@ -1,4 +1,11 @@
-# Changlog
+# Changelog
+
+## 6.1.0
+
+- Implmenttaion of free resources method for the relays service of an instance that clears and closes all events registeries and streams.
+- Implementation of a new asynchronous methods for sending and receiving events, to ensure actions before and after the event is sent or received.
+- More Doc comments for members.
+- Minor bug fixes.
 
 ## 6.0.1
 
