@@ -47,10 +47,10 @@ void main(List<String> args) async {
       shouldThrowErrorOnTimeoutWithoutEose: true,
     );
 
-    events.forEach((element) {
+    for (var element in events) {
       // should our event content here
       print('${element.content}\n\n');
-    });
+    }
 
     final isFree = await Nostr.instance.relaysService.freeAllResources();
     print("isFree: $isFree");

@@ -22,7 +22,7 @@ Future<void> main(List<String> args) async {
     );
 
     print(okCOmmand.isEventAccepted);
-  } on TimeoutException catch (e) {
+  } on TimeoutException {
     print("Timeout");
   } catch (e) {
     print(e);
