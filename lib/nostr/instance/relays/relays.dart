@@ -148,6 +148,7 @@ class NostrRelays implements NostrRelaysBase {
     void Function(NostrEventOkCommand ok)? onOk,
   }) {
     final serialized = event.serialized();
+
     _registerOnOklCallBack(event.id, onOk);
 
     _runFunctionOverRelationIteration((relay) {
