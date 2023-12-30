@@ -583,6 +583,24 @@ class NostrRelays implements NostrRelaysBase {
     return true;
   }
 
+  @override
+  Future<bool> freeAllResources([bool throwOnFailure = false]) async {
+    try {
+      await disconnectFromRelays();
+      await streamsController.close();
+
+      nostrRegistry.clearAllRegistries();
+
+      return true;
+    } catch (e) {
+      if (throwOnFailure) {
+        rethrow;
+      }
+
+      return false;
+    }
+  }
+
   Future<void> _reconnectToRelay({
     required String relay,
     required void Function(

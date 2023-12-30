@@ -24,4 +24,12 @@ class NostrStreamsControllers {
 
   /// This is the stream which will have all notices from all relays, all of them will be included in this stream, and so in order to filter them, you will need to use the [Stream.where] method.
   Stream<NostrNotice> get notices => noticesController.stream;
+
+  /// Closes all streams.
+  Future<void> close() async {
+    Future.wait([
+      eventsController.close(),
+      noticesController.close(),
+    ]);
+  }
 }

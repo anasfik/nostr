@@ -78,7 +78,11 @@ class NostrRegistry {
 
   /// Clears all registries.
   void clearAllRegistries() {
-    return relaysWebSocketsRegistry.clear();
+    relaysWebSocketsRegistry.clear();
+    eventsRegistry.clear();
+    okCommandCallBacks.clear();
+    eoseCommandCallBacks.clear();
+    countResponseCallBacks.clear();
   }
 
   /// Wether a [WebSocket] is registered with the given [relayUrl].

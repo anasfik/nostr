@@ -51,6 +51,9 @@ void main(List<String> args) async {
       // should our event content here
       print('${element.content}\n\n');
     });
+
+    final isFree = await Nostr.instance.relaysService.freeAllResources();
+    print("isFree: $isFree");
   } catch (e) {
     print(e);
   }

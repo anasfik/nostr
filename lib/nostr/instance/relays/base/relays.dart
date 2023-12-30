@@ -108,4 +108,6 @@ abstract class NostrRelaysBase {
     required bool lazyListeningToRelays,
     bool relayUnregistered = true,
   });
+
+  Future<void> freeAllResources();
 }
