@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunkdocs=self.webpackChunkdocs||[]).push([[426],{9114:e=>{e.exports=JSON.parse('{"title":"Usage","slug":"/category/usage","permalink":"/nostr/category/usage","navigation":{"previous":{"title":"Must Know ?","permalink":"/nostr/must-know"},"next":{"title":"Generate A New Key Pair","permalink":"/nostr/usage/key-pairs/generate-key-pair"}}}')}}]);
