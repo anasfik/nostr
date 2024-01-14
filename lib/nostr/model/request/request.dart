@@ -21,7 +21,8 @@ class NostrRequest extends Equatable {
 
   /// {@macro nostr_request}
   NostrRequest({
-    required this.filters, this.subscriptionId,
+    required this.filters,
+    this.subscriptionId,
   });
 
   /// Serialize the request to send it to the remote relays websockets.

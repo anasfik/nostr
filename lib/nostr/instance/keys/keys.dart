@@ -240,6 +240,7 @@ class NostrKeys implements NostrKeysBase {
     return hexChildKey;
   }
 
+  /// Clears all the cached key pairs.
   bool freeAllResources() {
     _keyPairsCache.clear();
 

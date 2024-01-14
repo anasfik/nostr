@@ -21,7 +21,7 @@ You can get the final events that you will send them to your relays by either cr
 final keyPair = Nostr.instance.keysService.generateKeyPair();
 
 // Create a new event.
-NostrEvent event = SendNostrEvent(
+NostrEvent event = NostrEvent(
   pubkey: '<THE-PUBKEY-OF-THE-EVENT-OWNER>',
   kind: 0,
   content: 'This is a test event content',
@@ -35,7 +35,7 @@ NostrEvent event = SendNostrEvent(
 // ...
 ```
 
-## Creating a shortcut event
+## Creating events with minimum effort
 
 As it is mentioned, this will require you to set every single value of the event properties manually. Well, we all love easy things right? `dart_nostr` offers the option to handle all this internally and covers you in this part with the  `NostrEvent.fromPartialData(...)` factory constructor, which requires you to only set the direct necessary fields and leave the the rest to be handled internally by the package, so you don't need to worry about anything else, this is the newest & fastest way to create an event:
 
@@ -69,29 +69,3 @@ The only required fields in the  `NostrEvent.fromPartialData` factory constructo
 **Why `keyPairs` is required ?**
 
 The `NostrEvent.fromPartialData` requires the `keyPairs` because it needs to get it's private key to sign the event with it, creating the `sig` field of the event. In the other side, the public key will be used directly for the event `pubKey` field.
-
-## Customized events
-
-### Delete Event
-
-You can create & send a delete event like this:
-
-```dart
-
-// assuming you have other receivedEvents
-NostrEvent originalEvent = ...
-
-// create a delete event
-  final deleteEvent = NostrEvent.deleteEvent(
-    reasonOfDeletion: "As example, the user decided to delete his created note events.",
-    keyPairs: newKeyPair,
-    eventIdsToBeDeleted: [
-      // this is just an example event id.
-      originalEvent.id,
-    ],
-  );
-
-  // send the delete event.
-  Nostr.instance.relaysService.sendEventToRelays(deleteEvent);
-
-```
