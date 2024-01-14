@@ -1,27 +1,15 @@
 import 'dart:core';
-import 'package:dart_nostr/nostr/instance/relays/relays.dart';
 
-import 'base/nostr.dart';
-import 'core/utils.dart';
-import 'instance/keys/keys.dart';
-import 'instance/tlv/tlv_utils.dart';
-import 'instance/utils/utils.dart';
+import 'package:dart_nostr/nostr/base/nostr.dart';
+import 'package:dart_nostr/nostr/core/utils.dart';
+import 'package:dart_nostr/nostr/instance/keys/keys.dart';
+import 'package:dart_nostr/nostr/instance/relays/relays.dart';
+import 'package:dart_nostr/nostr/instance/utils/utils.dart';
 
 /// {@template nostr_service}
 /// This class is responsible for handling the connection to all relays.
 /// {@endtemplate}
 class Nostr implements NostrServiceBase {
-  /// Wether this instance resources are disposed or not.
-  bool _isDisposed = false;
-
-  /// {@macro nostr_service}
-  static final Nostr _instance = Nostr._();
-
-  /// {@macro nostr_service}
-  static Nostr get instance => _instance;
-
-  /// {@macro nostr_client_utils}
-  late final NostrClientUtils utils;
 
   /// {@macro nostr_service}
   factory Nostr() {
@@ -33,6 +21,17 @@ class Nostr implements NostrServiceBase {
   Nostr._() {
     utils = NostrClientUtils();
   }
+  /// Wether this instance resources are disposed or not.
+  bool _isDisposed = false;
+
+  /// {@macro nostr_service}
+  static final Nostr _instance = Nostr._();
+
+  /// {@macro nostr_service}
+  static Nostr get instance => _instance;
+
+  /// {@macro nostr_client_utils}
+  late final NostrClientUtils utils;
 
   /// This method will disable the logs of the library.
   @override
@@ -50,13 +49,13 @@ class Nostr implements NostrServiceBase {
   @override
   Future<bool> dispose() async {
     if (_isDisposed) {
-      utils.log("This Nostr instance is already disposed.");
+      utils.log('This Nostr instance is already disposed.');
       return true;
     }
 
     _isDisposed = true;
 
-    utils.log("A Nostr instance disposed successfully.");
+    utils.log('A Nostr instance disposed successfully.');
 
     await Future.wait<dynamic>(<Future<bool>>[
       Future.value(keysService.freeAllResources()),

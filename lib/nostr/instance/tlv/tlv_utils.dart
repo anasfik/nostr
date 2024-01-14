@@ -1,7 +1,7 @@
 import 'dart:typed_data';
-import 'package:dart_nostr/nostr/model/tlv.dart';
 
-import 'base/base.dart';
+import 'package:dart_nostr/nostr/instance/tlv/base/base.dart';
+import 'package:dart_nostr/nostr/model/tlv.dart';
 
 /// {@template nostr_tlv}
 /// This class is responsible for handling the tlv.
@@ -10,13 +10,13 @@ class NostrTLV implements TLVBase {
   /// Decode list bytes to list tlv model
   @override
   List<TLV> decode(Uint8List data) {
-    var tlvList = <TLV>[];
+    final tlvList = <TLV>[];
     var offset = 0;
     while (offset < data.length) {
-      int type = data[offset++];
-      int length = _decodeLength(data, offset);
+      final type = data[offset++];
+      final length = _decodeLength(data, offset);
       offset += _getLengthBytes(length);
-      Uint8List value = data.sublist(offset, offset + length);
+      final value = data.sublist(offset, offset + length);
       offset += length;
       tlvList.add(TLV(type: type, length: length, value: value));
     }
@@ -25,14 +25,14 @@ class NostrTLV implements TLVBase {
 
   /// Decode length from list bytes
   int _decodeLength(Uint8List buffer, int offset) {
-    int length = buffer[offset] & 255;
+    var length = buffer[offset] & 255;
     if ((length & 128) == 128) {
-      int numberOfBytes = length & 127;
+      final numberOfBytes = length & 127;
       if (numberOfBytes > 3) {
-        throw Exception("Invalid length");
+        throw Exception('Invalid length');
       }
       length = 0;
-      for (int i = offset + 1; i < offset + 1 + numberOfBytes; ++i) {
+      for (var i = offset + 1; i < offset + 1 + numberOfBytes; ++i) {
         length = length * 256 + (buffer[i] & 255);
       }
     }
@@ -46,10 +46,10 @@ class NostrTLV implements TLVBase {
   /// Encode list tlv to list bytes
   @override
   Uint8List encode(List<TLV> tlvList) {
-    List<Uint8List> byteLists = [];
-    for (TLV tlv in tlvList) {
-      Uint8List typeBytes = Uint8List.fromList([tlv.type]);
-      Uint8List lengthBytes = _encodeLength(tlv.value.length);
+    final byteLists = <Uint8List>[];
+    for (final tlv in tlvList) {
+      final typeBytes = Uint8List.fromList([tlv.type]);
+      final lengthBytes = _encodeLength(tlv.value.length);
       byteLists.addAll([typeBytes, lengthBytes, tlv.value]);
     }
     return _concatenateUint8List(byteLists);
@@ -60,16 +60,16 @@ class NostrTLV implements TLVBase {
     if (length < 128) {
       return Uint8List.fromList([length]);
     }
-    List<int> lengthBytesList = [0x82 | (length >> 8), length & 0xFF];
+    final lengthBytesList = <int>[0x82 | (length >> 8), length & 0xFF];
     return Uint8List.fromList(lengthBytesList);
   }
 
   /// concatenate/chain list bytes
   Uint8List _concatenateUint8List(List<Uint8List> lists) {
-    int totalLength = lists.map((list) => list.length).reduce((a, b) => a + b);
-    var result = Uint8List(totalLength);
-    int offset = 0;
-    for (var list in lists) {
+    final totalLength = lists.map((list) => list.length).reduce((a, b) => a + b);
+    final result = Uint8List(totalLength);
+    var offset = 0;
+    for (final list in lists) {
       result.setRange(offset, offset + list.length, list);
       offset += list.length;
     }

@@ -1,15 +1,8 @@
 import 'package:equatable/equatable.dart';
 
 class RelayInformations extends Equatable {
-  final String? contact;
-  final String? description;
-  final String? name;
-  final String? pubkey;
-  final String? software;
-  final List<int>? supportedNips;
-  final String? version;
 
-  RelayInformations({
+  const RelayInformations({
     required this.contact,
     required this.description,
     required this.name,
@@ -32,6 +25,13 @@ class RelayInformations extends Equatable {
       version: json['version'] as String?,
     );
   }
+  final String? contact;
+  final String? description;
+  final String? name;
+  final String? pubkey;
+  final String? software;
+  final List<int>? supportedNips;
+  final String? version;
   @override
   List<Object?> get props => [
         contact,

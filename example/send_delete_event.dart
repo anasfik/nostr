@@ -5,7 +5,7 @@ void main() async {
   final newKeyPair = Nostr.instance.keysService.generateKeyPair();
 
   // set our relays list.
-  final relays = <String>["wss://relay.damus.io"];
+  final relays = <String>['wss://relay.damus.io'];
 
   // init relays service with our relays list.
   await Nostr.instance.relaysService.init(relaysUrl: relays);
@@ -13,7 +13,7 @@ void main() async {
   // create a delete event
   final deleteEvent = NostrEvent.deleteEvent(
     reasonOfDeletion:
-        "As example, the user decided to delete his created note events.",
+        'As example, the user decided to delete his created note events.',
     keyPairs: newKeyPair,
     eventIdsToBeDeleted: [
       // this is just an example event id.

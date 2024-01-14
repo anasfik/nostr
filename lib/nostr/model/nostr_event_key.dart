@@ -5,6 +5,13 @@ import 'package:equatable/equatable.dart';
 /// This clas can be used to identify an event uniquely based on external factors such as the  subscription id.
 /// {@endtemplate}
 class NostrEventKey extends Equatable {
+
+  /// {@macro nostr_event_key}
+  const NostrEventKey({
+    required this.eventId,
+    required this.sourceSubscriptionId,
+    required this.originalSourceEvent,
+  });
   /// The id of the event.
   final String eventId;
 
@@ -13,13 +20,6 @@ class NostrEventKey extends Equatable {
 
   /// The source original event.
   final NostrEvent originalSourceEvent;
-
-  /// {@macro nostr_event_key}
-  NostrEventKey({
-    required this.eventId,
-    required this.sourceSubscriptionId,
-    required this.originalSourceEvent,
-  });
 
   @override
   List<Object?> get props => [

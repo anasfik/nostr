@@ -5,8 +5,8 @@ void main() async {
 
   await Nostr.instance.relaysService.init(
     relaysUrl: <String>[
-      "wss://relay.damus.io",
-      "wss://eden.nostr.land",
+      'wss://relay.damus.io',
+      'wss://eden.nostr.land',
     ],
     shouldReconnectToRelayOnNotice: true,
   );
@@ -18,14 +18,14 @@ void main() async {
     final req = NostrRequest(
       filters: <NostrFilter>[
         NostrFilter(
-          t: ["nostr"],
-          kinds: [0],
-          since: DateTime.now().subtract(Duration(days: 10)),
+          t: const ['nostr'],
+          kinds: const [0],
+          since: DateTime.now().subtract(const Duration(days: 10)),
         ),
       ],
     );
 
-    print("Starting subscription $i");
+    print('Starting subscription $i');
     Nostr.instance.relaysService.startEventsSubscription(request: req);
   }
 }

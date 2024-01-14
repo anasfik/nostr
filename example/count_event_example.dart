@@ -17,7 +17,7 @@ void main() async {
     'wss://nostr.relayer.se',
   ];
 
-  List<String> relayThatSupportsNip45 = [];
+  final relayThatSupportsNip45 = <String>[];
 
   for (final relay in relays) {
     final relayInfo =
@@ -32,7 +32,7 @@ void main() async {
   }
 
   if (relayThatSupportsNip45.isEmpty) {
-    throw Exception("no relay supports NIP-45");
+    throw Exception('no relay supports NIP-45');
   }
 
   await Nostr.instance.relaysService.init(
@@ -40,9 +40,9 @@ void main() async {
   );
 
 // create filter for events to count with.
-  NostrFilter filter = NostrFilter(
+  const filter = NostrFilter(
     kinds: [1],
-    t: ["nostr"],
+    t: ['nostr'],
   );
 
 // create the count event.
@@ -53,7 +53,7 @@ void main() async {
   Nostr.instance.relaysService.sendCountEventToRelays(
     countEvent,
     onCountResponse: (countRes) {
-      print("your filter matches ${countRes.count} events");
+      print('your filter matches ${countRes.count} events');
     },
   );
 }

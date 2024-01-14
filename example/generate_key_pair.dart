@@ -18,7 +18,7 @@ void main() async {
 
   assert(sameKeyPairGeneratedFromPrivate == keyPair);
   if (sameKeyPairGeneratedFromPrivate != keyPair) {
-    throw Exception("Key pair generation has something wrong.");
+    throw Exception('Key pair generation has something wrong.');
   }
 
   final publicKey = Nostr.instance.keysService
@@ -27,6 +27,6 @@ void main() async {
 
   assert(publicKey == sameKeyPairGeneratedFromPrivate.public);
   if (publicKey != sameKeyPairGeneratedFromPrivate.public) {
-    throw Exception("Key pair generation has something wrong.");
+    throw Exception('Key pair generation has something wrong.');
   }
 }

@@ -1,16 +1,15 @@
 import 'dart:convert';
 
+import 'package:dart_nostr/nostr/core/constants.dart';
 import 'package:equatable/equatable.dart';
 
-import '../../core/constants.dart';
-
 class NostrEOSE extends Equatable {
-  final String subscriptionId;
   const NostrEOSE({required this.subscriptionId});
+  final String subscriptionId;
   @override
   List<Object?> get props => [subscriptionId];
 
-  canBeDeserialized(String message) {
+  bool canBeDeserialized(String message) {
     final decoded = jsonDecode(message) as List;
 
     return decoded.first == NostrConstants.eose;

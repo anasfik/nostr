@@ -2,11 +2,10 @@
 
 import 'dart:convert';
 
+import 'package:dart_nostr/nostr/core/constants.dart';
+import 'package:dart_nostr/nostr/dart_nostr.dart';
+import 'package:dart_nostr/nostr/model/request/filter.dart';
 import 'package:equatable/equatable.dart';
-
-import '../../core/constants.dart';
-import '../../dart_nostr.dart';
-import 'filter.dart';
 
 /// {@template nostr_request}
 /// NostrRequest is a request to subscribe to a set of events that match a set of filters with a given [subscriptionId].
@@ -22,8 +21,7 @@ class NostrRequest extends Equatable {
 
   /// {@macro nostr_request}
   NostrRequest({
-    this.subscriptionId,
-    required this.filters,
+    required this.filters, this.subscriptionId,
   });
 
   /// Serialize the request to send it to the remote relays websockets.
@@ -36,10 +34,10 @@ class NostrRequest extends Equatable {
               .reduce((value, element) => value + element),
         );
 
-    String decodedFilters =
+    final decodedFilters =
         jsonEncode(filters.map((item) => item.toMap()).toList());
 
-    String header = jsonEncode([NostrConstants.request, subscriptionId]);
+    final header = jsonEncode([NostrConstants.request, subscriptionId]);
 
     final result =
         '${header.substring(0, header.length - 1)},${decodedFilters.substring(1, decodedFilters.length)}';

@@ -11,7 +11,7 @@ Future<void> main() async {
 
   // init relays
   await Nostr.instance.relaysService.init(
-    relaysUrl: ["wss://relay.damus.io"],
+    relaysUrl: ['wss://relay.damus.io'],
   );
 
   final currentDateInMsAsString =
@@ -20,17 +20,17 @@ Future<void> main() async {
   // create an event
   final event = NostrEvent.fromPartialData(
     kind: 1,
-    content: "example content",
+    content: 'example content',
     keyPairs: keyPair,
     tags: [
-      ["t", currentDateInMsAsString],
+      ['t', currentDateInMsAsString],
     ],
   );
 
   // send the event
   Nostr.instance.relaysService.sendEventToRelays(event);
 
-  await Future.delayed(Duration(seconds: 5));
+  await Future.delayed(const Duration(seconds: 5));
 
   // create a subscription id.
   final subscriptionId = Nostr.instance.utilsService.random64HexChars();
@@ -40,7 +40,7 @@ Future<void> main() async {
     subscriptionId: subscriptionId,
     filters: [
       NostrFilter(
-        kinds: [1],
+        kinds: const [1],
         t: [currentDateInMsAsString],
         authors: [keyPair.public],
       ),
@@ -51,31 +51,29 @@ Future<void> main() async {
   final sub =
       Nostr.instance.relaysService.startEventsSubscription(request: request);
 
-  StreamSubscription subscritpion = sub.stream.listen(
-    (event) {
-      print(event);
-    },
+  final StreamSubscription subscritpion = sub.stream.listen(
+    print,
     onDone: () {
-      print("done");
+      print('done');
     },
   );
 
-  await Future.delayed(Duration(seconds: 5));
+  await Future.delayed(const Duration(seconds: 5));
 
   // cancel the subscription
-  subscritpion.cancel().whenComplete(() {
+  await subscritpion.cancel().whenComplete(() {
     Nostr.instance.relaysService.closeEventsSubscription(subscriptionId);
   });
 
-  await Future.delayed(Duration(seconds: 5));
+  await Future.delayed(const Duration(seconds: 5));
 
   // create a new event that will not be received by the subscription because it is closed.
   final event2 = NostrEvent.fromPartialData(
     kind: 1,
-    content: "example content",
+    content: 'example content',
     keyPairs: keyPair,
     tags: [
-      ["t", currentDateInMsAsString],
+      ['t', currentDateInMsAsString],
     ],
   );
 

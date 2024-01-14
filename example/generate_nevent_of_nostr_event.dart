@@ -4,17 +4,17 @@ import 'package:dart_nostr/nostr/model/event/event.dart';
 void main() {
   final newKeyPair = Nostr.instance.keysService.generateKeyPair();
 
-  print("pubKey: ${newKeyPair.public}");
+  print('pubKey: ${newKeyPair.public}');
 
-  final relays = ["wss://relay.damus.io"];
+  final relays = ['wss://relay.damus.io'];
 
   final nostrEvent = NostrEvent.fromPartialData(
     kind: 1,
-    content: "THIS IS EXAMPLE OF NOSTR EVENT CONTENT",
+    content: 'THIS IS EXAMPLE OF NOSTR EVENT CONTENT',
     keyPairs: newKeyPair,
   );
 
-  print("event id: ${nostrEvent.id}");
+  print('event id: ${nostrEvent.id}');
 
   final encodedNEvent = Nostr.instance.utilsService.encodeNevent(
     eventId: nostrEvent.id,
@@ -22,10 +22,10 @@ void main() {
     pubkey: newKeyPair.public,
   );
 
-  print("encodedNEvent: $encodedNEvent");
+  print('encodedNEvent: $encodedNEvent');
 
   final decodedEvent =
       Nostr.instance.utilsService.decodeNeventToMap(encodedNEvent);
 
-  print("decodedEvent: $decodedEvent");
+  print('decodedEvent: $decodedEvent');
 }

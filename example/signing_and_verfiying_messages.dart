@@ -4,15 +4,15 @@ void main() {
   final keyPair = Nostr.instance.keysService.generateKeyPair();
   final signature = Nostr.instance.keysService.sign(
     privateKey: keyPair.private,
-    message: "message",
+    message: 'message',
   );
 
-  print("signature: $signature"); // ...
+  print('signature: $signature'); // ...
   final isVerified = Nostr.instance.keysService.verify(
     publicKey: keyPair.public,
-    message: "message",
+    message: 'message',
     signature: signature,
   );
 
-  print("isVerified: $isVerified"); // true
+  print('isVerified: $isVerified'); // true
 }

@@ -1,12 +1,12 @@
 import 'dart:io';
 
-import '../../../model/count.dart';
-import '../../../model/ease.dart';
-import '../../../model/event/event.dart';
-import '../../../model/nostr_events_stream.dart';
-import '../../../model/ok.dart';
-import '../../../model/relay_informations.dart';
-import '../../../model/request/request.dart';
+import 'package:dart_nostr/nostr/model/count.dart';
+import 'package:dart_nostr/nostr/model/ease.dart';
+import 'package:dart_nostr/nostr/model/event/event.dart';
+import 'package:dart_nostr/nostr/model/nostr_events_stream.dart';
+import 'package:dart_nostr/nostr/model/ok.dart';
+import 'package:dart_nostr/nostr/model/relay_informations.dart';
+import 'package:dart_nostr/nostr/model/request/request.dart';
 
 abstract class NostrRelaysBase {
   // Stream<NostrEvent> get eventsStream;
@@ -72,10 +72,10 @@ abstract class NostrRelaysBase {
   void startListeningToRelay({
     required String relay,
     required void Function(
-            String relayUrl, dynamic receivedData, WebSocket? relayWebSocket)?
+            String relayUrl, dynamic receivedData, WebSocket? relayWebSocket,)?
         onRelayListening,
     required void Function(
-            String relayUrl, Object? error, WebSocket? relayWebSocket)?
+            String relayUrl, Object? error, WebSocket? relayWebSocket,)?
         onRelayConnectionError,
     required void Function(String relayUrl, WebSocket? relayWebSocket)?
         onRelayConnectionDone,
@@ -93,10 +93,10 @@ abstract class NostrRelaysBase {
   });
   Future<void> reconnectToRelays({
     required void Function(
-            String relayUrl, dynamic receivedData, WebSocket? relayWebSocket)?
+            String relayUrl, dynamic receivedData, WebSocket? relayWebSocket,)?
         onRelayListening,
     required void Function(
-            String relayUrl, Object? error, WebSocket? relayWebSocket)?
+            String relayUrl, Object? error, WebSocket? relayWebSocket,)?
         onRelayConnectionError,
     required void Function(String relayUrl, WebSocket? relayWebSocket)?
         onRelayConnectionDone,

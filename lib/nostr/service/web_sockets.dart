@@ -1,20 +1,20 @@
 import 'dart:io';
 
-import '../core/utils.dart';
+import 'package:dart_nostr/nostr/core/utils.dart';
 
 /// {@template nostr_web_sockets_service}
 /// A service that manages the relays web sockets connections
 /// {@endtemplate}
 class NostrWebSocketsService {
-  final NostrClientUtils utils;
 
   /// {@macro nostr_web_sockets_service}
   NostrWebSocketsService({
     required this.utils,
   });
+  final NostrClientUtils utils;
 
   /// The connection timeout for the web sockets.
-  Duration _connectionTimeout = Duration(seconds: 5);
+  Duration _connectionTimeout = const Duration(seconds: 5);
 
   void set(Duration newDur) {
     _connectionTimeout = newDur;
@@ -43,13 +43,13 @@ class NostrWebSocketsService {
       onConnectionSuccess?.call(webSocket);
     } catch (e) {
       utils.log(
-        "error while connecting to the relay with url: $relay",
+        'error while connecting to the relay with url: $relay',
         e,
       );
 
       if (shouldIgnoreConnectionException ?? true) {
         utils.log(
-          "The error related to relay: $relay is ignored, because to the ignoreConnectionException parameter is set to true.",
+          'The error related to relay: $relay is ignored, because to the ignoreConnectionException parameter is set to true.',
         );
       } else {
         rethrow;
@@ -60,18 +60,18 @@ class NostrWebSocketsService {
   /// Changes the protocol of a websocket url to http.
   Uri getHttpUrlFromWebSocketUrl(String relayUrl) {
     assert(
-      relayUrl.startsWith("ws://") || relayUrl.startsWith("wss://"),
-      "invalid relay url",
+      relayUrl.startsWith('ws://') || relayUrl.startsWith('wss://'),
+      'invalid relay url',
     );
 
     try {
-      String removeWebsocketSign = relayUrl.replaceFirst("ws://", "http://");
+      var removeWebsocketSign = relayUrl.replaceFirst('ws://', 'http://');
       removeWebsocketSign =
-          removeWebsocketSign.replaceFirst("wss://", "https://");
+          removeWebsocketSign.replaceFirst('wss://', 'https://');
       return Uri.parse(removeWebsocketSign);
     } catch (e) {
       utils.log(
-        "error while getting http url from websocket url: $relayUrl",
+        'error while getting http url from websocket url: $relayUrl',
         e,
       );
 
@@ -81,9 +81,9 @@ class NostrWebSocketsService {
 
   /// Creates a custom http client.
   HttpClient _createCustomHttpClient() {
-    HttpClient client = HttpClient();
+    final client = HttpClient();
     client.badCertificateCallback =
-        ((X509Certificate cert, String host, int port) => true);
+        (X509Certificate cert, String host, int port) => true;
     client.connectionTimeout = _connectionTimeout;
 
     return client;

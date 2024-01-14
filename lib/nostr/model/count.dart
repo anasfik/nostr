@@ -1,18 +1,17 @@
 import 'dart:convert';
 
 import 'package:dart_nostr/dart_nostr.dart';
+import 'package:dart_nostr/nostr/core/constants.dart';
 import 'package:equatable/equatable.dart';
 
-import '../core/constants.dart';
-
 class NostrCountEvent extends Equatable {
-  final NostrFilter eventsFilter;
-  final String subscriptionId;
 
-  NostrCountEvent({
+  const NostrCountEvent({
     required this.eventsFilter,
     required this.subscriptionId,
   });
+  final NostrFilter eventsFilter;
+  final String subscriptionId;
 
   static NostrCountEvent fromPartialData({
     required NostrFilter eventsFilter,
@@ -44,10 +43,8 @@ class NostrCountEvent extends Equatable {
 }
 
 class NostrCountResponse extends Equatable {
-  final String subscriptionId;
-  final int count;
 
-  NostrCountResponse({
+  const NostrCountResponse({
     required this.subscriptionId,
     required this.count,
   });
@@ -61,9 +58,11 @@ class NostrCountResponse extends Equatable {
 
     return NostrCountResponse(
       subscriptionId: decodedData[1] as String,
-      count: int.parse(countMap["count"] as String),
+      count: int.parse(countMap['count'] as String),
     );
   }
+  final String subscriptionId;
+  final int count;
   @override
   List<Object?> get props => throw UnimplementedError();
 

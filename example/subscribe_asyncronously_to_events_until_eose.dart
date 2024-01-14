@@ -6,8 +6,8 @@ void main(List<String> args) async {
   Nostr.instance.disableLogs();
 
   await Nostr.instance.relaysService.init(relaysUrl: [
-    "wss://relay.damus.io",
-  ]);
+    'wss://relay.damus.io',
+  ],);
   final keyPair = Nostr.instance.keysService.generateKeyPair();
 
   final event = NostrEvent.fromPartialData(
@@ -23,10 +23,10 @@ void main(List<String> args) async {
   try {
     final okCommand = await Nostr.instance.relaysService.sendEventToRelaysAsync(
       event,
-      timeout: Duration(seconds: 3),
+      timeout: const Duration(seconds: 3),
     );
     if (!(okCommand.isEventAccepted ?? true)) {
-      print("not accepted");
+      print('not accepted');
       return;
     }
 
@@ -34,7 +34,7 @@ void main(List<String> args) async {
       filters: [
         NostrFilter(
           limit: 10,
-          kinds: [0],
+          kinds: const [0],
           authors: [keyPair.public],
         ),
       ],
@@ -43,17 +43,16 @@ void main(List<String> args) async {
     final events =
         await Nostr.instance.relaysService.startEventsSubscriptionAsync(
       request: request,
-      timeout: Duration(seconds: 10),
-      shouldThrowErrorOnTimeoutWithoutEose: true,
+      timeout: const Duration(seconds: 10),
     );
 
-    for (var element in events) {
+    for (final element in events) {
       // should our event content here
       print('${element.content}\n\n');
     }
 
     final isFree = await Nostr.instance.relaysService.freeAllResources();
-    print("isFree: $isFree");
+    print('isFree: $isFree');
   } catch (e) {
     print(e);
   }

@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import '../model/export.dart';
+import 'package:dart_nostr/nostr/model/export.dart';
 
 /// {@template nostr_streams_controllers}
 /// A service that manages the relays streams messages
@@ -27,7 +27,7 @@ class NostrStreamsControllers {
 
   /// Closes all streams.
   Future<void> close() async {
-    Future.wait([
+    await Future.wait([
       eventsController.close(),
       noticesController.close(),
     ]);

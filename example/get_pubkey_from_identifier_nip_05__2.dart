@@ -4,11 +4,11 @@ void main() async {
   try {
     final publicKeyFromNip05 =
         await Nostr.instance.utilsService.pubKeyFromIdentifierNip05(
-      internetIdentifier: "jb55@jb55.com",
+      internetIdentifier: 'jb55@jb55.com',
     );
 
-    print("publicKeyFromNip05: $publicKeyFromNip05"); // ...
+    print('publicKeyFromNip05: $publicKeyFromNip05'); // ...
   } catch (e) {
-    print(e.toString());
+    print(e);
   }
 }

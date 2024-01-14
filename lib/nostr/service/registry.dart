@@ -1,22 +1,22 @@
 import 'dart:io';
+
+import 'package:dart_nostr/nostr/core/exceptions.dart';
+import 'package:dart_nostr/nostr/core/utils.dart';
 import 'package:dart_nostr/nostr/model/count.dart';
+import 'package:dart_nostr/nostr/model/ease.dart';
+import 'package:dart_nostr/nostr/model/event/event.dart';
 import 'package:dart_nostr/nostr/model/ok.dart';
 import 'package:meta/meta.dart';
-
-import '../core/exceptions.dart';
-import '../core/utils.dart';
-import '../model/ease.dart';
-import '../model/event/event.dart';
 
 /// {@template nostr_registry}
 /// This is responsible for registering and retrieving relays [WebSocket]s that are connected to the app.
 /// {@endtemplate}
 @protected
 class NostrRegistry {
-  final NostrClientUtils utils;
 
   /// {@macro nostr_registry}
   NostrRegistry({required this.utils});
+  final NostrClientUtils utils;
 
   /// This is the registry which will have all relays [WebSocket]s.
   final relaysWebSocketsRegistry = <String, WebSocket>{};
@@ -64,7 +64,7 @@ class NostrRegistry {
       return relay;
     } else {
       utils.log(
-        "No relay is registered with the given url: $relayUrl, did you forget to register it?",
+        'No relay is registered with the given url: $relayUrl, did you forget to register it?',
       );
 
       throw RelayNotFoundException(relayUrl);

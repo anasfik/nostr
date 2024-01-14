@@ -14,19 +14,19 @@ void main() async {
       kind: 1,
       keyPairs: newKeyPair,
       tags: [
-        ["t", newKeyPair.public]
-      ]);
+        ['t', newKeyPair.public],
+      ],);
 
   Nostr.instance.relaysService.sendEventToRelays(event, onOk: (ok) {
-    print("event sent, ${ok.eventId}");
-  });
+    print('event sent, ${ok.eventId}');
+  },);
 
-  await Future.delayed(Duration(seconds: 5));
+  await Future.delayed(const Duration(seconds: 5));
 
 // ...
 
   final filter = NostrFilter(
-    kinds: [1],
+    kinds: const [1],
     t: [newKeyPair.public],
   );
 
@@ -43,32 +43,32 @@ void main() async {
     print(event.content);
   });
 
-  await Future.delayed(Duration(seconds: 5));
+  await Future.delayed(const Duration(seconds: 5));
 
-  for (int index = 0; index < 50; index++) {
+  for (var index = 0; index < 50; index++) {
     Nostr.instance.relaysService.startEventsSubscription(
       request: req,
     );
   }
 
-  await Future.delayed(Duration(seconds: 5));
+  await Future.delayed(const Duration(seconds: 5));
 
   Nostr.instance.relaysService.startEventsSubscription(
     request: req,
   );
 
-  await Future.delayed(Duration(seconds: 5));
+  await Future.delayed(const Duration(seconds: 5));
 
   final anotherEvent = NostrEvent.fromPartialData(
     kind: 1,
-    content: "another event with different content, but matches same filter",
+    content: 'another event with different content, but matches same filter',
     keyPairs: newKeyPair,
     tags: [
-      ["t", newKeyPair.public]
+      ['t', newKeyPair.public],
     ],
   );
 
   Nostr.instance.relaysService.sendEventToRelays(anotherEvent, onOk: (ok) {
-    print("event sent, ${ok.eventId}");
-  });
+    print('event sent, ${ok.eventId}');
+  },);
 }

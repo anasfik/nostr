@@ -1,13 +1,19 @@
 import 'dart:convert';
 
+import 'package:dart_nostr/nostr/core/constants.dart';
 import 'package:equatable/equatable.dart';
-
-import '../core/constants.dart';
 
 /// {@template nostr_event_ok_command}
 /// The ok command that is sent to the server when an event is accepted or declined.
 /// {@endtemplate}
 class NostrEventOkCommand extends Equatable {
+
+  /// {@macro nostr_event_ok_command}
+  const NostrEventOkCommand({
+    required this.eventId,
+    this.isEventAccepted,
+    this.message,
+  });
   /// The event ID of which this ok command was sent.
   final String eventId;
 
@@ -16,13 +22,6 @@ class NostrEventOkCommand extends Equatable {
 
   /// The message that was sent with the ok command.
   final String? message;
-
-  /// {@macro nostr_event_ok_command}
-  NostrEventOkCommand({
-    required this.eventId,
-    this.isEventAccepted,
-    this.message,
-  });
 
   @override
   List<Object?> get props => [

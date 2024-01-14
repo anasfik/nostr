@@ -2,17 +2,58 @@ import 'dart:convert';
 
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
+import 'package:dart_nostr/nostr/core/constants.dart';
 import 'package:dart_nostr/nostr/core/key_pairs.dart';
+import 'package:dart_nostr/nostr/model/nostr_event_key.dart';
 import 'package:equatable/equatable.dart';
-
-import '../../core/constants.dart';
-import '../nostr_event_key.dart';
 
 /// {@template nostr_event}
 /// This represents a low level Nostr event that requires setting all fields manually, which requires you to doo all encodings...
 /// You can use [NostrEvent.fromPartialData] to create an event with less fields and lower complexity..
 /// {@endtemplate}
 class NostrEvent extends Equatable {
+
+  const NostrEvent({
+    required this.content,
+    required this.createdAt,
+    required this.id,
+    required this.kind,
+    required this.ots,
+    required this.pubkey,
+    required this.sig,
+    required this.tags,
+    this.subscriptionId,
+  });
+
+  /// This represents a nostr event that is received from the relays,
+  /// it takes directly the relay message which is serialized, and handles all internally
+  factory NostrEvent.deserialized(String data) {
+    assert(NostrEvent.canBeDeserialized(data));
+    final decoded = jsonDecode(data) as List;
+
+    final event = decoded.last as Map<String, dynamic>;
+    return NostrEvent(
+      id: event['id'] as String,
+      kind: event['kind'] as int,
+      content: event['content'] as String,
+      sig: event['sig'] as String,
+      pubkey: event['pubkey'] as String,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(
+        (event['created_at'] as int) * 1000,
+      ),
+      tags: List<List<String>>.from((event['tags'] as List)
+          .map(
+            (nestedElem) => (nestedElem as List)
+                .map(
+                  (nestedElemContent) => nestedElemContent.toString(),
+                )
+                .toList(),
+          )
+          .toList(),),
+      subscriptionId: decoded[1] as String?,
+      ots: event['ots'] as String?,
+    );
+  }
   /// The id of the event.
   final String id;
 
@@ -48,18 +89,6 @@ class NostrEvent extends Equatable {
     return decoded.first == NostrConstants.event;
   }
 
-  NostrEvent({
-    required this.content,
-    required this.createdAt,
-    required this.id,
-    required this.kind,
-    required this.ots,
-    required this.pubkey,
-    required this.sig,
-    required this.tags,
-    this.subscriptionId,
-  });
-
   /// Creates the [id] of an event, based on Nostr specs.
   static String getEventId({
     required int kind,
@@ -68,13 +97,13 @@ class NostrEvent extends Equatable {
     required List tags,
     required String pubkey,
   }) {
-    List data = [
+    final data = [
       0,
       pubkey,
       createdAt.millisecondsSinceEpoch ~/ 1000,
       kind,
       tags,
-      content
+      content,
     ];
 
     final serializedEvent = jsonEncode(data);
@@ -123,14 +152,14 @@ class NostrEvent extends Equatable {
   static NostrEvent deleteEvent({
     required NostrKeyPairs keyPairs,
     required List<String> eventIdsToBeDeleted,
-    String reasonOfDeletion = "",
+    String reasonOfDeletion = '',
     DateTime? createdAt,
   }) {
     return fromPartialData(
       kind: 5,
       content: reasonOfDeletion,
       keyPairs: keyPairs,
-      tags: eventIdsToBeDeleted.map((eventId) => ["e", eventId]).toList(),
+      tags: eventIdsToBeDeleted.map((eventId) => ['e', eventId]).toList(),
       createdAt: createdAt,
     );
   }
@@ -147,36 +176,6 @@ class NostrEvent extends Equatable {
       eventId: id,
       sourceSubscriptionId: subscriptionId!,
       originalSourceEvent: this,
-    );
-  }
-
-  /// This represents a nostr event that is received from the relays,
-  /// it takes directly the relay message which is serialized, and handles all internally
-  factory NostrEvent.deserialized(String data) {
-    assert(NostrEvent.canBeDeserialized(data));
-    final decoded = jsonDecode(data) as List;
-
-    final event = decoded.last as Map<String, dynamic>;
-    return NostrEvent(
-      id: event['id'] as String,
-      kind: event['kind'] as int,
-      content: event['content'] as String,
-      sig: event['sig'] as String,
-      pubkey: event['pubkey'] as String,
-      createdAt: DateTime.fromMillisecondsSinceEpoch(
-        (event['created_at'] as int) * 1000,
-      ),
-      tags: List<List<String>>.from((event['tags'] as List)
-          .map(
-            (nestedElem) => (nestedElem as List)
-                .map(
-                  (nestedElemContent) => nestedElemContent.toString(),
-                )
-                .toList(),
-          )
-          .toList()),
-      subscriptionId: decoded[1] as String?,
-      ots: event['ots'] as String?,
     );
   }
 

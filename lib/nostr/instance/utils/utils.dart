@@ -1,29 +1,27 @@
 import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:bech32/bech32.dart';
+import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
+import 'package:dart_nostr/nostr/core/constants.dart';
+import 'package:dart_nostr/nostr/core/utils.dart';
+import 'package:dart_nostr/nostr/instance/tlv/tlv_utils.dart';
+import 'package:dart_nostr/nostr/instance/utils/base/base.dart';
+import 'package:dart_nostr/nostr/model/tlv.dart';
 import 'package:hex/hex.dart';
 import 'package:http/http.dart' as http;
-import 'dart:math';
-
-import 'package:convert/convert.dart';
-
-import '../../core/constants.dart';
-import '../../core/utils.dart';
-import '../../model/tlv.dart';
-import '../tlv/tlv_utils.dart';
-import 'base/base.dart';
 
 /// {@template nostr_utils}
 /// This class is responsible for handling some of the helper utils of the library.
 /// {@endtemplate}
 class NostrUtils implements NostrUtilsBase {
-  /// {@macro nostr_client_utils}
-  final NostrClientUtils utils;
-
   /// {@macro nostr_utils}
   NostrUtils({required this.utils});
+
+  /// {@macro nostr_client_utils}
+  final NostrClientUtils utils;
 
   /// {@macro nostr_utils}
   final tlv = NostrTLV();
@@ -100,31 +98,31 @@ class NostrUtils implements NostrUtilsBase {
     required String pubKey,
   }) async {
     assert(
-      pubKey.length == 64 || !pubKey.startsWith("npub"),
-      "pub key is invalid, it must be in hex format and not a npub(nip19) key!",
+      pubKey.length == 64 || !pubKey.startsWith('npub'),
+      'pub key is invalid, it must be in hex format and not a npub(nip19) key!',
     );
     assert(
-      internetIdentifier.contains("@") &&
-          internetIdentifier.split("@").length == 2,
-      "invalid internet identifier",
+      internetIdentifier.contains('@') &&
+          internetIdentifier.split('@').length == 2,
+      'invalid internet identifier',
     );
 
     try {
-      final localPart = internetIdentifier.split("@")[0];
-      final domainPart = internetIdentifier.split("@")[1];
+      final localPart = internetIdentifier.split('@')[0];
+      final domainPart = internetIdentifier.split('@')[1];
       final res = await http.get(
-        Uri.parse("https://$domainPart/.well-known/nostr.json?name=$localPart"),
+        Uri.parse('https://$domainPart/.well-known/nostr.json?name=$localPart'),
       );
 
       final decoded = jsonDecode(res.body) as Map<String, dynamic>;
-      assert(decoded["names"] != null, "invalid nip05 response, no names key!");
-      final pubKeyFromResponse = decoded["names"][localPart];
-      assert(pubKeyFromResponse != null, "invalid nip05 response, no pub key!");
+      assert(decoded['names'] != null, 'invalid nip05 response, no names key!');
+      final pubKeyFromResponse = decoded['names'][localPart];
+      assert(pubKeyFromResponse != null, 'invalid nip05 response, no pub key!');
 
       return pubKey == pubKeyFromResponse;
     } catch (e) {
       utils.log(
-        "error while verifying nip05 for internet identifier: $internetIdentifier",
+        'error while verifying nip05 for internet identifier: $internetIdentifier',
         e,
       );
       rethrow;
@@ -147,24 +145,24 @@ class NostrUtils implements NostrUtilsBase {
     required String internetIdentifier,
   }) async {
     try {
-      final localPart = internetIdentifier.split("@")[0];
-      final domainPart = internetIdentifier.split("@")[1];
+      final localPart = internetIdentifier.split('@')[0];
+      final domainPart = internetIdentifier.split('@')[1];
       final res = await http.get(
-        Uri.parse("https://$domainPart/.well-known/nostr.json?name=$localPart"),
+        Uri.parse('https://$domainPart/.well-known/nostr.json?name=$localPart'),
       );
 
       final decoded = jsonDecode(res.body) as Map<String, dynamic>;
-      assert(decoded["names"] != null, "invalid nip05 response, no names key!");
-      final pubKeyFromResponse = decoded["names"][localPart] as String?;
+      assert(decoded['names'] != null, 'invalid nip05 response, no names key!');
+      final pubKeyFromResponse = decoded['names'][localPart] as String?;
 
       if (pubKeyFromResponse == null) {
-        throw Exception("invalid nip05 response, no pub key!");
+        throw Exception('invalid nip05 response, no pub key!');
       }
 
       return pubKeyFromResponse;
     } catch (e) {
       utils.log(
-        "error while verifying nip05 for internet identifier: $internetIdentifier",
+        'error while verifying nip05 for internet identifier: $internetIdentifier',
         e,
       );
       rethrow;
@@ -190,7 +188,7 @@ class NostrUtils implements NostrUtilsBase {
     required String pubkey,
     List<String> userRelays = const [],
   }) {
-    final map = <String, dynamic>{"pubkey": pubkey, "relays": userRelays};
+    final map = <String, dynamic>{'pubkey': pubkey, 'relays': userRelays};
 
     return _nProfileMapToBech32(map);
   }
@@ -215,9 +213,9 @@ class NostrUtils implements NostrUtilsBase {
     List<String> userRelays = const [],
   }) {
     final map = <String, dynamic>{
-      "pubkey": pubkey,
-      "relays": userRelays,
-      "eventId": eventId,
+      'pubkey': pubkey,
+      'relays': userRelays,
+      'eventId': eventId,
     };
 
     return _nEventMapToBech32(map);
@@ -236,16 +234,16 @@ class NostrUtils implements NostrUtilsBase {
   /// ```
   @override
   Map<String, dynamic> decodeNprofileToMap(String bech32) {
-    final List<String> decodedBech32 = decodeBech32(bech32);
+    final decodedBech32 = decodeBech32(bech32);
 
-    final String dataString = decodedBech32[0];
-    final List<int> data = HEX.decode(dataString);
+    final dataString = decodedBech32[0];
+    final data = HEX.decode(dataString);
 
-    final List<TLV> tlvList = tlv.decode(Uint8List.fromList(data));
-    final Map<String, dynamic> resultMap = _parseNprofileTlvList(tlvList);
+    final tlvList = tlv.decode(Uint8List.fromList(data));
+    final resultMap = _parseNprofileTlvList(tlvList);
 
-    if (resultMap["pubkey"].length != 64) {
-      throw Exception("Invalid pubkey length");
+    if (resultMap['pubkey'].length != 64) {
+      throw Exception('Invalid pubkey length');
     }
 
     return resultMap;
@@ -265,16 +263,16 @@ class NostrUtils implements NostrUtilsBase {
   /// ```
   @override
   Map<String, dynamic> decodeNeventToMap(String bech32) {
-    final List<String> decodedBech32 = decodeBech32(bech32);
+    final decodedBech32 = decodeBech32(bech32);
 
-    final String dataString = decodedBech32[0];
-    final List<int> data = HEX.decode(dataString);
+    final dataString = decodedBech32[0];
+    final data = HEX.decode(dataString);
 
-    final List<TLV> tlvList = tlv.decode(Uint8List.fromList(data));
-    final Map<String, dynamic> resultMap = _parseNeventTlvList(tlvList);
+    final tlvList = tlv.decode(Uint8List.fromList(data));
+    final resultMap = _parseNeventTlvList(tlvList);
 
-    if (resultMap["eventId"].length != 64) {
-      throw Exception("Invalid pubkey length");
+    if (resultMap['eventId'].length != 64) {
+      throw Exception('Invalid pubkey length');
     }
 
     return resultMap;
@@ -290,24 +288,24 @@ class NostrUtils implements NostrUtilsBase {
   ///
   @override
   int countDifficultyOfHex(String hexString) {
-    List<String> idChars = hexString.split('');
+    final idChars = hexString.split('');
 
     // encode to bits.
-    List<String> idCharsBinary = idChars.map((char) {
-      int charCode = int.parse(char, radix: 16);
-      String charBinary = charCode.toRadixString(2);
+    var idCharsBinary = idChars.map((char) {
+      final charCode = int.parse(char, radix: 16);
+      final charBinary = charCode.toRadixString(2);
       return charBinary;
     }).toList();
 
     idCharsBinary = idCharsBinary.map((charBinary) {
-      int charBinaryLength = charBinary.length;
-      int charBinaryLengthDiff = 4 - charBinaryLength;
-      String charBinaryPadded =
+      final charBinaryLength = charBinary.length;
+      final charBinaryLengthDiff = 4 - charBinaryLength;
+      final charBinaryPadded =
           charBinary.padLeft(charBinaryLength + charBinaryLengthDiff, '0');
       return charBinaryPadded;
     }).toList();
 
-    return idCharsBinary.join('').split("1").first.length;
+    return idCharsBinary.join().split('1').first.length;
   }
 
   // String _convertBech32toHr(String bech32, {int cutLength = 15}) {
@@ -324,15 +322,15 @@ class NostrUtils implements NostrUtilsBase {
 
   /// expects a map with pubkey and relays and [returns] a bech32 encoded nprofile
   String _nProfileMapToBech32(Map<String, dynamic> map) {
-    final String pubkey = map["pubkey"] as String;
+    final pubkey = map['pubkey'] as String;
 
-    final List<String> relays = List<String>.from(map['relays'] as List);
+    final relays = List<String>.from(map['relays'] as List);
 
-    final List<TLV> tlvList = _generatenProfileTlvList(pubkey, relays);
+    final tlvList = _generatenProfileTlvList(pubkey, relays);
 
-    final Uint8List bytes = tlv.encode(tlvList);
+    final bytes = tlv.encode(tlvList);
 
-    final String dataString = HEX.encode(bytes);
+    final dataString = HEX.encode(bytes);
 
     return encodeBech32(
       dataString,
@@ -362,8 +360,8 @@ class NostrUtils implements NostrUtilsBase {
   /// ```
   @override
   List<String> decodeBech32(String bech32String) {
-    final Bech32Codec codec = const Bech32Codec();
-    final Bech32 bech32 = codec.decode(bech32String, bech32String.length);
+    const codec = Bech32Codec();
+    final bech32 = codec.decode(bech32String, bech32String.length);
     final eightBitWords = _convertBits(bech32.data, 5, 8, false);
     return [HEX.encode(eightBitWords), bech32.hrp];
   }
@@ -373,13 +371,13 @@ class NostrUtils implements NostrUtilsBase {
     final authorPubkey = map['pubkey'] as String?;
     final relays = List<String>.from(map['relays'] as List);
 
-    final List<TLV> tlvList = _generatenEventTlvList(
+    final tlvList = _generatenEventTlvList(
       eventId,
       authorPubkey,
       relays,
     );
 
-    final String dataString = HEX.encode(tlv.encode(tlvList));
+    final dataString = HEX.encode(tlv.encode(tlvList));
 
     return encodeBech32(
       dataString,
@@ -388,23 +386,24 @@ class NostrUtils implements NostrUtilsBase {
   }
 
   Map<String, dynamic> _parseNprofileTlvList(List<TLV> tlvList) {
-    String pubkey = "";
-    List<String> relays = [];
-    for (TLV tlv in tlvList) {
+    var pubkey = '';
+    final relays = <String>[];
+
+    for (final tlv in tlvList) {
       if (tlv.type == 0) {
         pubkey = HEX.encode(tlv.value);
       } else if (tlv.type == 1) {
         relays.add(ascii.decode(tlv.value));
       }
     }
-    return {"pubkey": pubkey, "relays": relays};
+    return {'pubkey': pubkey, 'relays': relays};
   }
 
   Map<String, dynamic> _parseNeventTlvList(List<TLV> tlvList) {
-    String pubkey = "";
-    List<String> relays = [];
-    String eventId = "";
-    for (TLV tlv in tlvList) {
+    var pubkey = '';
+    final relays = <String>[];
+    var eventId = '';
+    for (final tlv in tlvList) {
       if (tlv.type == 0) {
         eventId = HEX.encode(tlv.value);
       } else if (tlv.type == 1) {
@@ -414,7 +413,7 @@ class NostrUtils implements NostrUtilsBase {
       }
     }
 
-    return {"eventId": eventId, "pubkey": pubkey, "relays": relays};
+    return {'eventId': eventId, 'pubkey': pubkey, 'relays': relays};
   }
 
   /// Generates a list of TLV objects
@@ -423,7 +422,7 @@ class NostrUtils implements NostrUtilsBase {
     String? authorPubkey,
     List<String> relays,
   ) {
-    final List<TLV> tlvList = [];
+    final tlvList = <TLV>[];
     tlvList.add(_generateEventIdTlv(eventId));
 
     tlvList.addAll(relays.map(_generateRelayTlv));
@@ -438,15 +437,14 @@ class NostrUtils implements NostrUtilsBase {
   /// TLV type 1
   /// [relay] must be a string
   TLV _generateRelayTlv(String relay) {
-    final Uint8List relayBytes = Uint8List.fromList(ascii.encode(relay));
+    final relayBytes = Uint8List.fromList(ascii.encode(relay));
     return TLV(type: 1, length: relayBytes.length, value: relayBytes);
   }
 
   /// TLV type 2
   /// [authorPubkey] must be 32 bytes long
   TLV _generateAuthorPubkeyTlv(String authorPubkey) {
-    final Uint8List authorPubkeyBytes =
-        Uint8List.fromList(HEX.decode(authorPubkey));
+    final authorPubkeyBytes = Uint8List.fromList(HEX.decode(authorPubkey));
 
     return TLV(type: 2, length: 32, value: authorPubkeyBytes);
   }
@@ -454,16 +452,16 @@ class NostrUtils implements NostrUtilsBase {
   /// TLV type 0
   /// [eventId] must be 32 bytes long
   TLV _generateEventIdTlv(String eventId) {
-    final Uint8List eventIdBytes = Uint8List.fromList(HEX.decode(eventId));
+    final eventIdBytes = Uint8List.fromList(HEX.decode(eventId));
     return TLV(type: 0, length: 32, value: eventIdBytes);
   }
 
   List<TLV> _generatenProfileTlvList(String pubkey, List<String> relays) {
-    final Uint8List pubkeyBytes = _hexDecodeToUint8List(pubkey);
-    List<TLV> tlvList = [TLV(type: 0, length: 32, value: pubkeyBytes)];
+    final pubkeyBytes = _hexDecodeToUint8List(pubkey);
+    final tlvList = <TLV>[TLV(type: 0, length: 32, value: pubkeyBytes)];
 
-    for (String relay in relays) {
-      final Uint8List relayBytes = _asciiEncodeToUint8List(relay);
+    for (final relay in relays) {
+      final relayBytes = _asciiEncodeToUint8List(relay);
       tlvList.add(TLV(type: 1, length: relayBytes.length, value: relayBytes));
     }
 
@@ -486,11 +484,11 @@ class NostrUtils implements NostrUtilsBase {
   /// If pad is true, and there are remaining bits after the conversion, then the remaining bits are left-shifted and added to the result
   /// [return] - the converted data
   List<int> _convertBits(List<int> data, int fromBits, int toBits, bool pad) {
-    int acc = 0;
-    int bits = 0;
-    List<int> result = [];
+    var acc = 0;
+    var bits = 0;
+    final result = <int>[];
 
-    for (int value in data) {
+    for (final value in data) {
       acc = (acc << fromBits) | value;
       bits += fromBits;
 

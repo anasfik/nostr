@@ -1,20 +1,12 @@
+import 'package:dart_nostr/nostr/dart_nostr.dart';
+import 'package:dart_nostr/nostr/model/event/event.dart';
+import 'package:dart_nostr/nostr/model/request/request.dart';
 import 'package:equatable/equatable.dart';
-
-import '../dart_nostr.dart';
-import 'event/event.dart';
-import 'request/request.dart';
 
 /// {@template nostr_events_stream}
 /// Represents a holde class for the stream of nostr events and the subscription id.
 /// {@endtemplate}
 class NostrEventsStream extends Equatable {
-  /// This the stream of nostr events that you can listen to and get the events.
-  final Stream<NostrEvent> stream;
-
-  /// This is the subscription id of the stream. You can use this to unsubscribe from the stream.
-  final String subscriptionId;
-
-  final NostrRequest request;
 
   /// {@macro nostr_events_stream}
   const NostrEventsStream({
@@ -22,6 +14,13 @@ class NostrEventsStream extends Equatable {
     required this.subscriptionId,
     required this.request,
   });
+  /// This the stream of nostr events that you can listen to and get the events.
+  final Stream<NostrEvent> stream;
+
+  /// This is the subscription id of the stream. You can use this to unsubscribe from the stream.
+  final String subscriptionId;
+
+  final NostrRequest request;
 
   /// {@macro close_events_subscription}
   void close() {

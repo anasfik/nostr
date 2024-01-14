@@ -1,26 +1,25 @@
-import 'package:dart_nostr/nostr/core/constants.dart';
-import 'package:dart_nostr/nostr/core/key_pairs.dart';
-
-import '../../core/utils.dart';
-import '../../dart_nostr.dart';
-import 'base/keys.dart';
 import 'package:bip32_bip44/dart_bip32_bip44.dart' as bip32_bip44;
 import 'package:bip39/bip39.dart' as bip39;
+import 'package:dart_nostr/nostr/core/constants.dart';
+import 'package:dart_nostr/nostr/core/key_pairs.dart';
+import 'package:dart_nostr/nostr/core/utils.dart';
+import 'package:dart_nostr/nostr/dart_nostr.dart';
+import 'package:dart_nostr/nostr/instance/keys/base/keys.dart';
 
 /// {@template nostr_keys}
 /// This class is responsible for generating key pairs and deriving public keys from private keys..
 /// {@endtemplate}
 class NostrKeys implements NostrKeysBase {
+  NostrKeys({
+    required this.utils,
+  });
+
   /// {@macro nostr_client_utils}
   final NostrClientUtils utils;
 
   /// A caching system for the key pairs, so we don't have to generate them again.
   /// A cache key is the private key, and the value is the [NostrKeyPairs] instance.
   static final _keyPairsCache = <String, NostrKeyPairs>{};
-
-  NostrKeys({
-    required this.utils,
-  });
 
   /// Derives a public key from a [privateKey] directly, use this if you want a quick way to get a public key from a private key.
   ///
@@ -224,16 +223,15 @@ class NostrKeys implements NostrKeysBase {
   /// print(privateKey); // ...
   /// ```
   static String getPrivateKeyFromMnemonic(String mnemonic) {
-    String seed = bip39.mnemonicToSeedHex(mnemonic);
-    bip32_bip44.Chain chain = bip32_bip44.Chain.seed(seed);
+    final seed = bip39.mnemonicToSeedHex(mnemonic);
+    final chain = bip32_bip44.Chain.seed(seed);
 
-    bip32_bip44.ExtendedPrivateKey key =
+    final key =
         chain.forPath("m/44'/1237'/0'/0") as bip32_bip44.ExtendedPrivateKey;
 
-    bip32_bip44.ExtendedPrivateKey? childKey =
-        bip32_bip44.deriveExtendedPrivateChildKey(key, 0);
+    final childKey = bip32_bip44.deriveExtendedPrivateChildKey(key, 0);
 
-    String hexChildKey = "";
+    var hexChildKey = '';
 
     if (childKey.key != null) {
       hexChildKey = childKey.key!.toRadixString(16);

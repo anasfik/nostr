@@ -7,17 +7,17 @@ void main() async {
   // We initialize the Nostr Relays Service with relays.
   await Nostr.instance.relaysService.init(
     relaysUrl: <String>[
-      "wss://relay.damus.io",
+      'wss://relay.damus.io',
     ],
     onRelayConnectionError: (relay, error, webSocket) {
-      print("Relay error: $error");
+      print('Relay error: $error');
     },
     onRelayConnectionDone: (relayUrl, webSocket) =>
-        print("Relay done: $relayUrl"),
+        print('Relay done: $relayUrl'),
   );
 
   final request = NostrRequest(
-    filters: <NostrFilter>[
+    filters: const <NostrFilter>[
       NostrFilter(
         kinds: [1],
         limit: 20,
@@ -30,16 +30,16 @@ void main() async {
   final requestStream = Nostr.instance.relaysService.startEventsSubscription(
       request: request,
       onEose: (ease) {
-        print("ease received for subscription id: ${ease.subscriptionId}");
+        print('ease received for subscription id: ${ease.subscriptionId}');
 
         Nostr.instance.relaysService.closeEventsSubscription(
           ease.subscriptionId,
         );
-      });
+      },);
 
   // We listen to the stream and print the events.
   requestStream.stream.listen((event) {
-    print("-------------------");
+    print('-------------------');
     print(event.content);
   });
 }

@@ -6,10 +6,10 @@ void main() {
   print(nostrKeyPairs.private);
 
   final firstKey = nostrKeyPairs.private;
-  final secondKey = "";
+  const secondKey = '';
 
   print(
-      "is firstKey a valid key? ${Nostr.instance.keysService.isValidPrivateKey(firstKey)}");
+      'is firstKey a valid key? ${Nostr.instance.keysService.isValidPrivateKey(firstKey)}',);
   print(
-      "is secondKey a valid key? ${Nostr.instance.keysService.isValidPrivateKey(secondKey)}");
+      'is secondKey a valid key? ${Nostr.instance.keysService.isValidPrivateKey(secondKey)}',);
 }

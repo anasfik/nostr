@@ -6,7 +6,7 @@ void main() async {
 
   // initialize the relays service.
   await Nostr.instance.relaysService.init(
-    relaysUrl: <String>["wss://relay.damus.io"],
+    relaysUrl: <String>['wss://relay.damus.io'],
   );
 
   // generate a key pair.
@@ -14,7 +14,7 @@ void main() async {
 
   final event = NostrEvent.fromPartialData(
     kind: 0,
-    content: "test ",
+    content: 'test ',
     keyPairs: keyPair,
   );
 

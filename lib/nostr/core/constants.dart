@@ -5,10 +5,10 @@ abstract class NostrConstants {
   static const String count = 'COUNT';
   static const String ok = 'OK';
   static const String close = 'CLOSE';
-  static const String eose = "EOSE";
+  static const String eose = 'EOSE';
 
   static const String npub = 'npub';
   static const String nsec = 'nsec';
-  static const String nProfile = "nprofile";
-  static const String nEvent = "nevent";
+  static const String nProfile = 'nprofile';
+  static const String nEvent = 'nevent';
 }

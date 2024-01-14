@@ -4,35 +4,9 @@ import 'package:equatable/equatable.dart';
 /// NostrFilter is a filter that can be used to match events.
 /// {@endtemplate}
 class NostrFilter extends Equatable {
-  /// a list of event ids to filter with.
-  final List<String>? ids;
-
-  /// a list of pubkeys or prefixes to filter with.
-  final List<String>? authors;
-
-  /// a list of a kind numbers to filter with.
-  final List<int>? kinds;
-
-  /// a list of event ids that are referenced in an "e" tag to filter with.
-  final List<String>? e;
-
-  /// a list of event ids that are referenced in an "e" tag to filter with.
-  final List<String>? t;
-
-  /// a list of pubkeys that are referenced in a "p" tag to filter with.
-  final List<String>? p;
-
-  /// the DateTime to start the filtering from
-  final DateTime? since;
-
-  /// the DateTime to end the filtering at
-  final DateTime? until;
-
-  /// the maximum number of events to return
-  final int? limit;
 
   /// {@macro nostr_filter}
-  NostrFilter({
+  const NostrFilter({
     this.ids,
     this.authors,
     this.kinds,
@@ -82,6 +56,32 @@ class NostrFilter extends Equatable {
       limit: limit,
     );
   }
+  /// a list of event ids to filter with.
+  final List<String>? ids;
+
+  /// a list of pubkeys or prefixes to filter with.
+  final List<String>? authors;
+
+  /// a list of a kind numbers to filter with.
+  final List<int>? kinds;
+
+  /// a list of event ids that are referenced in an "e" tag to filter with.
+  final List<String>? e;
+
+  /// a list of event ids that are referenced in an "e" tag to filter with.
+  final List<String>? t;
+
+  /// a list of pubkeys that are referenced in a "p" tag to filter with.
+  final List<String>? p;
+
+  /// the DateTime to start the filtering from
+  final DateTime? since;
+
+  /// the DateTime to end the filtering at
+  final DateTime? until;
+
+  /// the maximum number of events to return
+  final int? limit;
 
   /// Serialize a [NostrFilter] to a [Map<String, dynamic>]
   Map<String, dynamic> toMap() {

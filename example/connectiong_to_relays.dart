@@ -7,15 +7,11 @@ Future<void> main() async {
     relaysUrl: [
       /// your relays ...
     ],
-    ensureToClearRegistriesBeforeStarting: true,
-    connectionTimeout: Duration(seconds: 5),
-    ignoreConnectionException: true,
-    lazyListeningToRelays: false,
     onRelayConnectionDone: (relayUrl, relayWebSocket) {
-      print("Connected to relay: $relayUrl");
+      print('Connected to relay: $relayUrl');
     },
     onRelayListening: (relayUrl, receivedEvent, relayWebSocket) {
-      print("Listening to relay: $relayUrl");
+      print('Listening to relay: $relayUrl');
     },
     onRelayConnectionError: (relayUrl, error, relayWebSocket) {},
     retryOnClose: true,
@@ -23,17 +19,17 @@ Future<void> main() async {
     shouldReconnectToRelayOnNotice: true,
   );
 
-  await Future.delayed(Duration(seconds: 5));
+  await Future.delayed(const Duration(seconds: 5));
 
   await Nostr.instance.relaysService.reconnectToRelays(
-    connectionTimeout: Duration(seconds: 5),
+    connectionTimeout: const Duration(seconds: 5),
     ignoreConnectionException: true,
     lazyListeningToRelays: false,
     onRelayConnectionDone: (relayUrl, relayWebSocket) {
-      print("Connected to relay: $relayUrl");
+      print('Connected to relay: $relayUrl');
     },
     onRelayListening: (relayUrl, receivedEvent, relayWebSocket) {
-      print("Listening to relay: $relayUrl");
+      print('Listening to relay: $relayUrl');
     },
     onRelayConnectionError: (relayUrl, error, relayWebSocket) {},
     retryOnClose: true,
@@ -41,17 +37,17 @@ Future<void> main() async {
     shouldReconnectToRelayOnNotice: true,
   );
 
-  await Future.delayed(Duration(seconds: 5));
+  await Future.delayed(const Duration(seconds: 5));
 
-  Nostr.instance.relaysService.disconnectFromRelays(
+  await Nostr.instance.relaysService.disconnectFromRelays(
     closeCode: (relayUrl) {
       return WebSocketStatus.normalClosure;
     },
     closeReason: (relayUrl) {
-      return "Bye";
+      return 'Bye';
     },
     onRelayDisconnect: (relayUrl, relayWebSocket, returnedMessage) {
-      print("Disconnected from relay: $relayUrl, $returnedMessage");
+      print('Disconnected from relay: $relayUrl, $returnedMessage');
     },
   );
 }

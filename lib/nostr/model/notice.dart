@@ -1,14 +1,13 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+import 'package:dart_nostr/nostr/core/constants.dart';
 import 'package:equatable/equatable.dart';
-
-import '../core/constants.dart';
 
 class NostrNotice extends Equatable {
   final String message;
 
-  NostrNotice({
+  const NostrNotice({
     required this.message,
   });
 
