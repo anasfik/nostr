@@ -11,9 +11,16 @@ import 'package:bip39/bip39.dart' as bip39;
 /// This class is responsible for generating key pairs and deriving public keys from private keys..
 /// {@endtemplate}
 class NostrKeys implements NostrKeysBase {
+  /// {@macro nostr_client_utils}
   final NostrClientUtils utils;
 
-  NostrKeys({required this.utils});
+  /// A caching system for the key pairs, so we don't have to generate them again.
+  /// A cache key is the private key, and the value is the [NostrKeyPairs] instance.
+  static final _keyPairsCache = <String, NostrKeyPairs>{};
+
+  NostrKeys({
+    required this.utils,
+  });
 
   /// Derives a public key from a [privateKey] directly, use this if you want a quick way to get a public key from a private key.
   ///
@@ -24,7 +31,8 @@ class NostrKeys implements NostrKeysBase {
   /// ```
   @override
   String derivePublicKey({required String privateKey}) {
-    final nostrKeyPairs = NostrKeyPairs(private: privateKey);
+    final nostrKeyPairs = _keyPairFrom(privateKey);
+
     utils.log(
       "derived public key from private key, with it's value is: ${nostrKeyPairs.public}",
     );
@@ -42,7 +50,7 @@ class NostrKeys implements NostrKeysBase {
   /// ```
   @override
   NostrKeyPairs generateKeyPair() {
-    final nostrKeyPairs = NostrKeyPairs.generate();
+    final nostrKeyPairs = _generateKeyPair();
 
     utils.log(
       "generated key pairs, with it's public key is: ${nostrKeyPairs.public}",
@@ -62,7 +70,7 @@ class NostrKeys implements NostrKeysBase {
   NostrKeyPairs generateKeyPairFromExistingPrivateKey(
     String privateKey,
   ) {
-    return NostrKeyPairs(private: privateKey);
+    return _keyPairFrom(privateKey);
   }
 
   /// You can use this method to generate a key pair for your end users.
@@ -74,7 +82,7 @@ class NostrKeys implements NostrKeysBase {
   /// ```
   @override
   String generatePrivateKey() {
-    return generateKeyPair().private;
+    return _generateKeyPair().private;
   }
 
   /// Encodes a Nostr [publicKey] to an npub key (bech32 encoding).
@@ -110,8 +118,9 @@ class NostrKeys implements NostrKeysBase {
   String decodeNpubKeyToPublicKey(String npubKey) {
     assert(npubKey.startsWith(NostrConstants.npub));
 
-    final List<String> decodedKeyComponents =
+    final decodedKeyComponents =
         Nostr.instance.utilsService.decodeBech32(npubKey);
+
     return decodedKeyComponents.first;
   }
 
@@ -124,8 +133,9 @@ class NostrKeys implements NostrKeysBase {
   @override
   String decodeNsecKeyToPrivateKey(String nsecKey) {
     assert(nsecKey.startsWith(NostrConstants.nsec));
-    final List<String> decodedKeyComponents =
+    final decodedKeyComponents =
         Nostr.instance.utilsService.decodeBech32(nsecKey);
+
     return decodedKeyComponents.first;
   }
 
@@ -144,10 +154,13 @@ class NostrKeys implements NostrKeysBase {
     required String privateKey,
     required String message,
   }) {
-    final nostrKeyPairs = NostrKeyPairs(private: privateKey);
+    final nostrKeyPairs = _keyPairFrom(privateKey);
+
     final hexEncodedMessage =
         Nostr.instance.utilsService.hexEncodeString(message);
+
     final signature = nostrKeyPairs.sign(hexEncodedMessage);
+
     utils.log(
       "signed message with private key, with it's value is: $signature",
     );
@@ -176,6 +189,7 @@ class NostrKeys implements NostrKeysBase {
         Nostr.instance.utilsService.hexEncodeString(message);
     final isVerified =
         NostrKeyPairs.verify(publicKey, hexEncodedMessage, signature);
+
     utils.log(
       "verified message with public key: $publicKey, with it's value is: $isVerified",
     );
@@ -203,6 +217,12 @@ class NostrKeys implements NostrKeysBase {
     return bip39.validateMnemonic(text);
   }
 
+  /// Derives a private key from a [mnemonic] directly, use this if you want a quick way to get a private key from a mnemonic.
+  ///
+  /// ```dart
+  /// final privateKey = Nostr.instance.keysService.getPrivateKeyFromMnemonic('your mnemonic');
+  /// print(privateKey); // ...
+  /// ```
   static String getPrivateKeyFromMnemonic(String mnemonic) {
     String seed = bip39.mnemonicToSeedHex(mnemonic);
     bip32_bip44.Chain chain = bip32_bip44.Chain.seed(seed);
@@ -220,5 +240,25 @@ class NostrKeys implements NostrKeysBase {
     }
 
     return hexChildKey;
+  }
+
+  /// Creates a [NostrKeyPairs] from a [privateKey] if it's not already cached, and returns it.
+  /// if it's already cached, it returns the cached [NostrKeyPairs] instance and saves the regeneration time and resources.
+  NostrKeyPairs _keyPairFrom(String privateKey) {
+    if (_keyPairsCache.containsKey(privateKey)) {
+      return _keyPairsCache[privateKey]!;
+    } else {
+      _keyPairsCache[privateKey] = NostrKeyPairs(private: privateKey);
+
+      return _keyPairsCache[privateKey]!;
+    }
+  }
+
+  /// Generates a [NostrKeyPairs] and caches it, and returns it.
+  NostrKeyPairs _generateKeyPair() {
+    final keyPair = NostrKeyPairs.generate();
+    _keyPairsCache[keyPair.private] = keyPair;
+
+    return keyPair;
   }
 }
