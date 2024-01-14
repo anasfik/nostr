@@ -380,15 +380,17 @@ class NostrRelays implements NostrRelaysBase {
     final relayWebSocket = nostrRegistry.getRelayWebSocket(relayUrl: relay);
 
     relayWebSocket!.listen((d) {
+      final data = d.toString();
+
       onRelayListening?.call(relay, d, relayWebSocket);
 
-      if (NostrEvent.canBeDeserialized(d)) {
+      if (NostrEvent.canBeDeserialized(data)) {
         _handleAddingEventToSink(
-          event: NostrEvent.deserialized(d),
+          event: NostrEvent.deserialized(data),
           relay: relay,
         );
-      } else if (NostrNotice.canBeDeserialized(d)) {
-        final notice = NostrNotice.fromRelayMessage(d);
+      } else if (NostrNotice.canBeDeserialized(data)) {
+        final notice = NostrNotice.fromRelayMessage(data);
 
         onNoticeMessageFromRelay?.call(relay, relayWebSocket, notice);
 
@@ -405,16 +407,16 @@ class NostrRelays implements NostrRelaysBase {
           retryOnClose: retryOnClose,
           shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
         );
-      } else if (NostrEventOkCommand.canBeDeserialized(d)) {
+      } else if (NostrEventOkCommand.canBeDeserialized(data)) {
         _handleOkCommandMessageFromRelay(
-          okCommand: NostrEventOkCommand.fromRelayMessage(d),
+          okCommand: NostrEventOkCommand.fromRelayMessage(data),
         );
-      } else if (NostrRequestEoseCommand.canBeDeserialized(d)) {
+      } else if (NostrRequestEoseCommand.canBeDeserialized(data)) {
         _handleEoseCommandMessageFromRelay(
-          eoseCommand: NostrRequestEoseCommand.fromRelayMessage(d),
+          eoseCommand: NostrRequestEoseCommand.fromRelayMessage(data),
         );
-      } else if (NostrCountResponse.canBeDeserialized(d)) {
-        final countResponse = NostrCountResponse.deserialized(d);
+      } else if (NostrCountResponse.canBeDeserialized(data)) {
+        final countResponse = NostrCountResponse.deserialized(data);
 
         _handleCountResponseMessageFromRelay(
           countResponse: countResponse,

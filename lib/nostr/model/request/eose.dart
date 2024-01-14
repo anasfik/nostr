@@ -19,8 +19,6 @@ class NostrEOSE extends Equatable {
   NostrEOSE fromRelayMessage(String message) {
     final decoded = jsonDecode(message) as List;
 
-    return NostrEOSE(
-      subscriptionId: decoded.last,
-    );
+    return NostrEOSE(subscriptionId: decoded.last as String);
   }
 }

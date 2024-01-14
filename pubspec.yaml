@@ -24,3 +24,4 @@ dev_dependencies:
   dart_code_metrics: ^5.7.2
   lints:
   test:
+  very_good_analysis: ^5.1.0

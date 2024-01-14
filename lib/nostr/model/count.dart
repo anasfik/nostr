@@ -60,15 +60,16 @@ class NostrCountResponse extends Equatable {
     assert(countMap is Map);
 
     return NostrCountResponse(
-      subscriptionId: decodedData[1],
-      count: int.parse(countMap["count"]),
+      subscriptionId: decodedData[1] as String,
+      count: int.parse(countMap["count"] as String),
     );
   }
   @override
   List<Object?> get props => throw UnimplementedError();
 
-  static bool canBeDeserialized(d) {
-    final decodedData = jsonDecode(d);
+  static bool canBeDeserialized(String data) {
+    final decodedData = jsonDecode(data);
+
     assert(decodedData is List);
 
     if (decodedData[0] != NostrConstants.count) {

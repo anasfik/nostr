@@ -1,4 +1,5 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
+// ignore_for_file: public_member_api_docs, sort_constructors_first, avoid_dynamic_calls, argument_type_not_assignable
+
 import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
@@ -48,13 +49,19 @@ class NostrRequest extends Equatable {
 
   /// Deserialize a request
   factory NostrRequest.deserialized(input) {
-    assert(input.length >= 3, 'Invalid request, must have at least 3 elements');
+    final haveThreeElements = input is List && input.length >= 3;
+
+    assert(
+      haveThreeElements,
+      'Invalid request, must have at least 3 elements',
+    );
+
     assert(
       input[0] == NostrConstants.request,
       'Invalid request, must start with ${NostrConstants.request}',
     );
 
-    final subscriptionId = input[1];
+    final subscriptionId = input[1] as String;
 
     return NostrRequest(
       subscriptionId: subscriptionId,

@@ -46,16 +46,29 @@ class NostrFilter extends Equatable {
 
   /// Deserialize aNpstrFilter from a JSON
   factory NostrFilter.fromJson(Map<String, dynamic> json) {
-    final ids = json['ids'] == null ? null : List<String>.from(json['ids']);
-    final authors =
-        json['authors'] == null ? null : List<String>.from(json['authors']);
-    final kinds = json['kinds'] == null ? null : List<int>.from(json['kinds']);
-    final e = json['#e'] == null ? null : List<String>.from(json['#e']);
-    final p = json['#p'] == null ? null : List<String>.from(json['#p']);
-    final t = json['#t'] == null ? null : List<String>.from(json['#t']);
-    final since = DateTime.fromMillisecondsSinceEpoch(json['since'] * 1000);
-    final until = DateTime.fromMillisecondsSinceEpoch(json['until'] * 1000);
-    final limit = json['limit'];
+    final ids =
+        json['ids'] == null ? null : List<String>.from(json['ids'] as List);
+
+    final authors = json['authors'] == null
+        ? null
+        : List<String>.from(json['authors'] as List);
+
+    final kinds =
+        json['kinds'] == null ? null : List<int>.from(json['kinds'] as List);
+
+    final e = json['#e'] == null ? null : List<String>.from(json['#e'] as List);
+
+    final p = json['#p'] == null ? null : List<String>.from(json['#p'] as List);
+
+    final t = json['#t'] == null ? null : List<String>.from(json['#t'] as List);
+
+    final since =
+        DateTime.fromMillisecondsSinceEpoch((json['since'] as int) * 1000);
+
+    final until =
+        DateTime.fromMillisecondsSinceEpoch((json['until'] as int) * 1000);
+
+    final limit = json['limit'] as int?;
 
     return NostrFilter(
       ids: ids,

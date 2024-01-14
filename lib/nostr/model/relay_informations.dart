@@ -23,13 +23,13 @@ class RelayInformations extends Equatable {
     final supportedNips = json['supported_nips'].cast<int>();
 
     return RelayInformations(
-      contact: json['contact'],
-      description: json['description'],
-      name: json['name'],
-      pubkey: json['pubkey'],
-      software: json['software'],
-      supportedNips: supportedNips,
-      version: json['version'],
+      contact: json['contact'] as String?,
+      description: json['description'] as String?,
+      name: json['name'] as String?,
+      pubkey: json['pubkey'] as String?,
+      software: json['software'] as String?,
+      supportedNips: supportedNips as List<int>?,
+      version: json['version'] as String?,
     );
   }
   @override

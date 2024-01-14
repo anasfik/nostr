@@ -11,7 +11,7 @@ import 'instance/utils/utils.dart';
 /// This class is responsible for handling the connection to all relays.
 /// {@endtemplate}
 class Nostr implements NostrServiceBase {
-  /// Weither this instance resources are disposed or not.
+  /// Wether this instance resources are disposed or not.
   bool _isDisposed = false;
 
   /// {@macro nostr_service}
@@ -80,7 +80,4 @@ class Nostr implements NostrServiceBase {
   late final utilsService = NostrUtils(
     utils: utils,
   );
-
-  /// {@macro nostr_tlv}
-  final tlv = NostrTLV();
 }

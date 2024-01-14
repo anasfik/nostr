@@ -19,12 +19,14 @@ import 'base/base.dart';
 /// This class is responsible for handling some of the helper utils of the library.
 /// {@endtemplate}
 class NostrUtils implements NostrUtilsBase {
+  /// {@macro nostr_client_utils}
   final NostrClientUtils utils;
 
+  /// {@macro nostr_utils}
   NostrUtils({required this.utils});
 
   /// {@macro nostr_utils}
-  final _tlvService = NostrTLV();
+  final tlv = NostrTLV();
 
   /// Wether the given [identifier] has a valid format.
   ///
@@ -153,7 +155,11 @@ class NostrUtils implements NostrUtilsBase {
 
       final decoded = jsonDecode(res.body) as Map<String, dynamic>;
       assert(decoded["names"] != null, "invalid nip05 response, no names key!");
-      final pubKeyFromResponse = decoded["names"][localPart];
+      final pubKeyFromResponse = decoded["names"][localPart] as String?;
+
+      if (pubKeyFromResponse == null) {
+        throw Exception("invalid nip05 response, no pub key!");
+      }
 
       return pubKeyFromResponse;
     } catch (e) {
@@ -235,7 +241,7 @@ class NostrUtils implements NostrUtilsBase {
     final String dataString = decodedBech32[0];
     final List<int> data = HEX.decode(dataString);
 
-    final List<TLV> tlvList = _tlvService.decode(Uint8List.fromList(data));
+    final List<TLV> tlvList = tlv.decode(Uint8List.fromList(data));
     final Map<String, dynamic> resultMap = _parseNprofileTlvList(tlvList);
 
     if (resultMap["pubkey"].length != 64) {
@@ -264,7 +270,7 @@ class NostrUtils implements NostrUtilsBase {
     final String dataString = decodedBech32[0];
     final List<int> data = HEX.decode(dataString);
 
-    final List<TLV> tlvList = _tlvService.decode(Uint8List.fromList(data));
+    final List<TLV> tlvList = tlv.decode(Uint8List.fromList(data));
     final Map<String, dynamic> resultMap = _parseNeventTlvList(tlvList);
 
     if (resultMap["eventId"].length != 64) {
@@ -318,13 +324,13 @@ class NostrUtils implements NostrUtilsBase {
 
   /// expects a map with pubkey and relays and [returns] a bech32 encoded nprofile
   String _nProfileMapToBech32(Map<String, dynamic> map) {
-    final String pubkey = map["pubkey"];
+    final String pubkey = map["pubkey"] as String;
 
-    final List<String> relays = List<String>.from(map['relays']);
+    final List<String> relays = List<String>.from(map['relays'] as List);
 
     final List<TLV> tlvList = _generatenProfileTlvList(pubkey, relays);
 
-    final Uint8List bytes = _tlvService.encode(tlvList);
+    final Uint8List bytes = tlv.encode(tlvList);
 
     final String dataString = HEX.encode(bytes);
 
@@ -363,9 +369,9 @@ class NostrUtils implements NostrUtilsBase {
   }
 
   String _nEventMapToBech32(Map<String, dynamic> map) {
-    final String eventId = map['eventId'];
-    final String? authorPubkey = map['pubkey'];
-    final List<String> relays = List<String>.from(map['relays']);
+    final eventId = map['eventId'] as String;
+    final authorPubkey = map['pubkey'] as String?;
+    final relays = List<String>.from(map['relays'] as List);
 
     final List<TLV> tlvList = _generatenEventTlvList(
       eventId,
@@ -373,7 +379,7 @@ class NostrUtils implements NostrUtilsBase {
       relays,
     );
 
-    final String dataString = HEX.encode(_tlvService.encode(tlvList));
+    final String dataString = HEX.encode(tlv.encode(tlvList));
 
     return encodeBech32(
       dataString,

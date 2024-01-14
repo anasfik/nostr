@@ -164,7 +164,7 @@ class NostrEvent extends Equatable {
       sig: event['sig'] as String,
       pubkey: event['pubkey'] as String,
       createdAt: DateTime.fromMillisecondsSinceEpoch(
-        event['created_at'] * 1000,
+        (event['created_at'] as int) * 1000,
       ),
       tags: List<List<String>>.from((event['tags'] as List)
           .map(
@@ -175,7 +175,7 @@ class NostrEvent extends Equatable {
                 .toList(),
           )
           .toList()),
-      subscriptionId: decoded[1],
+      subscriptionId: decoded[1] as String?,
       ots: event['ots'] as String?,
     );
   }
