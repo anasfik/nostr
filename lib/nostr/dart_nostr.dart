@@ -11,13 +11,17 @@ import 'instance/utils/utils.dart';
 /// This class is responsible for handling the connection to all relays.
 /// {@endtemplate}
 class Nostr implements NostrServiceBase {
+  /// Weither this instance resources are disposed or not.
+  bool _isDisposed = false;
+
   /// {@macro nostr_service}
   static final Nostr _instance = Nostr._();
 
   /// {@macro nostr_service}
   static Nostr get instance => _instance;
 
-  late final utils;
+  /// {@macro nostr_client_utils}
+  late final NostrClientUtils utils;
 
   /// {@macro nostr_service}
   factory Nostr() {
@@ -40,6 +44,17 @@ class Nostr implements NostrServiceBase {
   @override
   void enableLogs() {
     utils.enableLogs();
+  }
+
+  /// Clears and frees all the resources used by this instance.
+  @override
+  Future<bool> dispose() async {
+    if (!_isDisposed) {
+      _isDisposed = true;
+      utils.log("A Nostr instance disposed successfully.");
+    }
+
+    return await relaysService.freeAllResources();
   }
 
   /// {@macro nostr_keys}
