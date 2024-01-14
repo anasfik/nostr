@@ -49,10 +49,14 @@ class Nostr implements NostrServiceBase {
   /// Clears and frees all the resources used by this instance.
   @override
   Future<bool> dispose() async {
-    if (!_isDisposed) {
-      _isDisposed = true;
-      utils.log("A Nostr instance disposed successfully.");
+    if (_isDisposed) {
+      utils.log("This Nostr instance is already disposed.");
+      return true;
     }
+
+    _isDisposed = true;
+
+    utils.log("A Nostr instance disposed successfully.");
 
     return await relaysService.freeAllResources();
   }
