@@ -242,6 +242,12 @@ class NostrKeys implements NostrKeysBase {
     return hexChildKey;
   }
 
+  bool freeAllResources() {
+    _keyPairsCache.clear();
+
+    return true;
+  }
+
   /// Creates a [NostrKeyPairs] from a [privateKey] if it's not already cached, and returns it.
   /// if it's already cached, it returns the cached [NostrKeyPairs] instance and saves the regeneration time and resources.
   NostrKeyPairs _keyPairFrom(String privateKey) {

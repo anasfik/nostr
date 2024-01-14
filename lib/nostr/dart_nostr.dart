@@ -58,7 +58,12 @@ class Nostr implements NostrServiceBase {
 
     utils.log("A Nostr instance disposed successfully.");
 
-    return await relaysService.freeAllResources();
+    await Future.wait<dynamic>(<Future<bool>>[
+      Future.value(keysService.freeAllResources()),
+      relaysService.freeAllResources(),
+    ]);
+
+    return true;
   }
 
   /// {@macro nostr_keys}
