@@ -54,6 +54,11 @@ abstract class NostrRelaysBase {
         onCountResponse,
   });
 
+  Future<NostrCountResponse> sendCountEventToRelaysAsync(
+    NostrCountEvent countEvent, {
+    required Duration timeout,
+  });
+
   NostrEventsStream startEventsSubscription({
     required NostrRequest request,
     void Function(NostrRequestEoseCommand ease)? onEose,
@@ -72,11 +77,15 @@ abstract class NostrRelaysBase {
   void startListeningToRelay({
     required String relay,
     required void Function(
-            String relayUrl, dynamic receivedData, WebSocket? relayWebSocket,)?
-        onRelayListening,
+      String relayUrl,
+      dynamic receivedData,
+      WebSocket? relayWebSocket,
+    )? onRelayListening,
     required void Function(
-            String relayUrl, Object? error, WebSocket? relayWebSocket,)?
-        onRelayConnectionError,
+      String relayUrl,
+      Object? error,
+      WebSocket? relayWebSocket,
+    )? onRelayConnectionError,
     required void Function(String relayUrl, WebSocket? relayWebSocket)?
         onRelayConnectionDone,
     required bool retryOnError,
@@ -93,11 +102,15 @@ abstract class NostrRelaysBase {
   });
   Future<void> reconnectToRelays({
     required void Function(
-            String relayUrl, dynamic receivedData, WebSocket? relayWebSocket,)?
-        onRelayListening,
+      String relayUrl,
+      dynamic receivedData,
+      WebSocket? relayWebSocket,
+    )? onRelayListening,
     required void Function(
-            String relayUrl, Object? error, WebSocket? relayWebSocket,)?
-        onRelayConnectionError,
+      String relayUrl,
+      Object? error,
+      WebSocket? relayWebSocket,
+    )? onRelayConnectionError,
     required void Function(String relayUrl, WebSocket? relayWebSocket)?
         onRelayConnectionDone,
     required bool retryOnError,

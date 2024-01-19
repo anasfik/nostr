@@ -5,11 +5,11 @@ import 'package:dart_nostr/nostr/core/constants.dart';
 import 'package:equatable/equatable.dart';
 
 class NostrCountEvent extends Equatable {
-
   const NostrCountEvent({
     required this.eventsFilter,
     required this.subscriptionId,
   });
+
   final NostrFilter eventsFilter;
   final String subscriptionId;
 
@@ -43,7 +43,6 @@ class NostrCountEvent extends Equatable {
 }
 
 class NostrCountResponse extends Equatable {
-
   const NostrCountResponse({
     required this.subscriptionId,
     required this.count,

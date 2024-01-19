@@ -1,4 +1,15 @@
 {
-  "cSpell.words": ["Nostr", "Nsec"],
+  "cSpell.words": [
+    "Bech",
+    "damus",
+    "Informations",
+    "Nevent",
+    "Nostr",
+    "nprofile",
+    "Npub",
+    "Nsec",
+    "pubkey",
+    "pubspec"
+  ],
   "editor.acceptSuggestionOnEnter": "off",
 }

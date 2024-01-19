@@ -5,9 +5,11 @@ import 'package:dart_nostr/dart_nostr.dart';
 void main(List<String> args) async {
   Nostr.instance.disableLogs();
 
-  await Nostr.instance.relaysService.init(relaysUrl: [
-    'wss://relay.damus.io',
-  ],);
+  await Nostr.instance.relaysService.init(
+    relaysUrl: [
+      'wss://relay.damus.io',
+    ],
+  );
   final keyPair = Nostr.instance.keysService.generateKeyPair();
 
   final event = NostrEvent.fromPartialData(
@@ -21,6 +23,13 @@ void main(List<String> args) async {
   );
 
   try {
+    final countEvent = NostrCountEvent.fromPartialData(
+      eventsFilter: NostrFilter(
+        kinds: const [0],
+        authors: [keyPair.public],
+      ),
+    );
+
     final okCommand = await Nostr.instance.relaysService.sendEventToRelaysAsync(
       event,
       timeout: const Duration(seconds: 3),

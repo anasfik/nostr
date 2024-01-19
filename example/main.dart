@@ -11,7 +11,7 @@ Future<void> main() async {
 
   // init relays
   await Nostr.instance.relaysService.init(
-    relaysUrl: ['wss://relay.damus.io'],
+    relaysUrl: ["wss://relay.damus.io"],
   );
 
   final currentDateInMsAsString =
@@ -20,17 +20,17 @@ Future<void> main() async {
   // create an event
   final event = NostrEvent.fromPartialData(
     kind: 1,
-    content: 'example content',
+    content: "example content",
     keyPairs: keyPair,
     tags: [
-      ['t', currentDateInMsAsString],
+      ["t", currentDateInMsAsString],
     ],
   );
 
   // send the event
   Nostr.instance.relaysService.sendEventToRelays(event);
 
-  await Future.delayed(const Duration(seconds: 5));
+  await Future.delayed(Duration(seconds: 5));
 
   // create a subscription id.
   final subscriptionId = Nostr.instance.utilsService.random64HexChars();
@@ -40,7 +40,7 @@ Future<void> main() async {
     subscriptionId: subscriptionId,
     filters: [
       NostrFilter(
-        kinds: const [1],
+        kinds: [1],
         t: [currentDateInMsAsString],
         authors: [keyPair.public],
       ),
@@ -48,35 +48,42 @@ Future<void> main() async {
   );
 
 // listen to events
-  final sub =
-      Nostr.instance.relaysService.startEventsSubscription(request: request);
+  final sub = Nostr.instance.relaysService.startEventsSubscription(
+    request: request,
+    onEose: (ease) => print(ease),
+  );
 
-  final StreamSubscription subscritpion = sub.stream.listen(
-    print,
+  StreamSubscription subscritpion = sub.stream.listen(
+    (event) {
+      print(event);
+    },
     onDone: () {
-      print('done');
+      print("done");
     },
   );
 
-  await Future.delayed(const Duration(seconds: 5));
+  await Future.delayed(Duration(seconds: 5));
 
   // cancel the subscription
-  await subscritpion.cancel().whenComplete(() {
+  subscritpion.cancel().whenComplete(() {
     Nostr.instance.relaysService.closeEventsSubscription(subscriptionId);
   });
 
-  await Future.delayed(const Duration(seconds: 5));
+  await Future.delayed(Duration(seconds: 5));
 
   // create a new event that will not be received by the subscription because it is closed.
   final event2 = NostrEvent.fromPartialData(
     kind: 1,
-    content: 'example content',
+    content: "example content",
     keyPairs: keyPair,
     tags: [
-      ['t', currentDateInMsAsString],
+      ["t", currentDateInMsAsString],
     ],
   );
 
   // send the event 2 that will not be received by the subscription because it is closed.
-  Nostr.instance.relaysService.sendEventToRelays(event2);
+  Nostr.instance.relaysService.sendEventToRelays(
+    event2,
+    onOk: (ok) => print(ok),
+  );
 }
