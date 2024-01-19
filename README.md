@@ -13,6 +13,17 @@ This is a Dart/Flutter toolkit for developing [Nostr](https://nostr.com/) client
     - [Sign & verify with a private key](#sign--verify-with-a-private-key)
     - [More functionalities](#more-functionalities)
   - [Events & Relays](#events--relays)
+    - [Create an event](#create-an-event)
+    - [Connect to relays](#connect-to-relays)
+    - [Listen to events](#listen-to-events)
+      - [As a stream](#as-a-stream)
+      - [As a future (resolves on EOSE)](#as-a-future-resolves-on-eose)
+    - [Reconnect & disconnect](#reconnect--disconnect)
+    - [Send an event](#send-an-event)
+    - [Send NIP45 COUNT](#send-nip45-count)
+    - [Relay Metadata NIP11](#relay-metadata-nip11)
+    - [More functionalities](#more-functionalities-1)
+  - [More utils](#more-utils)
 
 ## Installation
 
