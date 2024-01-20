@@ -63,7 +63,7 @@ if you are working on a Nostr client, app... you will be able to apply and use a
 - [NIP-45](https://github.com/nostr-protocol/nips/blob/master/45.md)
 - [NIP-47](https://github.com/nostr-protocol/nips/blob/master/47.md)
 - [NIP-48](https://github.com/nostr-protocol/nips/blob/master/48.md)
-- NIP-50 (not yet implemented)
+- [NIP-50](https://github.com/nostr-protocol/nips/blob/master/50.md)
 - [NIP-51](https://github.com/nostr-protocol/nips/blob/master/51.md)
 - [NIP-52](https://github.com/nostr-protocol/nips/blob/master/52.md)
 - [NIP-53](https://github.com/nostr-protocol/nips/blob/master/53.md)

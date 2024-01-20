@@ -35,15 +35,20 @@ class NostrRequest extends Equatable {
               .reduce((value, element) => value + element),
         );
 
-    final decodedFilters =
-        jsonEncode(filters.map((item) => item.toMap()).toList());
+    //! The old way of doing it is commented below
+    // final decodedFilters =
+    //     jsonEncode(filters.map((item) => item.toMap()).toList());
+    // final header = jsonEncode([NostrConstants.request, subscriptionId]);
+    // final result =
+    //     '${header.substring(0, header.length - 1)},${decodedFilters.substring(1, decodedFilters.length)}';
 
-    final header = jsonEncode([NostrConstants.request, subscriptionId]);
+    final encodedReq = jsonEncode([
+      NostrConstants.request,
+      subscriptionId,
+      ...filters.map((e) => e.toMap()),
+    ]);
 
-    final result =
-        '${header.substring(0, header.length - 1)},${decodedFilters.substring(1, decodedFilters.length)}';
-
-    return result;
+    return encodedReq;
   }
 
   /// Deserialize a request

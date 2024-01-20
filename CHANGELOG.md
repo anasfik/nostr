@@ -1,5 +1,9 @@
 # Changelog
 
+## 7.0.1
+
+- Support for NIP 50 search filter with example.
+
 ## 7.0.0
 
 - Breaking changes in most package services.
