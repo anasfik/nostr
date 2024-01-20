@@ -66,7 +66,8 @@ class NostrTLV implements TLVBase {
 
   /// concatenate/chain list bytes
   Uint8List _concatenateUint8List(List<Uint8List> lists) {
-    final totalLength = lists.map((list) => list.length).reduce((a, b) => a + b);
+    final totalLength =
+        lists.map((list) => list.length).reduce((a, b) => a + b);
     final result = Uint8List(totalLength);
     var offset = 0;
     for (final list in lists) {

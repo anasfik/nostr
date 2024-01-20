@@ -7,11 +7,11 @@ import 'package:equatable/equatable.dart';
 /// A request to close a subscription with a given subscription id.
 /// {@endtemplate}
 class NostrRequestClose extends Equatable {
-
   /// {@macro nostr_request_close}
   const NostrRequestClose({
     required this.subscriptionId,
   });
+
   /// The subscription id.
   final String subscriptionId;
 

@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:dart_nostr/dart_nostr.dart';
 
 Future<void> main(List<String> args) async {
-  await Nostr.instance.relaysService.init(relaysUrl: [
-    'wss://relay.damus.io',
-  ],);
+  await Nostr.instance.relaysService.init(
+    relaysUrl: [
+      'wss://relay.damus.io',
+    ],
+  );
 
   final keyPair = Nostr.instance.keysService.generateKeyPair();
 

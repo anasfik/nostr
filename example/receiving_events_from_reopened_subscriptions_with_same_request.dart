@@ -10,16 +10,20 @@ void main() async {
   final newKeyPair = Nostr.instance.keysService.generateKeyPair();
 
   final event = NostrEvent.fromPartialData(
-      content: newKeyPair.public,
-      kind: 1,
-      keyPairs: newKeyPair,
-      tags: [
-        ['t', newKeyPair.public],
-      ],);
+    content: newKeyPair.public,
+    kind: 1,
+    keyPairs: newKeyPair,
+    tags: [
+      ['t', newKeyPair.public],
+    ],
+  );
 
-  Nostr.instance.relaysService.sendEventToRelays(event, onOk: (ok) {
-    print('event sent, ${ok.eventId}');
-  },);
+  Nostr.instance.relaysService.sendEventToRelays(
+    event,
+    onOk: (ok) {
+      print('event sent, ${ok.eventId}');
+    },
+  );
 
   await Future.delayed(const Duration(seconds: 5));
 
@@ -68,7 +72,10 @@ void main() async {
     ],
   );
 
-  Nostr.instance.relaysService.sendEventToRelays(anotherEvent, onOk: (ok) {
-    print('event sent, ${ok.eventId}');
-  },);
+  Nostr.instance.relaysService.sendEventToRelays(
+    anotherEvent,
+    onOk: (ok) {
+      print('event sent, ${ok.eventId}');
+    },
+  );
 }

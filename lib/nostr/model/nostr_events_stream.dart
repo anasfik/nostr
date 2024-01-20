@@ -7,13 +7,13 @@ import 'package:equatable/equatable.dart';
 /// Represents a holde class for the stream of nostr events and the subscription id.
 /// {@endtemplate}
 class NostrEventsStream extends Equatable {
-
   /// {@macro nostr_events_stream}
   const NostrEventsStream({
     required this.stream,
     required this.subscriptionId,
     required this.request,
   });
+
   /// This the stream of nostr events that you can listen to and get the events.
   final Stream<NostrEvent> stream;
 

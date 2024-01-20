@@ -1,5 +1,12 @@
 # Changelog
 
+## 7.0.0
+
+- Breaking changes in most package services.
+- Implementations for more asyncronous methods.
+- New Mniimal Documentation for the package in readme.md file.
+- Minor dev edits, fixes and improvements.
+
 ## 6.1.0
 
 - Implmenttaion of free resources method for the relays service of an instance that clears and closes all events registeries and streams.

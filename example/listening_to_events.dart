@@ -28,14 +28,15 @@ void main() async {
   // Now we create the stream of that request.
   // ignore: unused_local_variable
   final requestStream = Nostr.instance.relaysService.startEventsSubscription(
-      request: request,
-      onEose: (ease) {
-        print('ease received for subscription id: ${ease.subscriptionId}');
+    request: request,
+    onEose: (ease) {
+      print('ease received for subscription id: ${ease.subscriptionId}');
 
-        Nostr.instance.relaysService.closeEventsSubscription(
-          ease.subscriptionId,
-        );
-      },);
+      Nostr.instance.relaysService.closeEventsSubscription(
+        ease.subscriptionId,
+      );
+    },
+  );
 
   // We listen to the stream and print the events.
   requestStream.stream.listen((event) {

@@ -1,7 +1,6 @@
 import 'dart:typed_data';
 
 class TLV {
-
   TLV({
     required this.type,
     required this.length,

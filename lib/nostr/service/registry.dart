@@ -13,7 +13,6 @@ import 'package:meta/meta.dart';
 /// {@endtemplate}
 @protected
 class NostrRegistry {
-
   /// {@macro nostr_registry}
   NostrRegistry({required this.utils});
   final NostrClientUtils utils;

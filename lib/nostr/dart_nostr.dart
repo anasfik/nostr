@@ -10,7 +10,6 @@ import 'package:dart_nostr/nostr/instance/utils/utils.dart';
 /// This class is responsible for handling the connection to all relays.
 /// {@endtemplate}
 class Nostr implements NostrServiceBase {
-
   /// {@macro nostr_service}
   factory Nostr() {
     //  utils.log("A Nostr instance created successfully.");
@@ -21,6 +20,7 @@ class Nostr implements NostrServiceBase {
   Nostr._() {
     utils = NostrClientUtils();
   }
+
   /// Wether this instance resources are disposed or not.
   bool _isDisposed = false;
 

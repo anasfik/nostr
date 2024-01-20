@@ -7,13 +7,13 @@ import 'package:equatable/equatable.dart';
 /// The ok command that is sent to the server when an event is accepted or declined.
 /// {@endtemplate}
 class NostrEventOkCommand extends Equatable {
-
   /// {@macro nostr_event_ok_command}
   const NostrEventOkCommand({
     required this.eventId,
     this.isEventAccepted,
     this.message,
   });
+
   /// The event ID of which this ok command was sent.
   final String eventId;
 

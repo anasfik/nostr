@@ -4,7 +4,6 @@ import 'package:equatable/equatable.dart';
 /// NostrFilter is a filter that can be used to match events.
 /// {@endtemplate}
 class NostrFilter extends Equatable {
-
   /// {@macro nostr_filter}
   const NostrFilter({
     this.ids,
@@ -56,6 +55,7 @@ class NostrFilter extends Equatable {
       limit: limit,
     );
   }
+
   /// a list of event ids to filter with.
   final List<String>? ids;
 

@@ -6,7 +6,6 @@ import 'package:dart_nostr/nostr/core/utils.dart';
 /// A service that manages the relays web sockets connections
 /// {@endtemplate}
 class NostrWebSocketsService {
-
   /// {@macro nostr_web_sockets_service}
   NostrWebSocketsService({
     required this.utils,

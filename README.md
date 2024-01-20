@@ -80,7 +80,7 @@ if you are working on a Nostr client, app... you will be able to apply and use a
 - [NIP-98](https://github.com/nostr-protocol/nips/blob/master/98.md)
 - [NIP-99](https://github.com/nostr-protocol/nips/blob/master/99.md)
 
-NIPs marked as "not yet implemented" are not supported yet. 
+NIPs marked as "not yet implemented" are not supported yet.
 
 Some existant NIPs are platform specific or can't just be supported directly like [NIP 07](https://github.com/nostr-protocol/nips/blob/master/07.md) which is only web-specific, or [NIP 90](https://github.com/nostr-protocol/nips/blob/master/90.md) which is related to Data Vending machines.
 

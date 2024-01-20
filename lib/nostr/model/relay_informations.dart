@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
 
 class RelayInformations extends Equatable {
-
   const RelayInformations({
     required this.contact,
     required this.description,

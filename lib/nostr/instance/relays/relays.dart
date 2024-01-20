@@ -218,6 +218,7 @@ class NostrRelays implements NostrRelaysBase {
     });
   }
 
+  @override
   Future<NostrCountResponse> sendCountEventToRelaysAsync(
     NostrCountEvent countEvent, {
     required Duration timeout,

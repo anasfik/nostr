@@ -7,7 +7,6 @@ import 'package:equatable/equatable.dart';
 /// It is used by the [NostrClient] to sign messages.
 /// {@endtemplate}
 class NostrKeyPairs extends Equatable {
-
   /// {@macro nostr_key_pairs}
   factory NostrKeyPairs({
     required String private,
@@ -32,6 +31,7 @@ class NostrKeyPairs extends Equatable {
       private: Nostr.instance.utilsService.random64HexChars(),
     );
   }
+
   /// This is the private generate Key, hex-encoded (64 chars)
   final String private;
 

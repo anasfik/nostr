@@ -12,7 +12,6 @@ import 'package:equatable/equatable.dart';
 /// You can use [NostrEvent.fromPartialData] to create an event with less fields and lower complexity..
 /// {@endtemplate}
 class NostrEvent extends Equatable {
-
   const NostrEvent({
     required this.content,
     required this.createdAt,
@@ -41,19 +40,22 @@ class NostrEvent extends Equatable {
       createdAt: DateTime.fromMillisecondsSinceEpoch(
         (event['created_at'] as int) * 1000,
       ),
-      tags: List<List<String>>.from((event['tags'] as List)
-          .map(
-            (nestedElem) => (nestedElem as List)
-                .map(
-                  (nestedElemContent) => nestedElemContent.toString(),
-                )
-                .toList(),
-          )
-          .toList(),),
+      tags: List<List<String>>.from(
+        (event['tags'] as List)
+            .map(
+              (nestedElem) => (nestedElem as List)
+                  .map(
+                    (nestedElemContent) => nestedElemContent.toString(),
+                  )
+                  .toList(),
+            )
+            .toList(),
+      ),
       subscriptionId: decoded[1] as String?,
       ots: event['ots'] as String?,
     );
   }
+
   /// The id of the event.
   final String id;
 
