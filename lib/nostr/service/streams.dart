@@ -32,4 +32,8 @@ class NostrStreamsControllers {
       noticesController.close(),
     ]);
   }
+
+  bool get isClosed {
+    return eventsController.isClosed || noticesController.isClosed;
+  }
 }

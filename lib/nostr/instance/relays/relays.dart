@@ -806,6 +806,14 @@ class NostrRelays implements NostrRelaysBase {
     );
 
     if (!nostrRegistry.isEventRegistered(event)) {
+      if (streamsController.isClosed) {
+        utils.log(
+          'streams controller is closed, event with id: ${event.id} will be ignored and not added to the sink.',
+        );
+
+        return;
+      }
+
       streamsController.eventsController.sink.add(event);
       nostrRegistry.registerEvent(event);
     }
