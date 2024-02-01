@@ -53,7 +53,7 @@ void main() async {
   Nostr.instance.relaysService.sendCountEventToRelays(
     countEvent,
     onCountResponse: (relay, countRes) {
-      print("from relay: $relay");
+      print('from relay: $relay');
 
       print('your filter matches ${countRes.count} events');
     },

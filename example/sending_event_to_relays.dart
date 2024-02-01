@@ -13,7 +13,6 @@ void main() async {
     onRelayConnectionError: (relay, err, websocket) {
       print('relay connection error: $err');
     },
-    ignoreConnectionException: true,
   );
 
   // generate a key pair.
@@ -32,7 +31,7 @@ void main() async {
       print(ok.eventId);
       print(ok.isEventAccepted);
       print(ok.message);
-      print("\n");
+      print('\n');
     },
   );
 

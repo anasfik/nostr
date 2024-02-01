@@ -236,7 +236,7 @@ class NostrRelays implements NostrRelaysBase {
     NostrCountEvent countEvent, {
     required Duration timeout,
   }) {
-    bool isSomeOkTriggered = false;
+    var isSomeOkTriggered = false;
 
     final completers = <Completer<NostrCountResponse>>[];
 
@@ -257,7 +257,7 @@ class NostrRelays implements NostrRelaysBase {
 
             isSomeOkTriggered = true;
             completer.complete(countRes);
-          });
+          },);
 
       final serialized = countEvent.serialized();
       relay.socket.add(serialized);
@@ -335,7 +335,7 @@ class NostrRelays implements NostrRelaysBase {
 
     final subId = subscription.subscriptionId;
 
-    bool isSomeEoseTriggered = false;
+    var isSomeEoseTriggered = false;
 
     final events = <NostrEvent>[];
 

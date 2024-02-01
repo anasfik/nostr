@@ -77,14 +77,14 @@ Future<void> main() async {
 
   final sub = instance.relaysService.startEventsSubscription(
     request: NostrRequest(
-      filters: [
+      filters: const [
         NostrFilter(kinds: [1], limit: 50),
       ],
     ),
   );
 
   sub.stream.listen((event) {
-    print("\n");
+    print('\n');
     print(event.content);
   });
 }

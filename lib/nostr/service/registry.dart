@@ -117,7 +117,7 @@ class NostrRegistry {
   }) {
     final relayOkRegister = getOrCreateRegister(okCommandCallBacks, relay);
 
-    relayOkRegister?[associatedEventId] = onOk;
+    relayOkRegister[associatedEventId] = onOk;
   }
 
   /// Returns an ok command callback from the registry with the given [associatedEventId].
@@ -130,7 +130,7 @@ class NostrRegistry {
   }) {
     final relayOkRegister = getOrCreateRegister(okCommandCallBacks, relay);
 
-    return relayOkRegister?[associatedEventIdWithOkCommand];
+    return relayOkRegister[associatedEventIdWithOkCommand];
   }
 
   /// Registers an eose command callback to the registry with the given [subscriptionId].
@@ -141,7 +141,7 @@ class NostrRegistry {
   }) {
     final relayEoseRegister = getOrCreateRegister(eoseCommandCallBacks, relay);
 
-    relayEoseRegister?[subscriptionId] = onEose;
+    relayEoseRegister[subscriptionId] = onEose;
   }
 
   /// Returns an eose command callback from the registry with the given [subscriptionId].
@@ -154,7 +154,7 @@ class NostrRegistry {
   }) {
     final relayEoseRegister = getOrCreateRegister(eoseCommandCallBacks, relay);
 
-    return relayEoseRegister?[subscriptionId];
+    return relayEoseRegister[subscriptionId];
   }
 
   /// Registers a count response callback to the registry with the given [subscriptionId].
@@ -180,7 +180,7 @@ class NostrRegistry {
     final relayCountRegister =
         getOrCreateRegister(countResponseCallBacks, relay);
 
-    return relayCountRegister?[subscriptionId];
+    return relayCountRegister[subscriptionId];
   }
 
   /// Clears the events registry.

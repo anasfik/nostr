@@ -13,7 +13,7 @@ Future<void> main() async {
   final req = NostrRequest(
     filters: const [
       NostrFilter(
-          kinds: [30402], limit: 100, t: ['tribly_exclusive'], search: "gu")
+          kinds: [30402], limit: 100, t: ['tribly_exclusive'], search: 'gu',),
     ],
   );
 
