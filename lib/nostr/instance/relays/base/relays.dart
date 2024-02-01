@@ -37,20 +37,20 @@ abstract class NostrRelaysBase {
     bool retryOnClose = false,
   });
 
+  @override
   Future<NostrEventOkCommand> sendEventToRelaysAsync(
     NostrEvent event, {
     required Duration timeout,
-    void Function(NostrEventOkCommand ok)? onOk,
   });
 
   void sendEventToRelays(
     NostrEvent event, {
-    required void Function(NostrEventOkCommand ok) onOk,
+    void Function(String relay, NostrEventOkCommand ok)? onOk,
   });
 
   void sendCountEventToRelays(
     NostrCountEvent countEvent, {
-    required void Function(NostrCountResponse NostrCountResponse)
+    required void Function(String relay, NostrCountResponse countResponse)
         onCountResponse,
   });
 
@@ -61,13 +61,14 @@ abstract class NostrRelaysBase {
 
   NostrEventsStream startEventsSubscription({
     required NostrRequest request,
-    void Function(NostrRequestEoseCommand ease)? onEose,
+    void Function(String relay, NostrRequestEoseCommand ease)? onEose,
+    bool useConsistentSubscriptionIdBasedOnRequestData = false,
   });
 
   Future<List<NostrEvent>> startEventsSubscriptionAsync({
     required NostrRequest request,
     required Duration timeout,
-    void Function(NostrRequestEoseCommand ease)? onEose,
+    void Function(String relay, NostrRequestEoseCommand ease)? onEose,
     bool useConsistentSubscriptionIdBasedOnRequestData = false,
     bool shouldThrowErrorOnTimeoutWithoutEose = true,
   });

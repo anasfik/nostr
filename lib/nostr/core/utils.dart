@@ -3,7 +3,7 @@ import 'dart:developer' as dev;
 /// {@template nostr_client_utils}
 /// General utils to be used in a whole [Nostr] instance.
 /// {@endtemplate}
-final class NostrClientUtils {
+class NostrClientUtils {
   /// Whether logs are enabled or not.
   bool _isLogsEnabled = true;
 

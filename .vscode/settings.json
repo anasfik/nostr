@@ -12,4 +12,5 @@
     "pubspec"
   ],
   "editor.acceptSuggestionOnEnter": "off",
+  "dart.sdkPath": "~/fvm/versions/3.13.0/bin/cache/dart-sdk"
 }

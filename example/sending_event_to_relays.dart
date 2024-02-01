@@ -6,7 +6,14 @@ void main() async {
 
   // initialize the relays service.
   await Nostr.instance.relaysService.init(
-    relaysUrl: <String>['wss://relay.damus.io'],
+    relaysUrl: <String>[
+      'wss://relay.damus.io',
+      'wss://relay.nostrss.re',
+    ],
+    onRelayConnectionError: (relay, err, websocket) {
+      print('relay connection error: $err');
+    },
+    ignoreConnectionException: true,
   );
 
   // generate a key pair.
@@ -20,10 +27,12 @@ void main() async {
 
   Nostr.instance.relaysService.sendEventToRelays(
     event,
-    onOk: (ok) {
+    onOk: (relay, ok) {
+      print(relay);
       print(ok.eventId);
       print(ok.isEventAccepted);
       print(ok.message);
+      print("\n");
     },
   );
 
