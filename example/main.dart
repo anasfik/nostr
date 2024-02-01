@@ -50,7 +50,9 @@ Future<void> main() async {
 // listen to events
   final sub = Nostr.instance.relaysService.startEventsSubscription(
     request: request,
-    onEose: print,
+    onEose: (relay, eose) {
+      print('eose $eose from $relay');
+    },
   );
 
   final StreamSubscription subscritpion = sub.stream.listen(
@@ -82,6 +84,8 @@ Future<void> main() async {
   // send the event 2 that will not be received by the subscription because it is closed.
   Nostr.instance.relaysService.sendEventToRelays(
     event2,
-    onOk: print,
+    onOk: (relay, ok) {
+      print('ok $ok from $relay');
+    },
   );
 }

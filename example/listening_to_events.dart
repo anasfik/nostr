@@ -29,7 +29,7 @@ void main() async {
   // ignore: unused_local_variable
   final requestStream = Nostr.instance.relaysService.startEventsSubscription(
     request: request,
-    onEose: (ease) {
+    onEose: (relay, ease) {
       print('ease received for subscription id: ${ease.subscriptionId}');
 
       Nostr.instance.relaysService.closeEventsSubscription(

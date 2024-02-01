@@ -20,14 +20,15 @@ void main() async {
 
   Nostr.instance.relaysService.sendEventToRelays(
     event,
-    onOk: (ok) {
+    onOk: (relay, ok) {
+      print('from relay: $relay');
       print('event sent, ${ok.eventId}');
     },
   );
 
   await Future.delayed(const Duration(seconds: 5));
 
-// ...
+  // ...
 
   final filter = NostrFilter(
     kinds: const [1],
@@ -38,7 +39,7 @@ void main() async {
 
   final sub = Nostr.instance.relaysService.startEventsSubscription(
     request: req,
-    onEose: (eose) {
+    onEose: (relay, eose) {
       Nostr.instance.relaysService.closeEventsSubscription(eose.subscriptionId);
     },
   );
@@ -74,7 +75,7 @@ void main() async {
 
   Nostr.instance.relaysService.sendEventToRelays(
     anotherEvent,
-    onOk: (ok) {
+    onOk: (relay, ok) {
       print('event sent, ${ok.eventId}');
     },
   );

@@ -1,6 +1,6 @@
 name: dart_nostr
 description: Develop Scalable Dart/Flutter Nostr clients quickly and easily
-version: 7.0.3
+version: 8.0.0
 repository: https://github.com/anasfik/nostr/
 
 environment:

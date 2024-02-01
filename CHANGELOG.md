@@ -1,5 +1,10 @@
 # Changelog
 
+## 8.0.0
+
+- Support for identification of relays commands by their name/url, in order to be able to customize behavior based on the relay and the action instead of the action only.
+- Minor edits and fixes.
+
 ## 7.0.1
 
 - Support for NIP 50 search filter with example.
