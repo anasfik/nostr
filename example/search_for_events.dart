@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dart_nostr/dart_nostr.dart';
 
 Future<void> main() async {
@@ -13,7 +15,13 @@ Future<void> main() async {
   final req = NostrRequest(
     filters: const [
       NostrFilter(
-          kinds: [30402], limit: 100, t: ['tribly_exclusive'], search: 'gu',),
+        limit: 500,
+        kinds: [10004],
+      ),
+      NostrFilter(
+        kinds: [3],
+        limit: 100,
+      ),
     ],
   );
 
@@ -22,6 +30,6 @@ Future<void> main() async {
   );
 
   sub.stream.listen((event) {
-    print(event.content);
+    print(event.tags);
   });
 }

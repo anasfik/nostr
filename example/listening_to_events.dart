@@ -2,12 +2,12 @@ import 'package:dart_nostr/dart_nostr.dart';
 
 void main() async {
   // // I did disabled logs here so we can see the output of the example exclusively.
-  Nostr.instance.disableLogs();
+  Nostr.instance.enableLogs();
 
   // We initialize the Nostr Relays Service with relays.
   await Nostr.instance.relaysService.init(
     relaysUrl: <String>[
-      'wss://relay.damus.io',
+      'wss://relay.nostr.band/all',
     ],
     onRelayConnectionError: (relay, error, webSocket) {
       print('Relay error: $error');
@@ -19,8 +19,8 @@ void main() async {
   final request = NostrRequest(
     filters: const <NostrFilter>[
       NostrFilter(
-        kinds: [1],
-        limit: 20,
+        kinds: [10004],
+        limit: 100,
       ),
     ],
   );
@@ -40,7 +40,10 @@ void main() async {
 
   // We listen to the stream and print the events.
   requestStream.stream.listen((event) {
-    print('-------------------');
-    print(event.content);
+    for (final a in event.tags) {
+      if (a.first == 'a') {
+        print(a.toString());
+      }
+    }
   });
 }

@@ -34,6 +34,7 @@ void main(List<String> args) async {
       event,
       timeout: const Duration(seconds: 3),
     );
+
     if (!(okCommand.isEventAccepted ?? true)) {
       print('not accepted');
       return;

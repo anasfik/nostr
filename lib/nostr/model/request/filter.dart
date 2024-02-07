@@ -16,6 +16,7 @@ class NostrFilter extends Equatable {
     this.until,
     this.limit,
     this.search,
+    this.a,
   });
 
   /// Deserialize aNpstrFilter from a JSON
@@ -36,6 +37,7 @@ class NostrFilter extends Equatable {
 
     final t = json['#t'] == null ? null : List<String>.from(json['#t'] as List);
 
+    final a = json['#a'] == null ? null : List<String>.from(json['#a'] as List);
     final since =
         DateTime.fromMillisecondsSinceEpoch((json['since'] as int) * 1000);
 
@@ -53,6 +55,7 @@ class NostrFilter extends Equatable {
       e: e,
       p: p,
       t: t,
+      a: a,
       since: since,
       until: until,
       limit: limit,
@@ -78,6 +81,9 @@ class NostrFilter extends Equatable {
   /// a list of pubkeys that are referenced in a "p" tag to filter with.
   final List<String>? p;
 
+  /// a list of event ids referenced in an "a" tag to filter with.
+  final List<String>? a;
+
   /// the DateTime to start the filtering from
   final DateTime? since;
 
@@ -99,6 +105,7 @@ class NostrFilter extends Equatable {
       if (e != null) '#e': e,
       if (p != null) '#p': p,
       if (t != null) '#t': t,
+      if (a != null) '#a': a,
       if (since != null) 'since': since!.millisecondsSinceEpoch ~/ 1000,
       if (until != null) 'until': until!.millisecondsSinceEpoch ~/ 1000,
       if (limit != null) 'limit': limit,
@@ -113,6 +120,8 @@ class NostrFilter extends Equatable {
         kinds,
         e,
         p,
+        t,
+        a,
         since,
         until,
         limit,

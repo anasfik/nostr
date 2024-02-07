@@ -1,5 +1,13 @@
 # Changelog
 
+## 8.0.2
+
+- Fixed issue of async method to get events from relays.
+
+## 8.0.1
+
+- Support for #a tag filter.
+
 ## 8.0.0
 
 - Support for identification of relays commands by their name/url, in order to be able to customize behavior based on the relay and the action instead of the action only.

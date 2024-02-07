@@ -178,7 +178,6 @@ class NostrRelays implements NostrRelaysBase {
 
     _runFunctionOverRelationIteration((relay) {
       final completer = Completer<NostrEventOkCommand>();
-
       completers.add(completer);
 
       Future.delayed(timeout, () {
@@ -242,22 +241,23 @@ class NostrRelays implements NostrRelaysBase {
 
     _runFunctionOverRelationIteration((relay) {
       _registerOnCountCallBack(
-          relay: relay.url,
-          subscriptionId: countEvent.subscriptionId,
-          onCountResponse: (relay, countRes) {
-            final completer = Completer<NostrCountResponse>();
+        relay: relay.url,
+        subscriptionId: countEvent.subscriptionId,
+        onCountResponse: (relay, countRes) {
+          final completer = Completer<NostrCountResponse>();
 
-            Future.delayed(timeout, () {
-              if (!isSomeOkTriggered) {
-                throw TimeoutException(
-                  'the count event with subscription id: ${countEvent.subscriptionId} has timed out after: ${timeout.inSeconds} seconds',
-                );
-              }
-            });
+          Future.delayed(timeout, () {
+            if (!isSomeOkTriggered) {
+              throw TimeoutException(
+                'the count event with subscription id: ${countEvent.subscriptionId} has timed out after: ${timeout.inSeconds} seconds',
+              );
+            }
+          });
 
-            isSomeOkTriggered = true;
-            completer.complete(countRes);
-          },);
+          isSomeOkTriggered = true;
+          completer.complete(countRes);
+        },
+      );
 
       final serialized = countEvent.serialized();
       relay.socket.add(serialized);
@@ -343,34 +343,39 @@ class NostrRelays implements NostrRelaysBase {
 
     _runFunctionOverRelationIteration((relay) {
       final completer = Completer<List<NostrEvent>>();
+      completers.add(completer);
 
       _registerOnEoselCallBack(
         subscriptionId: subId,
         relay: relay.url,
         onEose: (relay, eose) {
           if (!isSomeEoseTriggered) {
-            subscription.close();
+            // subscription.close();
             completer.complete(events);
             isSomeEoseTriggered = true;
           }
         },
       );
+    });
 
-      subscription.stream.listen(events.add);
+    subscription.stream.listen(events.add);
 
-      Future.delayed(timeout, () {
+    Future.delayed(
+      timeout,
+      () {
         if (!isSomeEoseTriggered) {
           if (shouldThrowErrorOnTimeoutWithoutEose) {
             throw TimeoutException(
               'the subscription with id: $subId has timed out after: ${timeout.inSeconds} seconds',
             );
           } else {
-            subscription.close();
-            completer.complete(events);
+            for (final completer in completers) {
+              completer.complete(events);
+            }
           }
         }
-      });
-    });
+      },
+    );
 
     return Future.any(completers.map((e) => e.future));
   }
