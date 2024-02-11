@@ -73,7 +73,7 @@ abstract class NostrRelaysBase {
     bool shouldThrowErrorOnTimeoutWithoutEose = true,
   });
 
-  void closeEventsSubscription(String subscriptionId);
+  void closeEventsSubscription(String subscriptionId, [String? relayUrl]);
 
   void startListeningToRelay({
     required String relay,

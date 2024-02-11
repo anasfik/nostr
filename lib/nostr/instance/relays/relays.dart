@@ -392,13 +392,24 @@ class NostrRelays implements NostrRelaysBase {
   /// ```
   /// {@endtemplate}
   @override
-  void closeEventsSubscription(String subscriptionId) {
+  void closeEventsSubscription(String subscriptionId, [String? relay]) {
     final close = NostrRequestClose(
       subscriptionId: subscriptionId,
     );
 
     final serialized = close.serialized();
 
+    if (relay != null) {
+      final registeredRelay = nostrRegistry.getRelayWebSocket(relayUrl: relay);
+
+      registeredRelay?.add(serialized);
+
+      utils.log(
+        'Close request with subscription id: $subscriptionId is sent to relay with url: $relay',
+      );
+
+      return;
+    }
     _runFunctionOverRelationIteration(
       (relay) {
         relay.socket.add(serialized);
