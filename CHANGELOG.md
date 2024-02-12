@@ -1,5 +1,9 @@
 # Changelog
 
+## 8.0.3
+
+- Support to sending close commands to specific relays, instead of closing all relays at once.
+
 ## 8.0.2
 
 - Fixed issue of async method to get events from relays.
