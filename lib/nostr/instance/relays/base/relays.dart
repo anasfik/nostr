@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:dart_nostr/nostr/model/count.dart';
 import 'package:dart_nostr/nostr/model/ease.dart';
 import 'package:dart_nostr/nostr/model/event/event.dart';
@@ -7,11 +5,12 @@ import 'package:dart_nostr/nostr/model/nostr_events_stream.dart';
 import 'package:dart_nostr/nostr/model/ok.dart';
 import 'package:dart_nostr/nostr/model/relay_informations.dart';
 import 'package:dart_nostr/nostr/model/request/request.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 abstract class NostrRelaysBase {
   // Stream<NostrEvent> get eventsStream;
   // Stream<NostrNotice> get noticesStream;
-  Map<String, WebSocket> get relaysWebSocketsRegistry;
+  Map<String, WebSocketChannel> get relaysWebSocketsRegistry;
   Map<String, NostrEvent> get eventsRegistry;
 
   List<String>? relaysList;
@@ -21,16 +20,16 @@ abstract class NostrRelaysBase {
     void Function(
       String relayUrl,
       dynamic receivedData,
-      WebSocket? relayWebSocket,
+      WebSocketChannel? relayWebSocket,
     )? onRelayListening,
     void Function(
       String relayUrl,
       Object? error,
-      WebSocket? relayWebSocket,
+      WebSocketChannel? relayWebSocket,
     )? onRelayConnectionError,
     void Function(
       String relayUrl,
-      WebSocket? relayWebSocket,
+      WebSocketChannel? relayWebSocket,
     )? onRelayConnectionDone,
     bool lazyListeningToRelays = false,
     bool retryOnError = false,
@@ -80,14 +79,14 @@ abstract class NostrRelaysBase {
     required void Function(
       String relayUrl,
       dynamic receivedData,
-      WebSocket? relayWebSocket,
+      WebSocketChannel? relayWebSocket,
     )? onRelayListening,
     required void Function(
       String relayUrl,
       Object? error,
-      WebSocket? relayWebSocket,
+      WebSocketChannel? relayWebSocket,
     )? onRelayConnectionError,
-    required void Function(String relayUrl, WebSocket? relayWebSocket)?
+    required void Function(String relayUrl, WebSocketChannel? relayWebSocket)?
         onRelayConnectionDone,
     required bool retryOnError,
     required bool retryOnClose,
@@ -105,14 +104,14 @@ abstract class NostrRelaysBase {
     required void Function(
       String relayUrl,
       dynamic receivedData,
-      WebSocket? relayWebSocket,
+      WebSocketChannel? relayWebSocket,
     )? onRelayListening,
     required void Function(
       String relayUrl,
       Object? error,
-      WebSocket? relayWebSocket,
+      WebSocketChannel? relayWebSocket,
     )? onRelayConnectionError,
-    required void Function(String relayUrl, WebSocket? relayWebSocket)?
+    required void Function(String relayUrl, WebSocketChannel? relayWebSocket)?
         onRelayConnectionDone,
     required bool retryOnError,
     required bool retryOnClose,

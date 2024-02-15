@@ -42,7 +42,7 @@ final utilsService = instance.utilsService; // access the utils service, which p
 
 Each service has its own methods that you can call and use, for example, the `keysService` has the `generateKeyPair()` method, which will generate a new key pair for your users, and so on.
 
-The singleton approach allows  using the package in the whole application with the same singleton without worrying about relating things around (relays connection with Nostr requests and received events...), however, if you want to use the package in a large application, you may want to create a new instance of the `Nostr` class, and use it in a specific part of your application, this will allow you to separate things around, and so you can use the package in different parts of your application without worrying about relating things around.
+The singleton approach allows using the package in the whole application with the same singleton without worrying about relating things around (relays connection with Nostr requests and received events...), however, if you want to use the package in a large application, you may want to create a new instance of the `Nostr` class, and use it in a specific part of your application, this will allow you to separate things around, and so you can use the package in different parts of your application without worrying about relating things around.
 
 ```dart
 // Connect to relays in a specific part of your application.
@@ -64,4 +64,3 @@ You don't need to worry about the code above, it's just an example to show you h
 ## The supported NIPs
 
 This package allows you to use the Nostr protocol with the following NIPs:
-

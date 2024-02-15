@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:dart_nostr/dart_nostr.dart';
 
 Future<void> main() async {
@@ -41,7 +39,7 @@ Future<void> main() async {
 
   await Nostr.instance.relaysService.disconnectFromRelays(
     closeCode: (relayUrl) {
-      return WebSocketStatus.normalClosure;
+      return 1000;
     },
     closeReason: (relayUrl) {
       return 'Bye';

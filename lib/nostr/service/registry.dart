@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:dart_nostr/nostr/core/exceptions.dart';
 import 'package:dart_nostr/nostr/core/utils.dart';
 import 'package:dart_nostr/nostr/model/count.dart';
@@ -7,6 +5,7 @@ import 'package:dart_nostr/nostr/model/ease.dart';
 import 'package:dart_nostr/nostr/model/event/event.dart';
 import 'package:dart_nostr/nostr/model/ok.dart';
 import 'package:meta/meta.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 typedef SubscriptionCallback<T>
     = Map<String, void Function(String relay, T callback)>;
@@ -23,7 +22,7 @@ class NostrRegistry {
   final NostrClientUtils utils;
 
   /// This is the registry which will have all relays [WebSocket]s.
-  final relaysWebSocketsRegistry = <String, WebSocket>{};
+  final relaysWebSocketsRegistry = <String, WebSocketChannel>{};
 
   ///  This is the registry which will have all events.
   final eventsRegistry = <String, NostrEvent>{};
@@ -39,16 +38,16 @@ class NostrRegistry {
 
   /// Registers a [WebSocket] to the registry with the given [relayUrl].
   /// If a [WebSocket] is already registered with the given [relayUrl], it will be replaced.
-  WebSocket registerRelayWebSocket({
+  WebSocketChannel registerRelayWebSocket({
     required String relayUrl,
-    required WebSocket webSocket,
+    required WebSocketChannel webSocket,
   }) {
     relaysWebSocketsRegistry[relayUrl] = webSocket;
     return relaysWebSocketsRegistry[relayUrl]!;
   }
 
   /// Returns the [WebSocket] registered with the given [relayUrl].
-  WebSocket? getRelayWebSocket({
+  WebSocketChannel? getRelayWebSocket({
     required String relayUrl,
   }) {
     final targetWebSocket = relaysWebSocketsRegistry[relayUrl];
@@ -67,7 +66,7 @@ class NostrRegistry {
   }
 
   /// Returns all [WebSocket]s registered in the registry.
-  List<MapEntry<String, WebSocket>> allRelaysEntries() {
+  List<MapEntry<String, WebSocketChannel>> allRelaysEntries() {
     return relaysWebSocketsRegistry.entries.toList();
   }
 

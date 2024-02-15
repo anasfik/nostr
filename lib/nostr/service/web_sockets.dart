@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:dart_nostr/nostr/core/utils.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// {@template nostr_web_sockets_service}
 /// A service that manages the relays web sockets connections
@@ -19,25 +18,20 @@ class NostrWebSocketsService {
     _connectionTimeout = newDur;
   }
 
-  /// THe custom http client that will be used to connect to the relay.
-  HttpClient? _client;
-
   /// Connects to a [relay] web socket, and trigger the [onConnectionSuccess] callback if the connection is successful, or the [onConnectionError] callback if the connection fails.
   Future<void> connectRelay({
     required String relay,
-    HttpClient? customHttpClient,
     bool? shouldIgnoreConnectionException,
-    void Function(WebSocket webSocket)? onConnectionSuccess,
+    void Function(WebSocketChannel webSocket)? onConnectionSuccess,
   }) async {
-    _client ??= _createCustomHttpClient();
-    WebSocket? webSocket;
+    WebSocketChannel? webSocket;
 
     try {
-      webSocket = await WebSocket.connect(
-        relay,
-        compression: CompressionOptions.compressionOff,
-        customClient: customHttpClient ?? _client!,
+      webSocket = WebSocketChannel.connect(
+        Uri.parse(relay),
       );
+
+      await webSocket.ready;
 
       onConnectionSuccess?.call(webSocket);
     } catch (e) {
@@ -79,12 +73,12 @@ class NostrWebSocketsService {
   }
 
   /// Creates a custom http client.
-  HttpClient _createCustomHttpClient() {
-    final client = HttpClient();
-    client.badCertificateCallback =
-        (X509Certificate cert, String host, int port) => true;
-    client.connectionTimeout = _connectionTimeout;
+  // HttpClient _createCustomHttpClient() {
+  //   final client = HttpClient();
+  //   client.badCertificateCallback =
+  //       (X509Certificate cert, String host, int port) => true;
+  //   client.connectionTimeout = _connectionTimeout;
 
-    return client;
-  }
+  //   return client;
+  // }
 }

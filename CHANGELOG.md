@@ -1,5 +1,9 @@
 # Changelog
 
+## 8.1.0
+
+- Making use of the `web_socket_channel` for cross platform compatibility.
+
 ## 8.0.3
 
 - Support to sending close commands to specific relays, instead of closing all relays at once.
