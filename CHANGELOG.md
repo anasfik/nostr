@@ -1,5 +1,10 @@
 # Changelog
 
+## 8.1.2
+
+- Made all event fields nullable, exposing the toMap() method publicly for NIP cases where an uncompleted events is required (Gift wraps, Remote signing).
+- Minor edits
+
 ## 8.1.0
 
 - Making use of the `web_socket_channel` for cross platform compatibility.

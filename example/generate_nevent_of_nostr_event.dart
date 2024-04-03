@@ -16,8 +16,13 @@ void main() {
 
   print('event id: ${nostrEvent.id}');
 
+ 
+ if(nostrEvent.id == null) {
+      throw Exception('event id cannot be null');
+    }
+
   final encodedNEvent = Nostr.instance.utilsService.encodeNevent(
-    eventId: nostrEvent.id,
+    eventId: nostrEvent.id!,
     userRelays: relays,
     pubkey: newKeyPair.public,
   );

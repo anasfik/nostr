@@ -152,9 +152,14 @@ class NostrRelays implements NostrRelaysBase {
   }) {
     final serialized = event.serialized();
 
+ if(event.id == null) {
+      throw Exception('event id cannot be null');
+    }
+
     _runFunctionOverRelationIteration((relay) {
+      
       _registerOnOklCallBack(
-        associatedEventId: event.id,
+        associatedEventId: event.id!,
         onOk: onOk ?? (relay, ok) {},
         relay: relay.url,
       );
@@ -191,8 +196,14 @@ class NostrRelays implements NostrRelaysBase {
 
       final serialized = event.serialized();
 
+
+ if(event.id == null) {
+      throw Exception('event id cannot be null');
+    }
+
+
       _registerOnOklCallBack(
-        associatedEventId: event.id,
+        associatedEventId: event.id!,
         relay: relay.url,
         onOk: (relay, ok) {
           isSomeOkTriggered = true;

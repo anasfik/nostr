@@ -17,7 +17,6 @@ class NostrEvent extends Equatable {
     required this.createdAt,
     required this.id,
     required this.kind,
-    required this.ots,
     required this.pubkey,
     required this.sig,
     required this.tags,
@@ -52,33 +51,31 @@ class NostrEvent extends Equatable {
             .toList(),
       ),
       subscriptionId: decoded[1] as String?,
-      ots: event['ots'] as String?,
+
     );
   }
 
   /// The id of the event.
-  final String id;
+  final String? id;
 
   /// The kind of the event.
-  final int kind;
+  final int? kind;
 
   /// The content of the event.
-  final String content;
+  final String? content;
 
   /// The signature of the event.
-  final String sig;
+  final String? sig;
 
   /// The public key of the event creator.
   final String pubkey;
 
   /// The creation date of the event.
-  final DateTime createdAt;
+  final DateTime? createdAt;
 
   /// The tags of the event.
-  final List<List<String>> tags;
+  final List<List<String>>? tags;
 
-  /// The ots of the event.
-  final String? ots;
 
   /// The subscription id of the event
   /// This is meant for events that are got from the relays, and not for events that are created by you.
@@ -146,7 +143,7 @@ class NostrEvent extends Equatable {
       pubkey: pubkey,
       createdAt: createdAtToUse,
       tags: tagsToUse,
-      ots: ots,
+
     );
   }
 
@@ -174,8 +171,14 @@ class NostrEvent extends Equatable {
       );
     }
 
+ if (id == null) {
+      throw Exception(
+        "You can't get a unique key for an event that you created, you can only get a unique key for an event that you got from the relays",
+      );
+    }
+
     return NostrEventKey(
-      eventId: id,
+      eventId: id!,
       sourceSubscriptionId: subscriptionId!,
       originalSourceEvent: this,
     );
@@ -183,23 +186,30 @@ class NostrEvent extends Equatable {
 
   /// Returns a serialized [NostrEvent] from this event.
   String serialized() {
-    return jsonEncode([NostrConstants.event, _toMap()]);
+    return jsonEncode([NostrConstants.event, toMap()]);
   }
 
   /// Returns a map representation of this event.
-  Map<String, dynamic> _toMap() {
+  Map<String, dynamic> toMap() {
     return {
-      'id': id,
-      'kind': kind,
-      'content': content,
-      'sig': sig,
-      'pubkey': pubkey,
-      'created_at': createdAt.millisecondsSinceEpoch ~/ 1000,
-      'tags': tags,
-      if (ots != null) 'ots': ots,
-    };
+       if (id != null) 'id': id,
+      if (kind != null) 'kind': kind,
+       'pubkey': pubkey,
+      if (content != null) 'content': content,
+      if (sig != null) 'sig': sig,
+      if (createdAt != null) 'created_at': createdAt!.millisecondsSinceEpoch ~/ 1000,
+      if (tags != null) 'tags': tags!.map((tag) => tag.map((e) => e).toList()).toList(), 
+      };
   }
 
+ bool isVerified() {
+    if(id == null || sig == null) {
+      return false;
+    }
+
+    return NostrKeyPairs.verify(pubkey, id!, sig!,  );
+ }
+ 
   @override
   List<Object?> get props => [
         id,
@@ -209,7 +219,6 @@ class NostrEvent extends Equatable {
         pubkey,
         createdAt,
         tags,
-        ots,
         subscriptionId,
       ];
 }

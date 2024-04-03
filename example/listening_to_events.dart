@@ -40,7 +40,19 @@ void main() async {
 
   // We listen to the stream and print the events.
   requestStream.stream.listen((event) {
-    for (final a in event.tags) {
+    if(event.tags == null) {
+     print('tags are null');
+      
+      return;
+    }
+
+ if(event.tags?.isEmpty ?? true) {
+     print('tags are empty');
+      
+      return;
+    }
+
+    for (final a in event.tags!) {
       if (a.first == 'a') {
         print(a.toString());
       }
