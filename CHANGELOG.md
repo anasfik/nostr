@@ -1,5 +1,9 @@
 # Changelog
 
+## 8.1.1
+
+- exposed a field in the `NostrFilter` class to allow using more filters.
+
 ## 8.1.2
 
 - Made all event fields nullable, exposing the toMap() method publicly for NIP cases where an uncompleted events is required (Gift wraps, Remote signing).

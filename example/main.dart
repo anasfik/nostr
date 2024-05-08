@@ -20,12 +20,16 @@ Future<void> main() async {
   // create an event
   final event = NostrEvent.fromPartialData(
     kind: 1,
-    content: 'example content',
+    content: 'content',
     keyPairs: keyPair,
     tags: [
       ['t', currentDateInMsAsString],
+      ['title', "ps5"],
     ],
   );
+
+  final asMap = event.toMap();
+  print(asMap);
 
   // send the event
   Nostr.instance.relaysService.sendEventToRelays(event);

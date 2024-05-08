@@ -17,6 +17,7 @@ class NostrFilter extends Equatable {
     this.limit,
     this.search,
     this.a,
+    this.additionalFilters,
   });
 
   /// Deserialize aNpstrFilter from a JSON
@@ -96,6 +97,9 @@ class NostrFilter extends Equatable {
   /// A search string to use to filter events
   final String? search;
 
+  /// Additional filters to be used in the filter
+  final Map<String, dynamic>? additionalFilters;
+
   /// Serialize a [NostrFilter] to a [Map<String, dynamic>]
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -110,6 +114,7 @@ class NostrFilter extends Equatable {
       if (until != null) 'until': until!.millisecondsSinceEpoch ~/ 1000,
       if (limit != null) 'limit': limit,
       if (search != null) 'search': search,
+      if (additionalFilters != null) ...additionalFilters!
     };
   }
 
@@ -126,5 +131,6 @@ class NostrFilter extends Equatable {
         until,
         limit,
         search,
+        additionalFilters,
       ];
 }
