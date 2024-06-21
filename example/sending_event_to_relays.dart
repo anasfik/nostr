@@ -3,13 +3,13 @@ import 'package:dart_nostr/dart_nostr.dart';
 void main() async {
   // This method will enable the logs of the library.
   Nostr.instance.enableLogs();
+  final relaysList = [
+    'wss://relay.nostr.band/all',
+  ];
 
   // initialize the relays service.
   await Nostr.instance.relaysService.init(
-    relaysUrl: <String>[
-      'wss://relay.damus.io',
-      'wss://relay.nostrss.re',
-    ],
+    relaysUrl: relaysList,
     onRelayConnectionError: (relay, err, websocket) {
       print('relay connection error: $err');
     },
@@ -26,12 +26,26 @@ void main() async {
 
   Nostr.instance.relaysService.sendEventToRelays(
     event,
+    relays: [
+      ...relaysList,
+      'wss://relay.damus.io',
+    ],
     onOk: (relay, ok) {
       print(relay);
       print(ok.eventId);
       print(ok.isEventAccepted);
       print(ok.message);
       print('\n');
+    },
+  );
+
+  Nostr.instance.relaysService.sendEventToRelays(
+    event,
+    relays: [
+      ...relaysList,
+    ],
+    onOk: (relay, ok) {
+      print("second only");
     },
   );
 

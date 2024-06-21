@@ -71,7 +71,7 @@ class NostrRegistry {
   }
 
   /// Clears all registries.
-  void clearAllRegistries() {
+  void clear() {
     relaysWebSocketsRegistry.clear();
     eventsRegistry.clear();
     okCommandCallBacks.clear();
@@ -198,5 +198,19 @@ class NostrRegistry {
     }
 
     return register[relay]!;
+  }
+
+  bool isRelayRegisteredAndConnectedSuccesfully(String relay) {
+    final relayWebSocket = relaysWebSocketsRegistry[relay];
+
+    if (relayWebSocket == null) {
+      return false;
+    }
+
+    if (relayWebSocket.closeCode == null) {
+      return true;
+    } else {
+      return false;
+    }
   }
 }

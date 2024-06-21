@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dart_nostr/dart_nostr.dart';
+import 'package:dart_nostr/nostr/core/extensions.dart';
 import 'package:dart_nostr/nostr/instance/relays/base/relays.dart';
 import 'package:dart_nostr/nostr/model/ease.dart';
 import 'package:dart_nostr/nostr/model/ok.dart';
@@ -121,8 +122,6 @@ class NostrRelays implements NostrRelaysBase {
     );
     relaysList = List.of(relaysUrl);
 
-    _clearRegistriesIf(ensureToClearRegistriesBeforeStarting);
-
     return _startConnectingAndRegisteringRelays(
       relaysUrl: relaysUrl,
       onRelayListening: onRelayListening,
@@ -142,31 +141,38 @@ class NostrRelays implements NostrRelaysBase {
   /// It takes a [NostrEvent] object, then it serializes it internally and sends it to all relays [WebSocket]s.
   ///
   /// example:
-  /// ```dart
+  /// ```dar
   /// Nostr.instance.relays.sendEventToRelays(event);
   /// ```
   @override
-  void sendEventToRelays(
+  Future<void> sendEventToRelays(
     NostrEvent event, {
+    List<String>? relays,
     void Function(String relay, NostrEventOkCommand ok)? onOk,
-  }) {
+  }) async {
+    await _registerNewRelays(relays ?? relaysList!);
+
     final serialized = event.serialized();
 
- if(event.id == null) {
+    if (event.id == null) {
       throw Exception('event id cannot be null');
     }
 
     _runFunctionOverRelationIteration((relay) {
-      
-      _registerOnOklCallBack(
-        associatedEventId: event.id!,
-        onOk: onOk ?? (relay, ok) {},
-        relay: relay.url,
-      );
-      relay.socket.sink.add(serialized);
-      utils.log(
-        'event with id: ${event.id} is sent to relay with url: ${relay.url}',
-      );
+      final relayUrl = relay.url;
+
+      if (relays?.containsRelay(relayUrl) ?? true) {
+        _registerOnOklCallBack(
+          associatedEventId: event.id!,
+          onOk: onOk ?? (relay, ok) {},
+          relay: relayUrl,
+        );
+
+        relay.socket.sink.add(serialized);
+        utils.log(
+          'event with id: ${event.id} is sent to relay with url: ${relay.url}',
+        );
+      }
     });
   }
 
@@ -177,68 +183,80 @@ class NostrRelays implements NostrRelaysBase {
   Future<NostrEventOkCommand> sendEventToRelaysAsync(
     NostrEvent event, {
     required Duration timeout,
-  }) {
+    List<String>? relays,
+  }) async {
+    await _registerNewRelays(relays ?? relaysList!);
+
     var isSomeOkTriggered = false;
 
     final completers = <Completer<NostrEventOkCommand>>[];
 
     _runFunctionOverRelationIteration((relay) {
-      final completer = Completer<NostrEventOkCommand>();
-      completers.add(completer);
+      final relayUrl = relay.url;
 
-      Future.delayed(timeout, () {
-        if (!isSomeOkTriggered) {
-          throw TimeoutException(
-            'the event with id: ${event.id} has timed out after: ${timeout.inSeconds} seconds',
-          );
+      if (relays?.containsRelay(relayUrl) ?? true) {
+        final completer = Completer<NostrEventOkCommand>();
+        completers.add(completer);
+
+        Future.delayed(timeout, () {
+          if (!isSomeOkTriggered) {
+            throw TimeoutException(
+              'the event with id: ${event.id} has timed out after: ${timeout.inSeconds} seconds',
+            );
+          }
+        });
+
+        final serialized = event.serialized();
+
+        if (event.id == null) {
+          throw Exception('event id cannot be null');
         }
-      });
 
-      final serialized = event.serialized();
+        _registerOnOklCallBack(
+          associatedEventId: event.id!,
+          relay: relayUrl,
+          onOk: (relay, ok) {
+            isSomeOkTriggered = true;
+            completer.complete(ok);
+          },
+        );
 
-
- if(event.id == null) {
-      throw Exception('event id cannot be null');
-    }
-
-
-      _registerOnOklCallBack(
-        associatedEventId: event.id!,
-        relay: relay.url,
-        onOk: (relay, ok) {
-          isSomeOkTriggered = true;
-          completer.complete(ok);
-        },
-      );
-
-      relay.socket.sink.add(serialized);
-      utils.log(
-        'event with id: ${event.id} is sent to relay with url: ${relay.url}',
-      );
+        relay.socket.sink.add(serialized);
+        utils.log(
+          'event with id: ${event.id} is sent to relay with url: $relayUrl',
+        );
+      }
     });
 
     return Future.any(completers.map((e) => e.future));
   }
 
   @override
-  void sendCountEventToRelays(
+  Future<void> sendCountEventToRelays(
     NostrCountEvent countEvent, {
     required void Function(String relay, NostrCountResponse countResponse)
         onCountResponse,
-  }) {
+    List<String>? relays,
+  }) async {
+    await _registerNewRelays(relays ?? relaysList!);
+
     final serialized = countEvent.serialized();
 
     _runFunctionOverRelationIteration((relay) {
-      _registerOnCountCallBack(
-        subscriptionId: countEvent.subscriptionId,
-        onCountResponse: onCountResponse,
-        relay: relay.url,
-      );
+      final relayUrl = relay.url;
 
-      relay.socket.sink.add(serialized);
-      utils.log(
-        'Count Event with subscription id: ${countEvent.subscriptionId} is sent to relay with url: ${relay.url}',
-      );
+      if (relays?.containsRelay(relayUrl) ?? true) {
+        _registerOnCountCallBack(
+          subscriptionId: countEvent.subscriptionId,
+          onCountResponse: onCountResponse,
+          relay: relayUrl,
+        );
+
+        relay.socket.sink.add(serialized);
+        utils.log(
+          'Count Event with subscription id: ${countEvent.subscriptionId} is sent to relay with url: ${relay.url}',
+        );
+      }
     });
   }
 
@@ -246,36 +264,42 @@ class NostrRelays implements NostrRelaysBase {
   Future<NostrCountResponse> sendCountEventToRelaysAsync(
     NostrCountEvent countEvent, {
     required Duration timeout,
-  }) {
+    List<String>? relays,
+  }) async {
+    await _registerNewRelays(relays ?? relaysList!);
+
     var isSomeOkTriggered = false;
 
     final completers = <Completer<NostrCountResponse>>[];
 
     _runFunctionOverRelationIteration((relay) {
-      _registerOnCountCallBack(
-        relay: relay.url,
-        subscriptionId: countEvent.subscriptionId,
-        onCountResponse: (relay, countRes) {
-          final completer = Completer<NostrCountResponse>();
+      final relayUrl = relay.url;
+      if (relays?.containsRelay(relayUrl) ?? true) {
+        _registerOnCountCallBack(
+          relay: relayUrl,
+          subscriptionId: countEvent.subscriptionId,
+          onCountResponse: (relay, countRes) {
+            final completer = Completer<NostrCountResponse>();
 
-          Future.delayed(timeout, () {
-            if (!isSomeOkTriggered) {
-              throw TimeoutException(
-                'the count event with subscription id: ${countEvent.subscriptionId} has timed out after: ${timeout.inSeconds} seconds',
-              );
-            }
-          });
+            Future.delayed(timeout, () {
+              if (!isSomeOkTriggered) {
+                throw TimeoutException(
+                  'the count event with subscription id: ${countEvent.subscriptionId} has timed out after: ${timeout.inSeconds} seconds',
+                );
+              }
+            });
 
-          isSomeOkTriggered = true;
-          completer.complete(countRes);
-        },
-      );
+            isSomeOkTriggered = true;
+            completer.complete(countRes);
+          },
+        );
 
-      final serialized = countEvent.serialized();
-      relay.socket.sink.add(serialized);
-      utils.log(
-        'count event with subscription id: ${countEvent.subscriptionId} is sent to relay with url: ${relay.url}',
-      );
+        final serialized = countEvent.serialized();
+        relay.socket.sink.add(serialized);
+        utils.log(
+          'count event with subscription id: ${countEvent.subscriptionId} is sent to relay with url: ${relayUrl}',
+        );
+      }
     });
 
     return Future.any(completers.map((e) => e.future));
@@ -295,6 +319,7 @@ class NostrRelays implements NostrRelaysBase {
     required NostrRequest request,
     void Function(String relay, NostrRequestEoseCommand ease)? onEose,
     bool useConsistentSubscriptionIdBasedOnRequestData = false,
+    List<String>? relays,
   }) {
     final serialized = request.serialized(
       subscriptionId: useConsistentSubscriptionIdBasedOnRequestData
@@ -302,17 +327,23 @@ class NostrRelays implements NostrRelaysBase {
           : Nostr.instance.utilsService.random64HexChars(),
     );
 
-    _runFunctionOverRelationIteration((relay) {
-      _registerOnEoselCallBack(
-        subscriptionId: request.subscriptionId!,
-        onEose: onEose ?? (relay, eose) {},
-        relay: relay.url,
-      );
+    _registerNewRelays(relays ?? relaysList!).then((_) {
+      _runFunctionOverRelationIteration((relay) {
+        final relayUrl = relay.url;
 
-      relay.socket.sink.add(serialized);
-      utils.log(
-        'request with subscription id: ${request.subscriptionId} is sent to relay with url: ${relay.url}',
-      );
+        if (relays?.containsRelay(relayUrl) ?? true) {
+          _registerOnEoselCallBack(
+            subscriptionId: request.subscriptionId!,
+            onEose: onEose ?? (relay, eose) {},
+            relay: relayUrl,
+          );
+
+          relay.socket.sink.add(serialized);
+          utils.log(
+            'request with subscription id: ${request.subscriptionId} is sent to relay with url: ${relayUrl}',
+          );
+        }
+      });
     });
 
     final requestSubId = request.subscriptionId;
@@ -337,7 +368,10 @@ class NostrRelays implements NostrRelaysBase {
     void Function(String relay, NostrRequestEoseCommand ease)? onEose,
     bool useConsistentSubscriptionIdBasedOnRequestData = false,
     bool shouldThrowErrorOnTimeoutWithoutEose = true,
-  }) {
+    List<String>? relays,
+  }) async {
+    await _registerNewRelays(relays ?? relaysList!);
+
     final subscription = startEventsSubscription(
       request: request,
       onEose: onEose,
@@ -354,20 +388,24 @@ class NostrRelays implements NostrRelaysBase {
     final completers = <Completer<List<NostrEvent>>>[];
 
     _runFunctionOverRelationIteration((relay) {
-      final completer = Completer<List<NostrEvent>>();
-      completers.add(completer);
+      final relayUrl = relay.url;
 
-      _registerOnEoselCallBack(
-        subscriptionId: subId,
-        relay: relay.url,
-        onEose: (relay, eose) {
-          if (!isSomeEoseTriggered) {
-            // subscription.close();
-            completer.complete(events);
-            isSomeEoseTriggered = true;
-          }
-        },
-      );
+      if (relays?.containsRelay(relayUrl) ?? true) {
+        final completer = Completer<List<NostrEvent>>();
+        completers.add(completer);
+
+        _registerOnEoselCallBack(
+          subscriptionId: subId,
+          relay: relayUrl,
+          onEose: (relay, eose) {
+            if (!isSomeEoseTriggered) {
+              // subscription.close();
+              completer.complete(events);
+              isSomeEoseTriggered = true;
+            }
+          },
+        );
+      }
     });
 
     subscription.stream.listen(events.add);
@@ -705,7 +743,7 @@ class NostrRelays implements NostrRelaysBase {
       await disconnectFromRelays();
       await streamsController.close();
 
-      nostrRegistry.clearAllRegistries();
+      nostrRegistry.clear();
 
       return true;
     } catch (e) {
@@ -816,6 +854,14 @@ class NostrRelays implements NostrRelaysBase {
     final completer = Completer();
 
     for (final relay in relaysUrl) {
+      if (nostrRegistry.isRelayRegisteredAndConnectedSuccesfully(relay)) {
+        utils.log(
+          'relay with url: $relay is already connected successfully, skipping...',
+        );
+
+        continue;
+      }
+
       try {
         await webSocketsService.connectRelay(
           relay: relay,
@@ -1029,9 +1075,9 @@ class NostrRelays implements NostrRelaysBase {
     }
   }
 
-  void _clearRegistriesIf(bool ensureToClearRegistriesBeforeStarting) {
-    if (ensureToClearRegistriesBeforeStarting) {
-      nostrRegistry.clearAllRegistries();
-    }
+  Future<void> _registerNewRelays(List<String> newRelaysList) async {
+    return init(
+      relaysUrl: newRelaysList,
+    );
   }
 }

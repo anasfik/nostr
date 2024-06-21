@@ -2,22 +2,22 @@ import 'package:dart_nostr/dart_nostr.dart';
 
 void main() async {
   await Nostr.instance.relaysService.init(
-    relaysUrl: ['wss://nos.lol'],
+    relaysUrl: ['wss://relay.damus.io'],
   );
 
   final request = NostrRequest(
     filters: const <NostrFilter>[
       NostrFilter(
         kinds: [0],
-        authors: [
-          'aeadd4b4a213c8bf86c63a3b52b5896193815f82122aa2a87ae91d2acaea087d'
-        ],
+        limit: 10,
+        search: 'something Idk',
       ),
     ],
   );
 
   final requestStream = Nostr.instance.relaysService.startEventsSubscription(
     request: request,
+    relays: ['wss://relay.nostr.band/all'],
     onEose: (relay, ease) {
       print('ease received for subscription id: ${ease.subscriptionId}');
 
