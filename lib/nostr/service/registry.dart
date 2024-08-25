@@ -163,9 +163,9 @@ class NostrRegistry {
         onCountResponse,
     required String relay,
   }) {
-    final relayCountRegister = countResponseCallBacks[subscriptionId];
-
-    relayCountRegister?[subscriptionId] = onCountResponse;
+    final relayCountRegister =
+        getOrCreateRegister(countResponseCallBacks, relay);
+    relayCountRegister[subscriptionId] = onCountResponse;
   }
 
   /// Returns a count response callback from the registry with the given [subscriptionId].
