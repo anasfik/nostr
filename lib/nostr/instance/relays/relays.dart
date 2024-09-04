@@ -851,7 +851,7 @@ class NostrRelays implements NostrRelaysBase {
     required bool shouldReconnectToRelayOnNotice,
     required Duration connectionTimeout,
   }) async {
-    final completer = Completer();
+    final completers = <String, Completer<void>>{};
 
     for (final relay in relaysUrl) {
       if (nostrRegistry.isRelayRegisteredAndConnectedSuccesfully(relay)) {
@@ -861,9 +861,14 @@ class NostrRelays implements NostrRelaysBase {
 
         continue;
       }
-
       try {
-        await webSocketsService.connectRelay(
+        final completer = Completer<String>();
+        completer.future.timeout(
+          connectionTimeout,
+        );
+        completers[relay] = completer;
+        // ignore: unawaited_futures
+        webSocketsService.connectRelay(
           relay: relay,
           onConnectionSuccess: (relayWebSocket) {
             nostrRegistry.registerRelayWebSocket(
@@ -891,16 +896,24 @@ class NostrRelays implements NostrRelaysBase {
                 lazyListeningToRelays: lazyListeningToRelays,
               );
             }
+            completer.complete(relay);
           },
         );
       } catch (e) {
         onRelayConnectionError?.call(relay, e, null);
       }
     }
-
-    completer.complete();
-
-    return completer.future;
+    await Future.wait(
+      completers.keys.map(
+        (key) => completers[key]!
+            .future
+            .timeout(connectionTimeout)
+            .catchError((err) {
+          onRelayConnectionError?.call(key, err, null);
+          return null;
+        }),
+      ),
+    );
   }
 
   bool _filterNostrEventsWithId(
