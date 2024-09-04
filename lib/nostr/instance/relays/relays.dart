@@ -24,6 +24,9 @@ class NostrRelays implements NostrRelaysBase {
     nostrRegistry = NostrRegistry(utils: utils);
   }
 
+  /// The list of relay urls that failed to connect
+  final List<String> failureRelaysList = [];
+
   /// Represents a registry of all relays that you did registered with the [init] method.
   @override
   Map<String, WebSocketChannel> get relaysWebSocketsRegistry =>
@@ -853,23 +856,24 @@ class NostrRelays implements NostrRelaysBase {
   }) async {
     final completers = <String, Completer<void>>{};
 
-    for (final relay in relaysUrl) {
+    for (final relay in relaysUrl.toList()) {
+      if (failureRelaysList.contains(relay)) {
+        continue;
+      }
       if (nostrRegistry.isRelayRegisteredAndConnectedSuccesfully(relay)) {
         utils.log(
           'relay with url: $relay is already connected successfully, skipping...',
         );
-
         continue;
       }
+      final completer = Completer<String>();
       try {
-        final completer = Completer<String>();
-        completer.future.timeout(
-          connectionTimeout,
-        );
         completers[relay] = completer;
         // ignore: unawaited_futures
-        webSocketsService.connectRelay(
+        webSocketsService
+            .connectRelay(
           relay: relay,
+          shouldIgnoreConnectionException: false,
           onConnectionSuccess: (relayWebSocket) {
             nostrRegistry.registerRelayWebSocket(
               relayUrl: relay,
@@ -898,9 +902,16 @@ class NostrRelays implements NostrRelaysBase {
             }
             completer.complete(relay);
           },
+        )
+            .catchError(
+          (err) {
+            onRelayConnectionError?.call(relay, err, null);
+            completer.completeError(Exception());
+          },
         );
       } catch (e) {
         onRelayConnectionError?.call(relay, e, null);
+        completer.completeError(e);
       }
     }
     await Future.wait(
@@ -908,8 +919,11 @@ class NostrRelays implements NostrRelaysBase {
         (key) => completers[key]!
             .future
             .timeout(connectionTimeout)
-            .catchError((err) {
-          onRelayConnectionError?.call(key, err, null);
+            .onError((e, stack) {
+          if (!failureRelaysList.contains(key)) {
+            failureRelaysList.add(key);
+          }
+          onRelayConnectionError?.call(key, e, null);
           return null;
         }),
       ),
