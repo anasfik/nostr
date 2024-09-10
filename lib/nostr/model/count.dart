@@ -56,14 +56,18 @@ class NostrCountResponse extends Equatable {
     assert(countMap is Map);
 
     return NostrCountResponse(
-      subscriptionId: decodedData[1] as String,
-      count: int.parse(countMap['count'] as String),
+      subscriptionId: parseString(decodedData[1]) ?? '',
+      count: parseInt(countMap['count']) ?? 0,
     );
   }
   final String subscriptionId;
   final int count;
   @override
-  List<Object?> get props => throw UnimplementedError();
+  List<Object?> get props => [
+        'COUNT',
+        subscriptionId,
+        {'count': count},
+      ];
 
   static bool canBeDeserialized(String data) {
     final decodedData = jsonDecode(data);
@@ -82,5 +86,19 @@ class NostrCountResponse extends Equatable {
     } else {
       return false;
     }
+  }
+}
+
+String? parseString(dynamic data) {
+  return (data ?? '') != '' ? data.toString() : null;
+}
+
+int? parseInt(dynamic data) {
+  if (data is double) {
+    return data.toInt();
+  } else if (data is int) {
+    return data;
+  } else {
+    return int.tryParse(data.toString());
   }
 }

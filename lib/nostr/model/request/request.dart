@@ -27,14 +27,15 @@ class NostrRequest extends Equatable {
 
   /// Serialize the request to send it to the remote relays websockets.
   String serialized({String? subscriptionId}) {
-    this.subscriptionId = subscriptionId ??
-        this.subscriptionId ??
-        Nostr.instance.utilsService.consistent64HexChars(
-          filters
-              .map((e) => e.toMap().toString())
-              .reduce((value, element) => value + element),
-        );
-
+    if (this.subscriptionId == null) {
+      this.subscriptionId = subscriptionId ??
+          this.subscriptionId ??
+          Nostr.instance.utilsService.consistent64HexChars(
+            filters
+                .map((e) => e.toMap().toString())
+                .reduce((value, element) => value + element),
+          );
+    }
     //! The old way of doing it is commented below
     // final decodedFilters =
     //     jsonEncode(filters.map((item) => item.toMap()).toList());
@@ -44,7 +45,7 @@ class NostrRequest extends Equatable {
 
     final encodedReq = jsonEncode([
       NostrConstants.request,
-      subscriptionId,
+      this.subscriptionId,
       ...filters.map((e) => e.toMap()),
     ]);
 

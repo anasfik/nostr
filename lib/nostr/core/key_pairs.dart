@@ -50,7 +50,7 @@ class NostrKeyPairs extends Equatable {
     String message,
     String signature,
   ) {
-    return bip340.verify(pubkey, message, signature);
+    return bip340.verify(pubkey!, message, signature);
   }
 
   static bool isValidPrivateKey(String privateKey) {

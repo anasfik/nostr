@@ -91,9 +91,19 @@ class NostrRegistry {
 
   /// Registers an event to the registry with the given [event].
   NostrEvent registerEvent(NostrEvent event) {
-    eventsRegistry[eventUniqueId(event)] = event;
+    final uniqueId = eventUniqueId(event);
+    final compareDate = event.createdAt != null
+        ? eventsRegistry[uniqueId]?.createdAt?.compareTo(event.createdAt!)
+        : null;
+    if (eventsRegistry.containsKey(uniqueId)) {
+      if (compareDate != null && compareDate < 0) {
+        eventsRegistry[uniqueId] = event;
+      }
+    } else {
+      eventsRegistry[uniqueId] = event;
+    }
 
-    return eventsRegistry[eventUniqueId(event)]!;
+    return eventsRegistry[uniqueId]!;
   }
 
   /// REturns an [event] unique id, See also [NostrEvent.uniqueKey].
@@ -163,9 +173,9 @@ class NostrRegistry {
         onCountResponse,
     required String relay,
   }) {
-    final relayCountRegister = countResponseCallBacks[subscriptionId];
-
-    relayCountRegister?[subscriptionId] = onCountResponse;
+    final relayCountRegister =
+        getOrCreateRegister(countResponseCallBacks, relay);
+    relayCountRegister[subscriptionId] = onCountResponse;
   }
 
   /// Returns a count response callback from the registry with the given [subscriptionId].
