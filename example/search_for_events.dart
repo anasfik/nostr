@@ -6,7 +6,7 @@ Future<void> main() async {
   final instance = Nostr()..disableLogs();
 
   // init relays
-  await instance.relaysService.init(
+  await instance.services.relays.init(
     relaysUrl: [
       'wss://relay.nostr.band/all',
     ],
@@ -25,7 +25,7 @@ Future<void> main() async {
     ],
   );
 
-  final sub = instance.relaysService.startEventsSubscription(
+  final sub = instance.services.relays.startEventsSubscription(
     request: req,
   );
 

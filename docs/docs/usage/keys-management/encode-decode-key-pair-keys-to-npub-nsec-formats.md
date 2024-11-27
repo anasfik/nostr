@@ -10,7 +10,7 @@ Nostr is about hex keys, these are what you will use to sign & verify data, or i
 Let's say we have this key pair:
 
 ```dart
-final keyPair = Nostr.instance.keysService.generateKeyPair();
+final keyPair = Nostr.instance.services.keys.generateKeyPair();
 
 print(keyPair.public); // ...
 print(keyPair.private); // ...
@@ -22,10 +22,10 @@ Let's learn how to encode & decode npub keys, in the following sections.
 
 ### Encode a public key to npub format
 
-Let's say we want to create the convenable npub key for the public key above, we can use the `encodePublicKeyToNpub()` method of the `Nostr.instance.keysService`, Example:
+Let's say we want to create the convenable npub key for the public key above, we can use the `encodePublicKeyToNpub()` method of the `Nostr.instance.services.keys`, Example:
 
 ```dart
-final npubKey = Nostr.instance.keysService.encodePublicKeyToNpub(keyPair.public);
+final npubKey = Nostr.instance.services.keys.encodePublicKeyToNpub(keyPair.public);
 
 print(npubKey); // npub...
 ```
@@ -34,10 +34,10 @@ we can now use it, maybe show it to users...
 
 ### Decodes a npub key to a public key
 
-Now let's say we want to turn back our npub to our public key, we can use the `decodeNpubKeyToPublicKey()` method of the `Nostr.instance.keysService`, Example:
+Now let's say we want to turn back our npub to our public key, we can use the `decodeNpubKeyToPublicKey()` method of the `Nostr.instance.services.keys`, Example:
 
 ```dart
-final decodedPublicKey = Nostr.instance.keysService.decodeNpubKeyToPublicKey(npubKey);
+final decodedPublicKey = Nostr.instance.services.keys.decodeNpubKeyToPublicKey(npubKey);
 
 print(decodedPublicKey); // ...
 
@@ -52,11 +52,11 @@ Let's learn how to encode & decode nsec keys, in the following sections.
 
 ### Encode a private key to nsec format
 
-Let's say we want to create the convenable nsec key for the private key above, we can use the `encodePrivateKeyToNsec()` method of the `Nostr.instance.keysService`, Example:
+Let's say we want to create the convenable nsec key for the private key above, we can use the `encodePrivateKeyToNsec()` method of the `Nostr.instance.services.keys`, Example:
 
 ```dart
 
-final nsecKey = Nostr.instance.keysService.encodePrivateKeyToNsec(keyPair.private);
+final nsecKey = Nostr.instance.services.keys.encodePrivateKeyToNsec(keyPair.private);
 
 print(nsecKey); // nsec...
 ```
@@ -65,10 +65,10 @@ We can now use it, maybe show it in the key's owner profile...
 
 ### Decodes a nsec key to a private key
 
-Now let's say we want to turn back our nsec to our private key, we can use the `decodeNsecKeyToPrivateKey()` method of the `Nostr.instance.keysService`, Example:
+Now let's say we want to turn back our nsec to our private key, we can use the `decodeNsecKeyToPrivateKey()` method of the `Nostr.instance.services.keys`, Example:
 
 ```dart
-final decodedPrivateKey = Nostr.instance.keysService.decodeNsecKeyToPrivateKey(nsecKey);
+final decodedPrivateKey = Nostr.instance.services.keys.decodeNsecKeyToPrivateKey(nsecKey);
 
 print(decodedPrivateKey); // ...
 

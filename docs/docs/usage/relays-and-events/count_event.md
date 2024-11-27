@@ -21,7 +21,7 @@ final countEvent = NostrCountEvent.fromPartialData(
   eventsFilter: filter,
 );
 
-Nostr.instance.relaysService.sendCountEventToRelays(
+Nostr.instance.services.relays.sendCountEventToRelays(
   countEvent,
   onCountResponse: (countRes) {
     print("your filter matches ${countRes.count} events");

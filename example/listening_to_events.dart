@@ -5,7 +5,7 @@ void main() async {
   Nostr.instance.enableLogs();
 
   // We initialize the Nostr Relays Service with relays.
-  await Nostr.instance.relaysService.init(
+  await Nostr.instance.services.relays.init(
     relaysUrl: <String>[
       'wss://relay.nostr.band/all',
     ],
@@ -27,12 +27,12 @@ void main() async {
 
   // Now we create the stream of that request.
   // ignore: unused_local_variable
-  final requestStream = Nostr.instance.relaysService.startEventsSubscription(
+  final requestStream = Nostr.instance.services.relays.startEventsSubscription(
     request: request,
     onEose: (relay, ease) {
       print('ease received for subscription id: ${ease.subscriptionId}');
 
-      Nostr.instance.relaysService.closeEventsSubscription(
+      Nostr.instance.services.relays.closeEventsSubscription(
         ease.subscriptionId,
       );
     },
@@ -40,15 +40,15 @@ void main() async {
 
   // We listen to the stream and print the events.
   requestStream.stream.listen((event) {
-    if(event.tags == null) {
-     print('tags are null');
-      
+    if (event.tags == null) {
+      print('tags are null');
+
       return;
     }
 
- if(event.tags?.isEmpty ?? true) {
-     print('tags are empty');
-      
+    if (event.tags?.isEmpty ?? true) {
+      print('tags are empty');
+
       return;
     }
 

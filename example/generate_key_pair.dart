@@ -5,12 +5,12 @@ void main() async {
   Nostr.instance.enableLogs();
 
   // generates a key pair.
-  final keyPair = Nostr.instance.keysService.generateKeyPair();
+  final keyPair = Nostr.instance.services.keys.generateKeyPair();
 
   print(keyPair.public); // ...
   print(keyPair.private); // ...
 
-  final sameKeyPairGeneratedFromPrivate = Nostr.instance.keysService
+  final sameKeyPairGeneratedFromPrivate = Nostr.instance.services.keys
       .generateKeyPairFromExistingPrivateKey(keyPair.private);
 
   print(sameKeyPairGeneratedFromPrivate.public); // ...
@@ -21,7 +21,7 @@ void main() async {
     throw Exception('Key pair generation has something wrong.');
   }
 
-  final publicKey = Nostr.instance.keysService
+  final publicKey = Nostr.instance.services.keys
       .derivePublicKey(privateKey: sameKeyPairGeneratedFromPrivate.private);
   print(publicKey);
 

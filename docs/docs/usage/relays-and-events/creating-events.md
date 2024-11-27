@@ -18,7 +18,7 @@ You can get the final events that you will send them to your relays by either cr
 
 ```dart
  // Create a new key pair.
-final keyPair = Nostr.instance.keysService.generateKeyPair();
+final keyPair = Nostr.instance.services.keys.generateKeyPair();
 
 // Create a new event.
 NostrEvent event = NostrEvent(
@@ -41,7 +41,7 @@ As it is mentioned, this will require you to set every single value of the event
 
 ```dart
 // Create a new key pair.
-final keyPair = Nostr.instance.keysService.generateKeyPair();
+final keyPair = Nostr.instance.services.keys.generateKeyPair();
 
 // Create a new event.
 final event = NostrEvent.fromPartialData(

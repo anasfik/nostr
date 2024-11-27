@@ -19,7 +19,7 @@ if you have a Flutter app, I personally recommend you to call this method in the
 
 ```dart
 void main() async {
-  await Nostr.instance.relaysService.init(
+  await Nostr.instance.services.relays.init(
     relaysUrl: <String>["wss://eden.nostr.land"],
     connectionTimeout: Duration(seconds: 5),
     ensureToClearRegistriesBeforeStarting: true,
@@ -49,7 +49,7 @@ void main() async {
 if you already connected to your relays, and you want to reconnect to them again, you can call the `reconnectToRelays()` method:
 
 ```dart
-await Nostr.instance.relaysService.reconnectToRelays(
+await Nostr.instance.services.relays.reconnectToRelays(
   connectionTimeout: Duration(seconds: 5),
   ignoreConnectionException: true,
   lazyListeningToRelays: false,
@@ -71,7 +71,7 @@ await Nostr.instance.relaysService.reconnectToRelays(
 if you want to disconnect from your relays, you can call the `disconnectFromRelays()` method:
 
 ```dart
-await Nostr.instance.relaysService.disconnectFromRelays(
+await Nostr.instance.services.relays.disconnectFromRelays(
   closeCode: (relayUrl) {
     return WebSocketStatus.normalClosure;
   },

@@ -3,7 +3,7 @@ import 'package:dart_nostr/dart_nostr.dart';
 void main() async {
   // Waiting first for the connection to be established for all relays.
 
-  await Nostr.instance.relaysService.init(
+  await Nostr.instance.services.relays.init(
     relaysUrl: <String>[
       'wss://relay.damus.io',
       'wss://eden.nostr.land',
@@ -26,6 +26,6 @@ void main() async {
     );
 
     print('Starting subscription $i');
-    Nostr.instance.relaysService.startEventsSubscription(request: req);
+    Nostr.instance.services.relays.startEventsSubscription(request: req);
   }
 }

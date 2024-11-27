@@ -1,7 +1,7 @@
 import 'package:dart_nostr/dart_nostr.dart';
 
 void main() async {
-  await Nostr.instance.relaysService.init(
+  await Nostr.instance.services.relays.init(
     relaysUrl: ['wss://relay.damus.io'],
   );
 
@@ -15,13 +15,13 @@ void main() async {
     ],
   );
 
-  final requestStream = Nostr.instance.relaysService.startEventsSubscription(
+  final requestStream = Nostr.instance.services.relays.startEventsSubscription(
     request: request,
     relays: ['wss://relay.nostr.band/all'],
     onEose: (relay, ease) {
       print('ease received for subscription id: ${ease.subscriptionId}');
 
-      Nostr.instance.relaysService.closeEventsSubscription(
+      Nostr.instance.services.relays.closeEventsSubscription(
         ease.subscriptionId,
       );
     },

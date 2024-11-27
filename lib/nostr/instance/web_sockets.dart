@@ -7,9 +7,9 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 class NostrWebSocketsService {
   /// {@macro nostr_web_sockets_service}
   NostrWebSocketsService({
-    required this.utils,
+    required this.logger,
   });
-  final NostrClientUtils utils;
+  final NostrLogger logger;
 
   /// The connection timeout for the web sockets.
   Duration _connectionTimeout = const Duration(seconds: 5);
@@ -35,13 +35,13 @@ class NostrWebSocketsService {
 
       onConnectionSuccess?.call(webSocket);
     } catch (e) {
-      utils.log(
+      logger.log(
         'error while connecting to the relay with url: $relay',
         e,
       );
 
       if (shouldIgnoreConnectionException ?? true) {
-        utils.log(
+        logger.log(
           'The error related to relay: $relay is ignored, because to the ignoreConnectionException parameter is set to true.',
         );
       } else {
@@ -63,7 +63,7 @@ class NostrWebSocketsService {
           removeWebsocketSign.replaceFirst('wss://', 'https://');
       return Uri.parse(removeWebsocketSign);
     } catch (e) {
-      utils.log(
+      logger.log(
         'error while getting http url from websocket url: $relayUrl',
         e,
       );

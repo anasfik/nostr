@@ -5,9 +5,9 @@ void main() async {
     'wss://nos.lol',
   ];
 
-  await Nostr.instance.relaysService.init(relaysUrl: relays);
+  await Nostr.instance.services.relays.init(relaysUrl: relays);
 
-  final newKeyPair = Nostr.instance.keysService.generateKeyPair();
+  final newKeyPair = Nostr.instance.services.keys.generateKeyPair();
 
   final event = NostrEvent.fromPartialData(
     content: newKeyPair.public,
@@ -18,7 +18,7 @@ void main() async {
     ],
   );
 
-  Nostr.instance.relaysService.sendEventToRelays(
+  Nostr.instance.services.relays.sendEventToRelays(
     event,
     onOk: (relay, ok) {
       print('from relay: $relay');
@@ -37,10 +37,11 @@ void main() async {
 
   final req = NostrRequest(filters: [filter]);
 
-  final sub = Nostr.instance.relaysService.startEventsSubscription(
+  final sub = Nostr.instance.services.relays.startEventsSubscription(
     request: req,
     onEose: (relay, eose) {
-      Nostr.instance.relaysService.closeEventsSubscription(eose.subscriptionId);
+      Nostr.instance.services.relays
+          .closeEventsSubscription(eose.subscriptionId);
     },
   );
 
@@ -51,14 +52,14 @@ void main() async {
   await Future.delayed(const Duration(seconds: 5));
 
   for (var index = 0; index < 50; index++) {
-    Nostr.instance.relaysService.startEventsSubscription(
+    Nostr.instance.services.relays.startEventsSubscription(
       request: req,
     );
   }
 
   await Future.delayed(const Duration(seconds: 5));
 
-  Nostr.instance.relaysService.startEventsSubscription(
+  Nostr.instance.services.relays.startEventsSubscription(
     request: req,
   );
 
@@ -73,7 +74,7 @@ void main() async {
     ],
   );
 
-  Nostr.instance.relaysService.sendEventToRelays(
+  Nostr.instance.services.relays.sendEventToRelays(
     anotherEvent,
     onOk: (relay, ok) {
       print('event sent, ${ok.eventId}');

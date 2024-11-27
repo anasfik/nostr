@@ -17,7 +17,7 @@ class NostrCountEvent extends Equatable {
     required NostrFilter eventsFilter,
   }) {
     final createdSubscriptionId =
-        Nostr.instance.utilsService.consistent64HexChars(
+        Nostr.instance.services.utils.consistent64HexChars(
       eventsFilter.toMap().toString(),
     );
 

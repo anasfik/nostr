@@ -7,10 +7,10 @@ Future<void> main() async {
   Nostr.instance.enableLogs();
 
   // generates a key pair.
-  final keyPair = Nostr.instance.keysService.generateKeyPair();
+  final keyPair = Nostr.instance.services.keys.generateKeyPair();
 
   // init relays
-  await Nostr.instance.relaysService.init(
+  await Nostr.instance.services.relays.init(
     relaysUrl: ['wss://relay.damus.io'],
   );
 
@@ -32,12 +32,12 @@ Future<void> main() async {
   print(asMap);
 
   // send the event
-  Nostr.instance.relaysService.sendEventToRelays(event);
+  Nostr.instance.services.relays.sendEventToRelays(event);
 
   await Future.delayed(const Duration(seconds: 5));
 
   // create a subscription id.
-  final subscriptionId = Nostr.instance.utilsService.random64HexChars();
+  final subscriptionId = Nostr.instance.services.utils.random64HexChars();
 
   // creating a request for listening to events.
   final request = NostrRequest(
@@ -52,7 +52,7 @@ Future<void> main() async {
   );
 
 // listen to events
-  final sub = Nostr.instance.relaysService.startEventsSubscription(
+  final sub = Nostr.instance.services.relays.startEventsSubscription(
     request: request,
     onEose: (relay, eose) {
       print('eose $eose from $relay');
@@ -70,7 +70,7 @@ Future<void> main() async {
 
   // cancel the subscription
   await subscritpion.cancel().whenComplete(() {
-    Nostr.instance.relaysService.closeEventsSubscription(subscriptionId);
+    Nostr.instance.services.relays.closeEventsSubscription(subscriptionId);
   });
 
   await Future.delayed(const Duration(seconds: 5));
@@ -86,7 +86,7 @@ Future<void> main() async {
   );
 
   // send the event 2 that will not be received by the subscription because it is closed.
-  Nostr.instance.relaysService.sendEventToRelays(
+  Nostr.instance.services.relays.sendEventToRelays(
     event2,
     onOk: (relay, ok) {
       print('ok $ok from $relay');

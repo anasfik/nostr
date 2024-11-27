@@ -28,7 +28,7 @@ class NostrKeyPairs extends Equatable {
   /// Instantiate a [NostrKeyPairs] from random bytes.
   factory NostrKeyPairs.generate() {
     return NostrKeyPairs(
-      private: Nostr.instance.utilsService.random64HexChars(),
+      private: Nostr.instance.services.utils.random64HexChars(),
     );
   }
 
@@ -40,7 +40,7 @@ class NostrKeyPairs extends Equatable {
 
   /// This will sign a [message] with the [private] key and return the signature.
   String sign(String message) {
-    final aux = Nostr.instance.utilsService.random64HexChars();
+    final aux = Nostr.instance.services.utils.random64HexChars();
     return bip340.sign(private, message, aux);
   }
 

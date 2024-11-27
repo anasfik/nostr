@@ -29,7 +29,7 @@ class NostrRequest extends Equatable {
   String serialized({String? subscriptionId}) {
     this.subscriptionId = subscriptionId ??
         this.subscriptionId ??
-        Nostr.instance.utilsService.consistent64HexChars(
+        Nostr.instance.services.utils.consistent64HexChars(
           filters
               .map((e) => e.toMap().toString())
               .reduce((value, element) => value + element),

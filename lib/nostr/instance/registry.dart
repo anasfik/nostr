@@ -18,8 +18,9 @@ typedef RelayCallbackRegister<T> = Map<String, SubscriptionCallback<T>>;
 @protected
 class NostrRegistry {
   /// {@macro nostr_registry}
-  NostrRegistry({required this.utils});
-  final NostrClientUtils utils;
+  NostrRegistry({required this.logger});
+
+  final NostrLogger logger;
 
   /// This is the registry which will have all relays [WebSocket]s.
   final relaysWebSocketsRegistry = <String, WebSocketChannel>{};
@@ -57,7 +58,7 @@ class NostrRegistry {
 
       return relay;
     } else {
-      utils.log(
+      logger.log(
         'No relay is registered with the given url: $relayUrl, did you forget to register it?',
       );
 

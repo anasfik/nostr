@@ -259,7 +259,7 @@ final request = NostrRequest(
 
 
 // Starting the subscription and listening to events
-final nostrStream = Nostr.instance.relaysService.startEventsSubscription(
+final nostrStream = Nostr.instance.services.relays.startEventsSubscription(
   request: request,
   onEose: (ease) => print(ease),
 );
@@ -290,7 +290,7 @@ final request = NostrRequest(
 
 // Call the async method and wait for the result
 final events =
-    await Nostr.instance.relaysService.startEventsSubscriptionAsync(
+    await Nostr.instance.services.relays.startEventsSubscriptionAsync(
   request: request,
 );
 
@@ -304,7 +304,7 @@ Note: `startEventsSubscriptionAsync` will be resolve with an `List<NostrEvent>` 
 
 ```dart
 // reconnect
-await Nostr.instance.relaysService.reconnectToRelays(
+await Nostr.instance.services.relays.reconnectToRelays(
        onRelayListening: onRelayListening,
        onRelayConnectionError: onRelayConnectionError,
        onRelayConnectionDone: onRelayConnectionDone,
@@ -317,20 +317,20 @@ await Nostr.instance.relaysService.reconnectToRelays(
      );
     
 // disconnect
-await Nostr.instance.relaysService.disconnectFromRelays();
+await Nostr.instance.services.relays.disconnectFromRelays();
 ```
 
 #### Send an event
 
 ```dart
 // sending synchronously
-Nostr.instance.relaysService.sendEventToRelays(
+Nostr.instance.services.relays.sendEventToRelays(
   event,
   onOk: (ok) => print(ok),
 );
 
 // sending synchronously with a custom timeout
-final okCommand = await Nostr.instance.relaysService.sendEventToRelaysAsync(
+final okCommand = await Nostr.instance.services.relays.sendEventToRelaysAsync(
   event,
   timeout: const Duration(seconds: 3),
 );
@@ -352,7 +352,7 @@ final countEvent = NostrCountEvent.fromPartialData(
 );
 
 // Send the count event synchronously
-Nostr.instance.relaysService.sendCountEventToRelays(
+Nostr.instance.services.relays.sendCountEventToRelays(
   countEvent,
   onCountResponse: (countRes) {
     print('count: $countRes');
@@ -360,7 +360,7 @@ Nostr.instance.relaysService.sendCountEventToRelays(
 );
 
 // Send the count event asynchronously
-final countRes = await Nostr.instance.relaysService.sendCountEventToRelaysAsync(
+final countRes = await Nostr.instance.services.relays.sendCountEventToRelaysAsync(
   countEvent,
   timeout: const Duration(seconds: 3),
 );
@@ -371,7 +371,7 @@ print("found ${countRes.count} events");
 #### Relay Metadata NIP11
 
 ```dart
-final relayDoc = await Nostr.instance.relaysService.relayInformationsDocumentNip11(
+final relayDoc = await Nostr.instance.services.relays.relayInformationsDocumentNip11(
   relayUrl: "wss://relay.damus.io",
 );
 

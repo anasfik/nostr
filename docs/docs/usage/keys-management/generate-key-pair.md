@@ -5,11 +5,11 @@ description: Learn how to generate a new key pair of a private and a public keys
 
 # Generate A New Key Pair
 
-In order to generate a new key pair of a private and a public keys for a new user as example, you can do it by calling the `generateKeyPair()` method of the `Nostr.instance.keysService`, This method will return a `NostrKeyPairs` that represents the key pair, like this:
+In order to generate a new key pair of a private and a public keys for a new user as example, you can do it by calling the `generateKeyPair()` method of the `Nostr.instance.services.keys`, This method will return a `NostrKeyPairs` that represents the key pair, like this:
 
 ```dart
 // Generate a new key pair.
-NostrKeyPairs keyPair = Nostr.instance.keysService.generateKeyPair();
+NostrKeyPairs keyPair = Nostr.instance.services.keys.generateKeyPair();
 
 // Now you can use it as you want.
 print(keyPair.private); // ...

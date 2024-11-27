@@ -3,7 +3,7 @@ import 'package:dart_nostr/dart_nostr.dart';
 void main() async {
   try {
     final publicKeyFromNip05 =
-        await Nostr.instance.utilsService.pubKeyFromIdentifierNip05(
+        await Nostr.instance.services.utils.pubKeyFromIdentifierNip05(
       internetIdentifier: 'jb55@jb55.com',
     );
 

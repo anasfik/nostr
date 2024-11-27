@@ -2,13 +2,13 @@ import 'package:dart_nostr/dart_nostr.dart';
 
 void main() async {
   // Create a new user key pair
-  final newKeyPair = Nostr.instance.keysService.generateKeyPair();
+  final newKeyPair = Nostr.instance.services.keys.generateKeyPair();
 
   // set our relays list.
   final relays = <String>['wss://relay.damus.io'];
 
   // init relays service with our relays list.
-  await Nostr.instance.relaysService.init(relaysUrl: relays);
+  await Nostr.instance.services.relays.init(relaysUrl: relays);
 
   // create a delete event
   final deleteEvent = NostrEvent.deleteEvent(
@@ -17,10 +17,10 @@ void main() async {
     keyPairs: newKeyPair,
     eventIdsToBeDeleted: [
       // this is just an example event id.
-      Nostr.instance.utilsService.random64HexChars(),
+      Nostr.instance.services.utils.random64HexChars(),
     ],
   );
 
   // send the delete event
-  Nostr.instance.relaysService.sendEventToRelays(deleteEvent);
+  Nostr.instance.services.relays.sendEventToRelays(deleteEvent);
 }

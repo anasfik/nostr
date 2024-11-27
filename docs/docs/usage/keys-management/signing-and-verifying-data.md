@@ -11,7 +11,7 @@ To sign a message as example or any price of data, you will need to use the `sig
 
 ## Sign Messages
 
-You can sign any message you want, using the `sign` method of the `Nostr.instance.keysService`, like this:
+You can sign any message you want, using the `sign` method of the `Nostr.instance.services.keys`, like this:
 
 ```dart
 
@@ -19,7 +19,7 @@ You can sign any message you want, using the `sign` method of the `Nostr.instanc
 String message = "something, IDK";
 
 // The signature of the message.
-String signature = Nostr.instance.keysService.sign(
+String signature = Nostr.instance.services.keys.sign(
   privateKey: "THE_PRIVATE_KEY_HEX_STRING",
   message: message,
 );
@@ -34,12 +34,12 @@ This will provide you withe a signature of that data that you can use to verify 
 
 ## Verify Signatures
 
-You can verify any signature you want, using the `verify` method of the `Nostr.instance.keysService`, like this:
+You can verify any signature you want, using the `verify` method of the `Nostr.instance.services.keys`, like this:
 
 ```dart
 
 // Later, when we get a signature from any source, we can verify it.
-bool isSignatureVerified = Nostr.instance.keysService.verify(
+bool isSignatureVerified = Nostr.instance.services.keys.verify(
   publicKey: "THE_PUBLIC_KEY_HEX_STRING",
   message: message,
   signature: signature,

@@ -1,7 +1,7 @@
 import 'package:dart_nostr/dart_nostr.dart';
 
 Future<void> main() async {
-  await Nostr.instance.relaysService.init(
+  await Nostr.instance.services.relays.init(
     relaysUrl: [
       /// your relays ...
     ],
@@ -19,7 +19,7 @@ Future<void> main() async {
 
   await Future.delayed(const Duration(seconds: 5));
 
-  await Nostr.instance.relaysService.reconnectToRelays(
+  await Nostr.instance.services.relays.reconnectToRelays(
     connectionTimeout: const Duration(seconds: 5),
     ignoreConnectionException: true,
     lazyListeningToRelays: false,
@@ -37,7 +37,7 @@ Future<void> main() async {
 
   await Future.delayed(const Duration(seconds: 5));
 
-  await Nostr.instance.relaysService.disconnectFromRelays(
+  await Nostr.instance.services.relays.disconnectFromRelays(
     closeCode: (relayUrl) {
       return 1000;
     },

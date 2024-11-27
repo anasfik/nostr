@@ -21,7 +21,7 @@ void main() async {
 
   for (final relay in relays) {
     final relayInfo =
-        await Nostr.instance.relaysService.relayInformationsDocumentNip11(
+        await Nostr.instance.services.relays.relayInformationsDocumentNip11(
       relayUrl: relay,
       throwExceptionIfExists: false,
     );
@@ -35,7 +35,7 @@ void main() async {
     throw Exception('no relay supports NIP-45');
   }
 
-  await Nostr.instance.relaysService.init(
+  await Nostr.instance.services.relays.init(
     relaysUrl: relayThatSupportsNip45,
   );
 
@@ -50,7 +50,7 @@ void main() async {
     eventsFilter: filter,
   );
 
-  Nostr.instance.relaysService.sendCountEventToRelays(
+  Nostr.instance.services.relays.sendCountEventToRelays(
     countEvent,
     onCountResponse: (relay, countRes) {
       print('from relay: $relay');

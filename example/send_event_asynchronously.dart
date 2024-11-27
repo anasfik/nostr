@@ -3,13 +3,13 @@ import 'dart:async';
 import 'package:dart_nostr/dart_nostr.dart';
 
 Future<void> main(List<String> args) async {
-  await Nostr.instance.relaysService.init(
+  await Nostr.instance.services.relays.init(
     relaysUrl: [
       'wss://relay.damus.io',
     ],
   );
 
-  final keyPair = Nostr.instance.keysService.generateKeyPair();
+  final keyPair = Nostr.instance.services.keys.generateKeyPair();
 
   final event = NostrEvent.fromPartialData(
     kind: 1,
@@ -18,7 +18,8 @@ Future<void> main(List<String> args) async {
   );
 
   try {
-    final okCOmmand = await Nostr.instance.relaysService.sendEventToRelaysAsync(
+    final okCOmmand =
+        await Nostr.instance.services.relays.sendEventToRelaysAsync(
       event,
       timeout: const Duration(seconds: 10),
     );

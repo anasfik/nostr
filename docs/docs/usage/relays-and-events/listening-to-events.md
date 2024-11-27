@@ -27,7 +27,7 @@ final req = NostrRequest(
 
 
 // Creating a request to retrieve all kind 1 (notes) events that have the "nostr" tag.
-final nostrEventsSubscription = Nostr.instance.relaysService.startEventsSubscription(
+final nostrEventsSubscription = Nostr.instance.services.relays.startEventsSubscription(
        request: req,
        onEose: (ease) {
          print("ease received for subscription id: ${ease.subscriptionId}");
@@ -51,7 +51,7 @@ in order to close & end aspecific subscription that is created, you can call the
 
 ```dart
 
-Nostr.instance.relaysService.closeEventsSubscription(
+Nostr.instance.services.relays.closeEventsSubscription(
   eose.subscriptionId,
 );
 ```

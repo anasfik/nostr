@@ -8,9 +8,9 @@ import 'package:dart_nostr/nostr/model/ease.dart';
 import 'package:dart_nostr/nostr/model/ok.dart';
 import 'package:dart_nostr/nostr/model/relay.dart';
 import 'package:dart_nostr/nostr/model/relay_informations.dart';
-import 'package:dart_nostr/nostr/service/registry.dart';
-import 'package:dart_nostr/nostr/service/streams.dart';
-import 'package:dart_nostr/nostr/service/web_sockets.dart';
+import 'package:dart_nostr/nostr/instance/registry.dart';
+import 'package:dart_nostr/nostr/instance/streams.dart';
+import 'package:dart_nostr/nostr/instance/web_sockets.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -20,8 +20,10 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 class NostrRelays implements NostrRelaysBase {
   /// {@macro nostr_relays}
-  NostrRelays({required this.utils}) {
-    nostrRegistry = NostrRegistry(utils: utils);
+  NostrRelays({
+    required this.logger,
+  }) {
+    nostrRegistry = NostrRegistry(logger: logger);
   }
 
   /// Represents a registry of all relays that you did registered with the [init] method.
@@ -42,12 +44,14 @@ class NostrRelays implements NostrRelaysBase {
 
   /// {@macro nostr_web_sockets_service}
 
-  late final webSocketsService = NostrWebSocketsService(utils: utils);
+  late final webSocketsService = NostrWebSocketsService(
+    logger: logger,
+  );
 
   /// {@macro nostr_registry}
   late final NostrRegistry nostrRegistry;
 
-  final NostrClientUtils utils;
+  final NostrLogger logger;
 
   /// This method is responsible for initializing the connection to all relays.
   /// It takes a [List<String>] of relays urls, then it connects to each relay and registers it for future use, if [relayUrl] is empty, it will throw an [AssertionError] since it doesn't make sense to connect to an empty list of relays.
@@ -169,7 +173,7 @@ class NostrRelays implements NostrRelaysBase {
         );
 
         relay.socket.sink.add(serialized);
-        utils.log(
+        logger.log(
           'event with id: ${event.id} is sent to relay with url: ${relay.url}',
         );
       }
@@ -222,7 +226,7 @@ class NostrRelays implements NostrRelaysBase {
         );
 
         relay.socket.sink.add(serialized);
-        utils.log(
+        logger.log(
           'event with id: ${event.id} is sent to relay with url: $relayUrl',
         );
       }
@@ -253,7 +257,7 @@ class NostrRelays implements NostrRelaysBase {
         );
 
         relay.socket.sink.add(serialized);
-        utils.log(
+        logger.log(
           'Count Event with subscription id: ${countEvent.subscriptionId} is sent to relay with url: ${relay.url}',
         );
       }
@@ -296,7 +300,7 @@ class NostrRelays implements NostrRelaysBase {
 
         final serialized = countEvent.serialized();
         relay.socket.sink.add(serialized);
-        utils.log(
+        logger.log(
           'count event with subscription id: ${countEvent.subscriptionId} is sent to relay with url: ${relayUrl}',
         );
       }
@@ -324,7 +328,7 @@ class NostrRelays implements NostrRelaysBase {
     final serialized = request.serialized(
       subscriptionId: useConsistentSubscriptionIdBasedOnRequestData
           ? null
-          : Nostr.instance.utilsService.random64HexChars(),
+          : Nostr.instance.services.utils.random64HexChars(),
     );
 
     _registerNewRelays(relays ?? relaysList!).then((_) {
@@ -339,7 +343,7 @@ class NostrRelays implements NostrRelaysBase {
           );
 
           relay.socket.sink.add(serialized);
-          utils.log(
+          logger.log(
             'request with subscription id: ${request.subscriptionId} is sent to relay with url: ${relayUrl}',
           );
         }
@@ -454,7 +458,7 @@ class NostrRelays implements NostrRelaysBase {
 
       registeredRelay?.sink.add(serialized);
 
-      utils.log(
+      logger.log(
         'Close request with subscription id: $subscriptionId is sent to relay with url: $relay',
       );
 
@@ -463,7 +467,7 @@ class NostrRelays implements NostrRelaysBase {
     _runFunctionOverRelationIteration(
       (relay) {
         relay.socket.sink.add(serialized);
-        utils.log(
+        logger.log(
           'Close request with subscription id: $subscriptionId is sent to relay with url: ${relay.url}',
         );
       },
@@ -565,7 +569,7 @@ class NostrRelays implements NostrRelaysBase {
             countResponse: countResponse,
           );
         } else {
-          utils.log(
+          logger.log(
             'received unknown message from relay: $relay, message: $d',
           );
         }
@@ -590,7 +594,7 @@ class NostrRelays implements NostrRelaysBase {
           onRelayConnectionError(relay, error, relayWebSocket);
         }
 
-        utils.log(
+        logger.log(
           'web socket of relay with $relay had an error: $error',
           error,
         );
@@ -645,7 +649,7 @@ class NostrRelays implements NostrRelaysBase {
 
       return RelayInformations.fromNip11Response(decoded);
     } catch (e) {
-      utils.log(
+      logger.log(
         'error while getting relay informations from nip11 for relay url: $relayUrl',
         e,
       );
@@ -777,7 +781,7 @@ class NostrRelays implements NostrRelaysBase {
     required bool lazyListeningToRelays,
     bool relayUnregistered = true,
   }) async {
-    utils.log('retrying to listen to relay with url: $relay...');
+    logger.log('retrying to listen to relay with url: $relay...');
 
     if (relayUnregistered) {
       await _startConnectingAndRegisteringRelay(
@@ -855,7 +859,7 @@ class NostrRelays implements NostrRelaysBase {
 
     for (final relay in relaysUrl) {
       if (nostrRegistry.isRelayRegisteredAndConnectedSuccesfully(relay)) {
-        utils.log(
+        logger.log(
           'relay with url: $relay is already connected successfully, skipping...',
         );
 
@@ -870,10 +874,10 @@ class NostrRelays implements NostrRelaysBase {
               relayUrl: relay,
               webSocket: relayWebSocket,
             );
-            utils.log(
+            logger.log(
               'the websocket for the relay with url: $relay, is registered.',
             );
-            utils.log(
+            logger.log(
               'listening to the websocket for the relay with url: $relay...',
             );
 
@@ -916,13 +920,13 @@ class NostrRelays implements NostrRelaysBase {
     required String? relay,
     required NostrEvent event,
   }) {
-    utils.log(
+    logger.log(
       'received event with content: ${event.content} from relay: $relay',
     );
 
     if (!nostrRegistry.isEventRegistered(event)) {
       if (streamsController.isClosed) {
-        utils.log(
+        logger.log(
           'streams controller is closed, event with id: ${event.id} will be ignored and not added to the sink.',
         );
 
@@ -956,7 +960,7 @@ class NostrRelays implements NostrRelaysBase {
     required bool ignoreConnectionException,
     required bool lazyListeningToRelays,
   }) {
-    utils.log(
+    logger.log(
       'received notice with message: ${notice.message} from relay: $relay',
     );
 

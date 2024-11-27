@@ -24,7 +24,8 @@ class NostrEventsStream extends Equatable {
 
   /// {@macro close_events_subscription}
   void close() {
-    return Nostr.instance.relaysService.closeEventsSubscription(subscriptionId);
+    return Nostr.instance.services.relays
+        .closeEventsSubscription(subscriptionId);
   }
 
   @override

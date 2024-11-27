@@ -5,12 +5,12 @@ import 'package:dart_nostr/dart_nostr.dart';
 void main(List<String> args) async {
   Nostr.instance.disableLogs();
 
-  await Nostr.instance.relaysService.init(
+  await Nostr.instance.services.relays.init(
     relaysUrl: [
       'wss://relay.damus.io',
     ],
   );
-  final keyPair = Nostr.instance.keysService.generateKeyPair();
+  final keyPair = Nostr.instance.services.keys.generateKeyPair();
 
   final event = NostrEvent.fromPartialData(
     kind: 0,
@@ -30,7 +30,8 @@ void main(List<String> args) async {
       ),
     );
 
-    final okCommand = await Nostr.instance.relaysService.sendEventToRelaysAsync(
+    final okCommand =
+        await Nostr.instance.services.relays.sendEventToRelaysAsync(
       event,
       timeout: const Duration(seconds: 3),
     );
@@ -51,7 +52,7 @@ void main(List<String> args) async {
     );
 
     final events =
-        await Nostr.instance.relaysService.startEventsSubscriptionAsync(
+        await Nostr.instance.services.relays.startEventsSubscriptionAsync(
       request: request,
       timeout: const Duration(seconds: 10),
     );
@@ -61,7 +62,7 @@ void main(List<String> args) async {
       print('${element.content}\n\n');
     }
 
-    final isFree = await Nostr.instance.relaysService.freeAllResources();
+    final isFree = await Nostr.instance.services.relays.freeAllResources();
     print('isFree: $isFree');
   } catch (e) {
     print(e);

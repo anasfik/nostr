@@ -8,7 +8,7 @@ void main() async {
   ];
 
   // initialize the relays service.
-  await Nostr.instance.relaysService.init(
+  await Nostr.instance.services.relays.init(
     relaysUrl: relaysList,
     onRelayConnectionError: (relay, err, websocket) {
       print('relay connection error: $err');
@@ -16,7 +16,7 @@ void main() async {
   );
 
   // generate a key pair.
-  final keyPair = Nostr.instance.keysService.generateKeyPair();
+  final keyPair = Nostr.instance.services.keys.generateKeyPair();
 
   final event = NostrEvent.fromPartialData(
     kind: 0,
@@ -24,7 +24,7 @@ void main() async {
     keyPairs: keyPair,
   );
 
-  Nostr.instance.relaysService.sendEventToRelays(
+  Nostr.instance.services.relays.sendEventToRelays(
     event,
     relays: [
       ...relaysList,
@@ -39,7 +39,7 @@ void main() async {
     },
   );
 
-  Nostr.instance.relaysService.sendEventToRelays(
+  Nostr.instance.services.relays.sendEventToRelays(
     event,
     relays: [
       ...relaysList,
