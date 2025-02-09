@@ -1,5 +1,9 @@
 # Changelog
 
+## 8.2.1
+
+- Remove the Registering of null/empty onEose callback which lead to a bug in the relays service.
+
 ## 8.1.1
 
 - exposed a field in the `NostrFilter` class to allow using more filters.
