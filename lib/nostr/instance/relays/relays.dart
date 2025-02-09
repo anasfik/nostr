@@ -336,11 +336,13 @@ class NostrRelays implements NostrRelaysBase {
         final relayUrl = relay.url;
 
         if (relays?.containsRelay(relayUrl) ?? true) {
-          _registerOnEoselCallBack(
-            subscriptionId: request.subscriptionId!,
-            onEose: onEose ?? (relay, eose) {},
-            relay: relayUrl,
-          );
+          if (onEose != null) {
+            _registerOnEoselCallBack(
+              subscriptionId: request.subscriptionId!,
+              onEose: onEose,
+              relay: relayUrl,
+            );
+          }
 
           relay.socket.sink.add(serialized);
           logger.log(
