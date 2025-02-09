@@ -1,5 +1,9 @@
 # Changelog
 
+## 9.0.0
+
+- Major structure changes for different services of the package.
+
 ## 8.2.1
 
 - Remove the Registering of null/empty onEose callback which lead to a bug in the relays service.
