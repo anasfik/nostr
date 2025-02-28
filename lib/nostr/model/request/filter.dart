@@ -114,7 +114,7 @@ class NostrFilter extends Equatable {
       if (until != null) 'until': until!.millisecondsSinceEpoch ~/ 1000,
       if (limit != null) 'limit': limit,
       if (search != null) 'search': search,
-      if (additionalFilters != null) ...additionalFilters!
+      if (additionalFilters != null) ...additionalFilters!,
     };
   }
 

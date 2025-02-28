@@ -1,16 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dart_nostr/dart_nostr.dart';
 import 'package:dart_nostr/nostr/core/extensions.dart';
+import 'package:dart_nostr/nostr/instance/registry.dart';
 import 'package:dart_nostr/nostr/instance/relays/base/relays.dart';
+import 'package:dart_nostr/nostr/instance/streams.dart';
+import 'package:dart_nostr/nostr/instance/web_sockets.dart';
 import 'package:dart_nostr/nostr/model/ease.dart';
 import 'package:dart_nostr/nostr/model/ok.dart';
 import 'package:dart_nostr/nostr/model/relay.dart';
 import 'package:dart_nostr/nostr/model/relay_informations.dart';
-import 'package:dart_nostr/nostr/instance/registry.dart';
-import 'package:dart_nostr/nostr/instance/streams.dart';
-import 'package:dart_nostr/nostr/instance/web_sockets.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -108,8 +109,10 @@ class NostrRelays implements NostrRelaysBase {
       WebSocketChannel? relayWebSocket,
     )? onRelayListening,
     void Function(
-            String relayUrl, Object? error, WebSocketChannel? relayWebSocket)?
-        onRelayConnectionError,
+      String relayUrl,
+      Object? error,
+      WebSocketChannel? relayWebSocket,
+    )? onRelayConnectionError,
     void Function(String relayUrl, WebSocketChannel? relayWebSocket)?
         onRelayConnectionDone,
     bool lazyListeningToRelays = false,
@@ -301,7 +304,7 @@ class NostrRelays implements NostrRelaysBase {
         final serialized = countEvent.serialized();
         relay.socket.sink.add(serialized);
         logger.log(
-          'count event with subscription id: ${countEvent.subscriptionId} is sent to relay with url: ${relayUrl}',
+          'count event with subscription id: ${countEvent.subscriptionId} is sent to relay with url: $relayUrl',
         );
       }
     });
@@ -346,7 +349,7 @@ class NostrRelays implements NostrRelaysBase {
 
           relay.socket.sink.add(serialized);
           logger.log(
-            'request with subscription id: ${request.subscriptionId} is sent to relay with url: ${relayUrl}',
+            'request with subscription id: ${request.subscriptionId} is sent to relay with url: $relayUrl',
           );
         }
       });
@@ -519,8 +522,10 @@ class NostrRelays implements NostrRelaysBase {
     required bool ignoreConnectionException,
     required bool lazyListeningToRelays,
     void Function(
-            String relay, WebSocketChannel? relayWebSocket, NostrNotice notice)?
-        onNoticeMessageFromRelay,
+      String relay,
+      WebSocketChannel? relayWebSocket,
+      NostrNotice notice,
+    )? onNoticeMessageFromRelay,
   }) {
     final relayWebSocket = nostrRegistry.getRelayWebSocket(relayUrl: relay);
 

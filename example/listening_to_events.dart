@@ -54,7 +54,7 @@ void main() async {
 
     for (final a in event.tags!) {
       if (a.first == 'a') {
-        print(a.toString());
+        print(a);
       }
     }
   });

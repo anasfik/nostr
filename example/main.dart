@@ -24,7 +24,7 @@ Future<void> main() async {
     keyPairs: keyPair,
     tags: [
       ['t', currentDateInMsAsString],
-      ['title', "ps5"],
+      ['title', 'ps5'],
     ],
   );
 

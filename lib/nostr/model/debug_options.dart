@@ -4,6 +4,17 @@ class NostrDebugOptions {
     this.isLogsEnabled = true,
   });
 
+  factory NostrDebugOptions.general() {
+    return NostrDebugOptions(
+      tag: 'Nostr',
+    );
+  }
+  factory NostrDebugOptions.generate() {
+    return NostrDebugOptions(
+      tag: _incrementallyGenerateTag(),
+    );
+  }
+
   static var _incrementalNumber = 0;
 
   bool isLogsEnabled = true;
@@ -14,17 +25,6 @@ class NostrDebugOptions {
     _incrementalNumber++;
 
     return '$_incrementalNumber - Nostr';
-  }
-
-  factory NostrDebugOptions.general() {
-    return NostrDebugOptions(
-      tag: 'Nostr',
-    );
-  }
-  factory NostrDebugOptions.generate() {
-    return NostrDebugOptions(
-      tag: _incrementallyGenerateTag(),
-    );
   }
 
   NostrDebugOptions copyWith({
