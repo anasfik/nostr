@@ -26,14 +26,14 @@ class NostrEvent extends Equatable {
   /// This represents a nostr event that is received from the relays,
   /// it takes directly the relay message which is serialized, and handles all internally
   factory NostrEvent.deserialized(String data) {
-    assert(NostrEvent.canBeDeserialized(data));
+    assert(NostrEvent.canBeDeserialized(data), 'Event is not json-decodable');
     final decoded = jsonDecode(data) as List;
 
     final event = decoded.last as Map<String, dynamic>;
     return NostrEvent(
       id: event['id'] as String,
       kind: event['kind'] as int,
-      content: event['content'] as String,
+      content: event['content'] == null ? '' : event['content'] as String,
       sig: event['sig'] as String,
       pubkey: event['pubkey'] as String,
       createdAt: DateTime.fromMillisecondsSinceEpoch(
