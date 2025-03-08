@@ -1,5 +1,10 @@
 # Changelog
 
+## 9.1.0
+
+- Fixed errors caused by strict assumption of content event non-nullability.
+- Fixed problem caused by possible received new data type from the relays's `OK` event.
+
 ## 9.0.0
 
 - Major structure changes for different services of the package.

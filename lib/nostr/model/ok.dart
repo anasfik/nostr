@@ -41,8 +41,16 @@ class NostrEventOkCommand extends Equatable {
 
     final decoded = jsonDecode(data) as List;
     final eventId = decoded[1] as String;
-    final isEventAccepted = decoded.length > 2 ? decoded[2] as bool : null;
-    final message = decoded.length > 3 ? decoded[3] as String : null;
+
+    final isEventAccepted = decoded.length > 2
+        ? decoded[2] is bool
+            ? decoded[2] as bool
+            : decoded[2] is String
+                ? (decoded[2] as String).toLowerCase() == 'true'
+                : null
+        : null;
+
+    final message = decoded.length > 3 ? decoded[3] as String? : null;
 
     return NostrEventOkCommand(
       eventId: eventId,
