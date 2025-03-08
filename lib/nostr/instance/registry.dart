@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dart_nostr/nostr/core/exceptions.dart';
 import 'package:dart_nostr/nostr/core/utils.dart';
 import 'package:dart_nostr/nostr/model/count.dart';

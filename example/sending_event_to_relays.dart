@@ -45,7 +45,7 @@ void main() async {
       ...relaysList,
     ],
     onOk: (relay, ok) {
-      print("second only");
+      print('second only');
     },
   );
 

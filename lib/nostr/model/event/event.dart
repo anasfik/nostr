@@ -26,14 +26,14 @@ class NostrEvent extends Equatable {
   /// This represents a nostr event that is received from the relays,
   /// it takes directly the relay message which is serialized, and handles all internally
   factory NostrEvent.deserialized(String data) {
-    assert(NostrEvent.canBeDeserialized(data));
+    assert(NostrEvent.canBeDeserialized(data), 'Event is not json-decodable');
     final decoded = jsonDecode(data) as List;
 
     final event = decoded.last as Map<String, dynamic>;
     return NostrEvent(
       id: event['id'] as String,
       kind: event['kind'] as int,
-      content: event['content'] as String,
+      content: event['content'] == null ? '' : event['content'] as String,
       sig: event['sig'] as String,
       pubkey: event['pubkey'] as String,
       createdAt: DateTime.fromMillisecondsSinceEpoch(
@@ -51,7 +51,6 @@ class NostrEvent extends Equatable {
             .toList(),
       ),
       subscriptionId: decoded[1] as String?,
-
     );
   }
 
@@ -75,7 +74,6 @@ class NostrEvent extends Equatable {
 
   /// The tags of the event.
   final List<List<String>>? tags;
-
 
   /// The subscription id of the event
   /// This is meant for events that are got from the relays, and not for events that are created by you.
@@ -143,7 +141,6 @@ class NostrEvent extends Equatable {
       pubkey: pubkey,
       createdAt: createdAtToUse,
       tags: tagsToUse,
-
     );
   }
 
@@ -171,7 +168,7 @@ class NostrEvent extends Equatable {
       );
     }
 
- if (id == null) {
+    if (id == null) {
       throw Exception(
         "You can't get a unique key for an event that you created, you can only get a unique key for an event that you got from the relays",
       );
@@ -192,24 +189,30 @@ class NostrEvent extends Equatable {
   /// Returns a map representation of this event.
   Map<String, dynamic> toMap() {
     return {
-       if (id != null) 'id': id,
+      if (id != null) 'id': id,
       if (kind != null) 'kind': kind,
-       'pubkey': pubkey,
+      'pubkey': pubkey,
       if (content != null) 'content': content,
       if (sig != null) 'sig': sig,
-      if (createdAt != null) 'created_at': createdAt!.millisecondsSinceEpoch ~/ 1000,
-      if (tags != null) 'tags': tags!.map((tag) => tag.map((e) => e).toList()).toList(), 
-      };
+      if (createdAt != null)
+        'created_at': createdAt!.millisecondsSinceEpoch ~/ 1000,
+      if (tags != null)
+        'tags': tags!.map((tag) => tag.map((e) => e).toList()).toList(),
+    };
   }
 
- bool isVerified() {
-    if(id == null || sig == null) {
+  bool isVerified() {
+    if (id == null || sig == null) {
       return false;
     }
 
-    return NostrKeyPairs.verify(pubkey, id!, sig!,  );
- }
- 
+    return NostrKeyPairs.verify(
+      pubkey,
+      id!,
+      sig!,
+    );
+  }
+
   @override
   List<Object?> get props => [
         id,

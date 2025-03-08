@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:dart_nostr/dart_nostr.dart';
+import 'package:dart_nostr/nostr/dart_nostr.dart';
 import 'package:dart_nostr/nostr/model/export.dart';
 
 /// {@template nostr_streams_controllers}

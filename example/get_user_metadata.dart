@@ -27,7 +27,5 @@ void main() async {
     },
   );
 
-  requestStream.stream.listen((event) {
-    print(event);
-  });
+  requestStream.stream.listen(print);
 }

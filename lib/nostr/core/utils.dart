@@ -1,19 +1,20 @@
 import 'dart:developer' as dev;
 
+import 'package:dart_nostr/dart_nostr.dart';
+import 'package:dart_nostr/nostr/dart_nostr.dart';
 import 'package:dart_nostr/nostr/model/debug_options.dart';
 
 /// {@template nostr_client_utils}
 /// General utils to be used in a whole [Nostr] instance.
 /// {@endtemplate}
 class NostrLogger {
-  final NostrDebugOptions passedDebugOptions;
-  late NostrDebugOptions _debugOptions;
-
   NostrLogger({
     required this.passedDebugOptions,
   }) {
     _debugOptions = passedDebugOptions;
   }
+  final NostrDebugOptions passedDebugOptions;
+  late NostrDebugOptions _debugOptions;
 
   NostrDebugOptions get debugOptions => _debugOptions;
 
