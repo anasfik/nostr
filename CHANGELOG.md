@@ -2,7 +2,7 @@
 
 ## 9.1.1
 
-- Provide new nip 05 functions that are nullable based on their success/failure instead of having ones that throw exception which may cause unwanted behavior if not been awared of and handled.
+- Provide new nip 05 functions that are nullable based on their success/fasilure instead of having ones that throw exception which may cause unwanted behavior if not been awared of and handled.
 
 ## 9.1.0
 
