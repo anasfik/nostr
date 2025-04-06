@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:convert/convert.dart';
 import 'package:crypto/crypto.dart';
+import 'package:dart_nostr/nostr/core/exceptions.dart';
 import 'package:dart_nostr/nostr/core/utils.dart';
 
 import 'package:http/http.dart' as http;
@@ -101,16 +102,9 @@ class NostrUtils {
     );
 
     try {
-      final localPart = internetIdentifier.split('@')[0];
-      final domainPart = internetIdentifier.split('@')[1];
-      final res = await http.get(
-        Uri.parse('https://$domainPart/.well-known/nostr.json?name=$localPart'),
+      final pubKeyFromResponse = await pubKeyFromIdentifierNip05(
+        internetIdentifier: internetIdentifier,
       );
-
-      final decoded = jsonDecode(res.body) as Map<String, dynamic>;
-      assert(decoded['names'] != null, 'invalid nip05 response, no names key!');
-      final pubKeyFromResponse = decoded['names'][localPart];
-      assert(pubKeyFromResponse != null, 'invalid nip05 response, no pub key!');
 
       return pubKey == pubKeyFromResponse;
     } catch (e) {
@@ -134,31 +128,43 @@ class NostrUtils {
   /// print(pubKey); // ...
   /// ```
 
-  Future<String> pubKeyFromIdentifierNip05({
+  Future<String?> pubKeyFromIdentifierNip05({
     required String internetIdentifier,
   }) async {
     try {
       final localPart = internetIdentifier.split('@')[0];
       final domainPart = internetIdentifier.split('@')[1];
+
+      logger.log(
+        'Attempt to fetch pubkey for $internetIdentifier from $domainPart',
+      );
+
       final res = await http.get(
         Uri.parse('https://$domainPart/.well-known/nostr.json?name=$localPart'),
       );
 
       final decoded = jsonDecode(res.body) as Map<String, dynamic>;
-      assert(decoded['names'] != null, 'invalid nip05 response, no names key!');
-      final pubKeyFromResponse = decoded['names'][localPart] as String?;
+      if (decoded
+          case {
+            'names': final names as Map<String, dynamic>,
+          }) {
+        logger.log(
+          'Pubkey for $localPart is ${names[localPart] ?? 'not found'} '
+          'at $domainPart',
+        );
 
-      if (pubKeyFromResponse == null) {
-        throw Exception('invalid nip05 response, no pub key!');
+        return names[localPart] as String?;
       }
 
-      return pubKeyFromResponse;
-    } catch (e) {
+      return null;
+    } on Exception catch (e) {
       logger.log(
-        'error while verifying nip05 for internet identifier: $internetIdentifier',
+        'error while verifying nip05 for internet identifier: '
+        '$internetIdentifier',
         e,
       );
-      rethrow;
+
+      throw Nip05VerificationException(parent: e);
     }
   }
 

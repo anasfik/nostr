@@ -6,7 +6,7 @@ void main() async {
 
   final isIdentifierVerifiedWithPublixKey =
       await Nostr.instance.services.utils.verifyNip05(
-    internetIdentifier: 'jb55@jb55.com',
+    internetIdentifier: 'jb55@randomshit.com',
     pubKey: publicKeyToCheckWith,
   );
 
