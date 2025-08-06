@@ -1,5 +1,9 @@
 # Changelog
 
+## 9.2.1
+
+- support implementation of broadcasting all kind of entities froma relay(s) connection(s) without the internal package types/model handling.
+
 ## 9.1.1
 
 - Provide new nip 05 functions that are nullable based on their success/fasilure instead of having ones that throw exception which may cause unwanted behavior if not been awared of and handled.

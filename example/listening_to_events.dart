@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:math';
+
 import 'package:dart_nostr/dart_nostr.dart';
 
 void main() async {
@@ -7,7 +10,8 @@ void main() async {
   // We initialize the Nostr Relays Service with relays.
   await Nostr.instance.services.relays.init(
     relaysUrl: <String>[
-      'wss://relay.nostr.band/all',
+      'wss://testing.gathr.gives',
+      // 'wss://relay.nostr.band/all',
     ],
     onRelayConnectionError: (relay, error, webSocket) {
       print('Relay error: $error');
@@ -19,8 +23,9 @@ void main() async {
   final request = NostrRequest(
     filters: const <NostrFilter>[
       NostrFilter(
-        kinds: [10004],
-        limit: 100,
+        kinds: [1985],
+        t: ["gathr.organization.project.cancel"],
+        limit: 2,
       ),
     ],
   );
@@ -40,6 +45,8 @@ void main() async {
 
   // We listen to the stream and print the events.
   requestStream.stream.listen((event) {
+    print(jsonEncode(event.toMap()));
+
     if (event.tags == null) {
       print('tags are null');
 

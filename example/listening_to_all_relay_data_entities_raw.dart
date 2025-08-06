@@ -20,7 +20,7 @@ void main() async {
     filters: const <NostrFilter>[
       NostrFilter(
         kinds: [1985],
-        limit: 100,
+        limit: 5,
       ),
     ],
   );

@@ -992,9 +992,19 @@ class NostrRelays implements NostrRelaysBase {
     String dataEntity,
     String? requestSubId,
   ) {
-    return requestSubId != null && requestSubId.isNotEmpty
-        ? dataEntity.contains(requestSubId)
-        : false;
+    try {
+      final tryDecode = jsonDecode(dataEntity) as List;
+      if (tryDecode.length > 1) {
+        final second = tryDecode[1];
+        if (second is String && second == requestSubId && second.isNotEmpty) {
+          return true;
+        }
+      }
+
+      return false;
+    } catch (e) {
+      return false;
+    }
   }
 
   void _handleRegisteringDataFromRelay({
