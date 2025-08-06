@@ -24,6 +24,8 @@ class NostrRegistry {
 
   final NostrLogger logger;
 
+  final allDataEntitiesRegister = <String, bool>{};
+
   /// This is the registry which will have all relays [WebSocket]s.
   final relaysWebSocketsRegistry = <String, WebSocketChannel>{};
 
@@ -215,5 +217,15 @@ class NostrRegistry {
     } else {
       return false;
     }
+  }
+
+  void registerDataEntity(String dataEntity) {
+    allDataEntitiesRegister[dataEntity] = true;
+
+    logger.log('Registered data entity: $dataEntity');
+  }
+
+  bool isDataEntityRegistered(String dataEntity) {
+    return allDataEntitiesRegister.containsKey(dataEntity);
   }
 }

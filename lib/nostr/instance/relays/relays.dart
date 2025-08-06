@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:async/async.dart';
 import 'package:dart_nostr/dart_nostr.dart';
 import 'package:dart_nostr/nostr/core/extensions.dart';
 import 'package:dart_nostr/nostr/instance/registry.dart';
@@ -367,6 +368,66 @@ class NostrRelays implements NostrRelaysBase {
     );
   }
 
+  ///
+  @override
+  NostrDataEntitiesStream startEventsSubscriptionWithoutAutoHandling({
+    required NostrRequest request,
+    List<String>? relays,
+    bool includeRequestEntity = false,
+  }) {
+    final serialized = request.serialized(
+      subscriptionId: Nostr.instance.services.utils.random64HexChars(),
+    );
+
+    _registerNewRelays(relays ?? relaysList!).then(
+      (_) {
+        _runFunctionOverRelationIteration(
+          (relay) {
+            final relayUrl = relay.url;
+
+            if (relays?.containsRelay(relayUrl) ?? true) {
+              // if (onEose != null) {
+              //   _registerOnEoselCallBack(
+              //     subscriptionId: request.subscriptionId!,
+              //     onEose: onEose,
+              //     relay: relayUrl,
+              //   );
+              // }
+
+              relay.socket.sink.add(serialized);
+              logger.log(
+                'request with subscription id: ${request.subscriptionId} is sent to relay with url: $relayUrl',
+              );
+            }
+          },
+        );
+      },
+    );
+
+    final requestSubId = request.subscriptionId;
+
+    final requestDataEntityStream = Stream.value(serialized);
+
+    final allFetchedDataEntities = streamsController.allDataEntities;
+
+    final mergedStream = includeRequestEntity
+        ? requestDataEntityStream.mergeWith([allFetchedDataEntities])
+        : allFetchedDataEntities;
+
+    final subStream = mergedStream.where(
+      (dataEntity) => _filterDataEntitiesBySubscriptionId(
+        dataEntity,
+        requestSubId,
+      ),
+    );
+
+    return NostrDataEntitiesStream(
+      request: request,
+      stream: subStream,
+      subscriptionId: request.subscriptionId!,
+    );
+  }
+
   /// {@template start_events_subscription_async}
   /// Retuens a [Future] of [List<NostrEvent>] that will be triggered when the [onEose] callback is triggered of the subscription created by your [request].
   /// {@endtemplate}
@@ -532,6 +593,10 @@ class NostrRelays implements NostrRelaysBase {
     relayWebSocket!.stream.listen(
       (d) {
         final data = d.toString();
+
+        _handleRegisteringDataFromRelay(
+          dataEntity: data,
+        );
 
         onRelayListening?.call(relay, d, relayWebSocket);
 
@@ -923,6 +988,33 @@ class NostrRelays implements NostrRelaysBase {
     return eventSubId == requestSubId;
   }
 
+  bool _filterDataEntitiesBySubscriptionId(
+    String dataEntity,
+    String? requestSubId,
+  ) {
+    return requestSubId != null && requestSubId.isNotEmpty
+        ? dataEntity.contains(requestSubId)
+        : false;
+  }
+
+  void _handleRegisteringDataFromRelay({
+    required String dataEntity,
+  }) {
+    if (nostrRegistry.isDataEntityRegistered(dataEntity)) {
+      logger.log(
+        'data entity with content: $dataEntity is already registered, skipping...',
+      );
+      return;
+    }
+
+    nostrRegistry.registerDataEntity(dataEntity);
+    streamsController.allDataEntittyEventController.sink.add(dataEntity);
+
+    logger.log(
+      'data entity with content: $dataEntity is registered and added to the sink.',
+    );
+  }
+
   void _handleAddingEventToSink({
     required String? relay,
     required NostrEvent event,
@@ -1090,5 +1182,11 @@ class NostrRelays implements NostrRelaysBase {
     return init(
       relaysUrl: newRelaysList,
     );
+  }
+}
+
+extension on Stream<String> {
+  Stream<String> mergeWith(List<Stream<String>> list) {
+    return StreamGroup.merge<String>([this, ...list]);
   }
 }
