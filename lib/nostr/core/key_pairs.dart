@@ -46,7 +46,7 @@ class NostrKeyPairs extends Equatable {
 
   /// This will verify a [signature] for a [message] with the [public] key.
   static bool verify(
-    String? pubkey,
+    String pubkey,
     String message,
     String signature,
   ) {
