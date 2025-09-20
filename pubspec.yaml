@@ -18,10 +18,10 @@ dependencies:
   hex: ^0.2.0
   bip32_bip44: ^1.0.0
   bip39: ^1.0.6
-  web_socket_channel: ^2.4.0
+  web_socket_channel: ^3.0.3
 
 dev_dependencies:
   # dart_code_metrics: ^5.7.6
   lints:
   test:
-  very_good_analysis: ^5.1.0
+  very_good_analysis: ^10.0.0
