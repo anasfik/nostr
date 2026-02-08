@@ -1,5 +1,11 @@
 # Changelog
 
+## 9.2.5
+
+- Improved README documentation with better structure and more natural language
+- Made NIPs list inline for easier reading
+- Added quick start example and better code samples
+
 ## 9.2.4
 
 - Fixed issue #5: Message signing and verification now properly hashes messages with SHA256 before signing, matching the behavior of event signing
