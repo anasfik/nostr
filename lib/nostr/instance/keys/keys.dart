@@ -99,10 +99,9 @@ class NostrKeys {
   }) {
     final nostrKeyPairs = _keyPairFrom(privateKey);
 
-    final hexEncodedMessage =
-        Nostr.instance.services.utils.hexEncodeString(message);
+    final messageHash = Nostr.instance.services.utils.sha256Hash(message);
 
-    final signature = nostrKeyPairs.sign(hexEncodedMessage);
+    final signature = nostrKeyPairs.sign(messageHash);
 
     logger.log(
       "signed message with private key, with it's value is: $signature",
@@ -128,10 +127,9 @@ class NostrKeys {
     required String message,
     required String signature,
   }) {
-    final hexEncodedMessage =
-        Nostr.instance.services.utils.hexEncodeString(message);
-    final isVerified =
-        NostrKeyPairs.verify(publicKey, hexEncodedMessage, signature);
+    // Hash the message to get a consistent format for verification
+    final messageHash = Nostr.instance.services.utils.sha256Hash(message);
+    final isVerified = NostrKeyPairs.verify(publicKey, messageHash, signature);
 
     logger.log(
       "verified message with public key: $publicKey, with it's value is: $isVerified",

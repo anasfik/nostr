@@ -1,23 +1,23 @@
 name: dart_nostr
 description: Develop Scalable Dart/Flutter Nostr clients quickly and easily
-version: 9.2.1
+version: 9.2.4
 repository: https://github.com/anasfik/nostr/
 
 environment:
-  sdk: "^3.10.0"
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
+  async: ^2.13.0
+  bech32: ^0.2.2
+  bip32_bip44: ^1.0.0
   bip340: ^0.3.0
-  equatable: ^2.0.5
+  bip39: ^1.0.6
   convert: ^3.1.1
   crypto: ^3.0.2
-  http: ^1.1.0
-  async: any
-  meta: ^1.8.0
-  bech32: ^0.2.2
+  equatable: ^2.0.5
   hex: ^0.2.0
-  bip32_bip44: ^1.0.0
-  bip39: ^1.0.6
+  http: ^1.1.0
+  meta: ^1.8.0
   web_socket_channel: ^3.0.3
 
 dev_dependencies:

@@ -77,6 +77,20 @@ class NostrUtils {
     return hex.encode(hashed.bytes);
   }
 
+  /// Generates a SHA256 hash of the given [input] and returns it as a hex-encoded string.
+  ///
+  /// Example:
+  ///
+  /// ```dart
+  /// final hash = Nostr.instance.utilsService.sha256Hash("message");
+  /// print(hash); // hex-encoded SHA256 hash
+  /// ```
+  String sha256Hash(String input) {
+    final bytes = utf8.encode(input);
+    final digest = sha256.convert(bytes);
+    return hex.encode(digest.bytes);
+  }
+
   /// This method will verify the [internetIdentifier] with a [pubKey] using the NIP05 implementation, and simply will return a [Future] with a [bool] that indicates if the verification was successful or not.
   ///
   /// example:

@@ -1,5 +1,15 @@
 # Changelog
 
+## 9.2.4
+
+- Fixed issue #5: Message signing and verification now properly hashes messages with SHA256 before signing, matching the behavior of event signing
+- Added `sha256Hash` utility method for consistent message hashing
+
+## 9.2.3
+
+- Fixed dependency constraints and sorted dependencies alphabetically
+- Updated SDK requirement to >=3.0.0 <4.0.0 for broader compatibility across Dart 3.x versions
+
 ## 9.2.1
 
 - support implementation of broadcasting all kind of entities froma relay(s) connection(s) without the internal package types/model handling.
