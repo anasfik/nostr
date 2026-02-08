@@ -1,458 +1,321 @@
-# Dart Nostr
+# dart_nostr
 
-This is a Dart/Flutter toolkit for developing [Nostr](https://nostr.com/) client apps faster and easier.
+A Dart/Flutter library for building Nostr clients. Built with simplicity in mind, dart_nostr handles the complexity of the Nostr protocol so you can focus on creating great user experiences.
 
-## Table of Contents
+## What is Nostr?
 
-- [Supported NIPs](#supported-nips)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Singleton instance vs. multiple instances](#singleton-instance-vs-multiple-instances)
-  - [Keys](#keys)
-    - [Generate private and public keys](#generate-private-and-public-keys)
-    - [Generate a key pair from a private key](#generate-a-key-pair-from-a-private-key)
-    - [Sign & verify with a private key](#sign--verify-with-a-private-key)
-    - [More functionalities](#more-functionalities)
-  - [Events & Relays](#events--relays)
-    - [Create an event](#create-an-event)
-    - [Connect to relays](#connect-to-relays)
-    - [Listen to events](#listen-to-events)
-      - [As a stream](#as-a-stream)
-      - [As a future (resolves on EOSE)](#as-a-future-resolves-on-eose)
-    - [Reconnect & disconnect](#reconnect--disconnect)
-    - [Send an event](#send-an-event)
-    - [Send NIP45 COUNT](#send-nip45-count)
-    - [Relay Metadata NIP11](#relay-metadata-nip11)
-    - [More functionalities](#more-functionalities-1)
-  - [More utils](#more-utils)
+[Nostr](https://nostr.com/) (Notes and Other Stuff Transmitted by Relays) is a simple, open protocol for global, decentralized, and censorship-resistant social media. This library gives you everything you need to build Nostr clients in Dart or Flutter.
+
+## Features
+
+- Complete key management (generation, derivation, encoding/decoding)
+- Event creation, signing, and verification
+- WebSocket relay connections with automatic reconnection
+- Event subscriptions with stream and future-based APIs
+- Support for 40+ NIPs out of the box
+- NIP-05 verification
+- NIP-19 entity encoding (nevent, nprofile, etc.)
+- Proof of work support (NIP-13)
+- And much more
 
 ## Supported NIPs
 
-if you are working on a Nostr client, app... you will be able to apply and use all the following NIPs (Updated 2024-01-18):
+Currently implements: [01](https://github.com/nostr-protocol/nips/blob/master/01.md), [02](https://github.com/nostr-protocol/nips/blob/master/02.md), [03](https://github.com/nostr-protocol/nips/blob/master/03.md), [04](https://github.com/nostr-protocol/nips/blob/master/04.md), [05](https://github.com/nostr-protocol/nips/blob/master/05.md), [06](https://github.com/nostr-protocol/nips/blob/master/06.md), [08](https://github.com/nostr-protocol/nips/blob/master/08.md), [09](https://github.com/nostr-protocol/nips/blob/master/09.md), [10](https://github.com/nostr-protocol/nips/blob/master/10.md), [11](https://github.com/nostr-protocol/nips/blob/master/11.md), [13](https://github.com/nostr-protocol/nips/blob/master/13.md), [14](https://github.com/nostr-protocol/nips/blob/master/14.md), [15](https://github.com/nostr-protocol/nips/blob/master/15.md), [18](https://github.com/nostr-protocol/nips/blob/master/18.md), [19](https://github.com/nostr-protocol/nips/blob/master/19.md), [21](https://github.com/nostr-protocol/nips/blob/master/21.md), [23](https://github.com/nostr-protocol/nips/blob/master/23.md), [24](https://github.com/nostr-protocol/nips/blob/master/24.md), [25](https://github.com/nostr-protocol/nips/blob/master/25.md), [27](https://github.com/nostr-protocol/nips/blob/master/27.md), [28](https://github.com/nostr-protocol/nips/blob/master/28.md), [30](https://github.com/nostr-protocol/nips/blob/master/30.md), [31](https://github.com/nostr-protocol/nips/blob/master/31.md), [32](https://github.com/nostr-protocol/nips/blob/master/32.md), [36](https://github.com/nostr-protocol/nips/blob/master/36.md), [38](https://github.com/nostr-protocol/nips/blob/master/38.md), [39](https://github.com/nostr-protocol/nips/blob/master/39.md), [40](https://github.com/nostr-protocol/nips/blob/master/40.md), [45](https://github.com/nostr-protocol/nips/blob/master/45.md), [47](https://github.com/nostr-protocol/nips/blob/master/47.md), [48](https://github.com/nostr-protocol/nips/blob/master/48.md), [50](https://github.com/nostr-protocol/nips/blob/master/50.md), [51](https://github.com/nostr-protocol/nips/blob/master/51.md), [52](https://github.com/nostr-protocol/nips/blob/master/52.md), [53](https://github.com/nostr-protocol/nips/blob/master/53.md), [56](https://github.com/nostr-protocol/nips/blob/master/56.md), [57](https://github.com/nostr-protocol/nips/blob/master/57.md), [58](https://github.com/nostr-protocol/nips/blob/master/58.md), [72](https://github.com/nostr-protocol/nips/blob/master/72.md), [75](https://github.com/nostr-protocol/nips/blob/master/75.md), [78](https://github.com/nostr-protocol/nips/blob/master/78.md), [84](https://github.com/nostr-protocol/nips/blob/master/84.md), [89](https://github.com/nostr-protocol/nips/blob/master/89.md), [94](https://github.com/nostr-protocol/nips/blob/master/94.md), [98](https://github.com/nostr-protocol/nips/blob/master/98.md), [99](https://github.com/nostr-protocol/nips/blob/master/99.md).
 
-- [NIP-01](https://github.com/nostr-protocol/nips/blob/master/01.md)
-- [NIP-02](https://github.com/nostr-protocol/nips/blob/master/02.md)
-- [NIP-03](https://github.com/nostr-protocol/nips/blob/master/03.md)
-- [NIP-04](https://github.com/nostr-protocol/nips/blob/master/04.md)
-- [NIP-05](https://github.com/nostr-protocol/nips/blob/master/05.md)
-- [NIP-06](https://github.com/nostr-protocol/nips/blob/master/06.md) 
-- [NIP-08](https://github.com/nostr-protocol/nips/blob/master/08.md)
-- [NIP-09](https://github.com/nostr-protocol/nips/blob/master/09.md)
-- [NIP-10](https://github.com/nostr-protocol/nips/blob/master/10.md)
-- [NIP-11](https://github.com/nostr-protocol/nips/blob/master/11.md)
-- [NIP-13](https://github.com/nostr-protocol/nips/blob/master/13.md)
-- [NIP-14](https://github.com/nostr-protocol/nips/blob/master/14.md)
-- [NIP-15](https://github.com/nostr-protocol/nips/blob/master/15.md)
-- [NIP-18](https://github.com/nostr-protocol/nips/blob/master/18.md)
-- [NIP-19](https://github.com/nostr-protocol/nips/blob/master/19.md)
-- [NIP-21](https://github.com/nostr-protocol/nips/blob/master/21.md)
-- [NIP-23](https://github.com/nostr-protocol/nips/blob/master/23.md)
-- [NIP-24](https://github.com/nostr-protocol/nips/blob/master/24.md)
-- [NIP-25](https://github.com/nostr-protocol/nips/blob/master/25.md)
-- [NIP-27](https://github.com/nostr-protocol/nips/blob/master/27.md)
-- [NIP-28](https://github.com/nostr-protocol/nips/blob/master/28.md)
-- [NIP-30](https://github.com/nostr-protocol/nips/blob/master/30.md)
-- [NIP-31](https://github.com/nostr-protocol/nips/blob/master/31.md)
-- [NIP-32](https://github.com/nostr-protocol/nips/blob/master/32.md)
-- [NIP-36](https://github.com/nostr-protocol/nips/blob/master/36.md)
-- [NIP-38](https://github.com/nostr-protocol/nips/blob/master/38.md)
-- [NIP-39](https://github.com/nostr-protocol/nips/blob/master/39.md)
-- [NIP-40](https://github.com/nostr-protocol/nips/blob/master/40.md)
-- NIP-42 (not yet implemented)
-- NIP-44 (not yet implemented)
-- [NIP-45](https://github.com/nostr-protocol/nips/blob/master/45.md)
-- [NIP-47](https://github.com/nostr-protocol/nips/blob/master/47.md)
-- [NIP-48](https://github.com/nostr-protocol/nips/blob/master/48.md)
-- [NIP-50](https://github.com/nostr-protocol/nips/blob/master/50.md)
-- [NIP-51](https://github.com/nostr-protocol/nips/blob/master/51.md)
-- [NIP-52](https://github.com/nostr-protocol/nips/blob/master/52.md)
-- [NIP-53](https://github.com/nostr-protocol/nips/blob/master/53.md)
-- [NIP-56](https://github.com/nostr-protocol/nips/blob/master/56.md)
-- [NIP-57: Lightning Zaps](57.md)
-- [NIP-58](https://github.com/nostr-protocol/nips/blob/master/58.md)
-<!-- - [NIP-65](https://github.com/nostr-protocol/nips/blob/master/65.md) -->
-- [NIP-72](https://github.com/nostr-protocol/nips/blob/master/72.md)
-- [NIP-75](https://github.com/nostr-protocol/nips/blob/master/75.md)
-- [NIP-78](https://github.com/nostr-protocol/nips/blob/master/78.md)
-- [NIP-84](https://github.com/nostr-protocol/nips/blob/master/84.md)
-- [NIP-89](https://github.com/nostr-protocol/nips/blob/master/89.md)
-- [NIP-94](https://github.com/nostr-protocol/nips/blob/master/94.md)
-- [NIP-98](https://github.com/nostr-protocol/nips/blob/master/98.md)
-- [NIP-99](https://github.com/nostr-protocol/nips/blob/master/99.md)
+Note: NIP-42 and NIP-44 are planned for future releases. Platform-specific NIPs like [NIP-07](https://github.com/nostr-protocol/nips/blob/master/07.md) (web browser extensions) aren't directly applicable to this library.
 
-NIPs marked as "not yet implemented" are not supported yet.
+## Getting Started
 
-Some existant NIPs are platform specific or can't just be supported directly like [NIP 07](https://github.com/nostr-protocol/nips/blob/master/07.md) which is only web-specific, or [NIP 90](https://github.com/nostr-protocol/nips/blob/master/90.md) which is related to Data Vending machines.
-
-## Installation
-
-Install the package by adding the following to your `pubspec.yaml` file:
+Add dart_nostr to your pubspec.yaml:
 
 ```yaml
 dependencies:
-  dart_nostr: any
+  dart_nostr: ^9.2.4
 ```
 
-Otherwise you can install it from the command line:
+Or use the command line:
 
 ```bash
-# Flutter project
-flutter pub add dart_nostr
-
-# Dart project
-dart pub add dart_nostr
+flutter pub add dart_nostr  # Flutter
+dart pub add dart_nostr     # Dart
 ```
 
-## Usage
+## Quick Example
 
-### Singleton instance vs. multiple instances
-
-The base and only class you need to remember is `Nostr`, all methods and utilities are available through it.
-
-The `Nostr` class is accessible through two ways, a singleton instance which you can access by calling `Nostr.instance` and a constructor which you can use to create multiple instances of `Nostr`.
-
-Each instance (including the singleton instance) is independent from each other, so everything you do with one instance will be accessible only through that instance including relays, events, caches, callbacks, etc.
-
-Use the singleton instance if you want to use the same instance across your app, so as example once you do connect to a set of relays, you can access and use them (send and receive events) from anywhere in your app.
-
-Use the constructor if you want to create multiple instances of `Nostr`, as example if you want to connect to different relays in different parts of your app, or if you have extensive Nostr relays usage (requests) and you want to separate them into different instances so you avoid relays limits.
+Here's a simple example to get you started:
 
 ```dart
-/// Singleton instance
-final instance = Nostr.instance;
+import 'package:dart_nostr/dart_nostr.dart';
 
-/// Constructor
-final instance = Nostr();
-```
+void main() async {
+  // Initialize
+  final nostr = Nostr.instance;
 
-### Keys
+  // Generate keys
+  final keyPair = nostr.keysService.generateKeyPair();
+  print('Public key: ${keyPair.public}');
 
-#### Generate private and public keys
+  // Connect to relays
+  await nostr.relaysService.init(
+    relaysUrl: ['wss://relay.damus.io', 'wss://nos.lol'],
+  );
 
-```dart
-final newKeyPair = instance.keysService.generateKeyPair();
+  // Create and publish an event
+  final event = NostrEvent.fromPartialData(
+    kind: 1,
+    content: 'Hello Nostr!',
+    keyPairs: keyPair,
+  );
 
-print(newKeyPair.public); // Public key
-print(newKeyPair.private); // Private key
-```
+  nostr.relaysService.sendEventToRelays(event);
 
-#### Generate a key pair from a private key
+  // Subscribe to events
+  final stream = nostr.relaysService.startEventsSubscription(
+    request: NostrRequest(filters: [
+      NostrFilter(kinds: [1], limit: 10),
+    ]),
+  );
 
-```dart
-final somePrivateKey = "HERE IS MY PRIVATE KEY";
-
-final newKeyPair = instance.keysService
-      .generateKeyPairFromExistingPrivateKey(somePrivateKey);
-
-print(somePrivateKey == newKeyPair.private); // true
-print(newKeyPair.public); // Public key
-```
-
-#### Sign & verify with a private key
-
-```dart
-
-/// sign a message with a private key
-final signature = instance.keysService.sign(
-  privateKey: keyPair.private,
-  message: "hello world",
-);
-
-print(signature);
-
-/// verify a message with a public key
-final verified = instance.keysService.verify(
-  publicKey: keyPair.public,
-  message: "hello world",
-  signature: signature,
-);
-
-print(verified); // true
-```
-
-Note: `dart_nostr` provides even more easier way to create, sign and verify Nostr events, see the relays and events sections below.
-
-#### More functionalities
-
-The package exposes more useful methods, like:
-  
-```dart
-// work with nsec keys
-instance.keysService.encodePrivateKeyToNsec(privateKey);
-instance.keysService.decodeNsecKeyToPrivateKey(privateKey);
-
-// work with npub keys
-instance.keysService.encodePublicKeyToNpub(privateKey);
-instance.keysService.decodeNpubKeyToPublicKey(privateKey);
-
-// more keys derivations and validations methods
-instance.keysService.derivePublicKey(privateKey);
-instance.keysService.generatePrivateKey(privateKey);
-instance.keysService.isValidPrivateKey(privateKey);
-
-// general utilities that related to keys
-instance.utilsService.decodeBech32(bech32String);
-instance.utilsService.encodeBech32(bech32String);
-instance.utilsService.pubKeyFromIdentifierNip05(bech32String);
-```
-
-### Events & Relays
-
-#### Create an event
-
-Quickest way to create an event is by using the `NostrEvent.fromPartialData` constructor, it does all the heavy lifting for you, like signing the event with the provided private key, generating the event id, etc.
-
-```dart
-final event = NostrEvent.fromPartialData(
-  kind: 1,
-  content: 'example content',
-  keyPairs: keyPair, // will be used to sign the event
-  tags: [
-    ['t', currentDateInMsAsString],
-  ],
-);
-
-print(event.id); // event id
-print(event.sig); // event signature
-
-print(event.serialized()); // event as serialized JSON
-```
-
-Note: you can also create an event from scratch with the `NostrEvent` constructor, but you will need to do the heavy lifting yourself, like signing the event, generating the event id, etc.
-
-#### Connect to relays
-for a single `Nostr` instance, you can connect and reconnect to multiple relays once or multiple times, so you will be able to send and receive events later.
-
-```dart
-try {
- 
- final relays = ['wss://relay.damus.io'];
- 
- await instance.relaysService.init(
-  relaysUrl: relays,
- );
-
-print("connected successfully")
-} catch (e) {
-  print(e);
+  stream.stream.listen((event) {
+    print('Received: ${event.content}');
+  });
 }
 ```
 
-if anything goes wrong, you will get an exception with the error message.
-Note: the `init` method is highly configurable, so you can control the behavior of the connection, like the number of retries, the timeout, wether to throw an exception or not, register callbacks for connections or events...
+## Usage Guide
 
-#### Listen to events
+### Working with Instances
 
-##### As a stream 
+You can use dart_nostr in two ways depending on your needs:
 
 ```dart
+// Singleton - shared state across your app
+final nostr = Nostr.instance;
+```
+
 ```dart
-// Creating a request to be sent to the relays. (as example this request will get all events with kind 1 of the provided public key)
-final request = NostrRequest(
-  filters: [
-    NostrFilter(
-      kinds: const [1],
-      authors: [keyPair.public],
-    ),
+// Multiple instances - isolated state
+final nostr1 = Nostr();
+final nostr2 = Nostr(); // Completely independent
+```
+
+Most apps work well with the singleton. Use multiple instances if you need to connect to different relay sets simultaneously or want to isolate different parts of your app.
+
+### Keys
+
+#### Generate New Keys
+
+```dart
+final keyPair = nostr.keysService.generateKeyPair();
+print(keyPair.public);  // Your public key
+print(keyPair.private); // Keep this secret!
+```
+
+#### Work with Existing Keys
+
+```dart
+// If you already have a private key
+final keyPair = nostr.keysService
+    .generateKeyPairFromExistingPrivateKey(myPrivateKey);
+```
+
+#### Sign and Verify Messages
+
+```dart
+final signature = nostr.keysService.sign(
+  privateKey: keyPair.private,
+  message: "GM",
+);
+
+final isValid = nostr.keysService.verify(
+  publicKey: keyPair.public,
+  message: "GM",
+  signature: signature,
+);
+```
+
+#### Bech32 Encoding (nsec/npub)
+
+```dart
+// Encode to human-friendly formats
+final nsec = nostr.keysService.encodePrivateKeyToNsec(privateKey);
+final npub = nostr.keysService.encodePublicKeyToNpub(publicKey);
+
+// Decode back
+final privateKey = nostr.keysService.decodeNsecKeyToPrivateKey(nsec);
+final publicKey = nostr.keysService.decodeNpubKeyToPublicKey(npub);
+```
+
+### Events
+
+#### Create and Sign Events
+
+The easiest way:
+
+```dart
+final event = NostrEvent.fromPartialData(
+  kind: 1,  // Text note
+  content: 'Hello Nostr!',
+  keyPairs: keyPair,
+  tags: [
+    ['p', 'pubkey_to_mention'],
+    ['e', 'event_id_to_reference'],
   ],
 );
 
+// Event is already signed and has an ID
+print(event.id);
+print(event.sig);
+```
 
-// Starting the subscription and listening to events
-final nostrStream = Nostr.instance.services.relays.startEventsSubscription(
-  request: request,
-  onEose: (ease) => print(ease),
+### Relays
+
+#### Connect to Relays
+
+```dart
+await nostr.relaysService.init(
+  relaysUrl: [
+    'wss://relay.damus.io',
+    'wss://nos.lol',
+    'wss://relay.nostr.band',
+  ],
+);
+```
+
+#### Subscribe to Events
+
+Real-time streaming:
+
+```dart
+final stream = nostr.relaysService.startEventsSubscription(
+  request: NostrRequest(filters: [
+    NostrFilter(
+      kinds: [1],
+      authors: [keyPair.public],
+      limit: 50,
+    ),
+  ]),
 );
 
-print(nostrStream.subscriptionId); // The subscription id
-
-// Listening to events
-nostrStream.stream.listen((NostrEvent event) {
+stream.stream.listen((event) {
   print(event.content);
 });
 
-// close the subscription later
-nostrStream.close();
+// Don't forget to close when done
+stream.close();
 ```
 
-##### As a future (resolves on EOSE)
+One-time fetch (waits for EOSE):
 
 ```dart
-// Creating a request to be sent to the relays. (as example this request will get all events with kind 1 of the provided public key)
-final request = NostrRequest(
-  filters: [
-    NostrFilter(
-      kinds: const [1],
-      authors: [keyPair.public],
-    ),
-  ],
+final events = await nostr.relaysService.startEventsSubscriptionAsync(
+  request: NostrRequest(filters: [
+    NostrFilter(kinds: [1], limit: 20),
+  ]),
 );
 
-// Call the async method and wait for the result
-final events =
-    await Nostr.instance.services.relays.startEventsSubscriptionAsync(
-  request: request,
-);
-
-// print the events
-print(events.map((e) => e.content));
+print('Got ${events.length} events');
 ```
 
-Note: `startEventsSubscriptionAsync` will be resolve with an `List<NostrEvent>` as soon as a relay sends an EOSE command.
-
-#### Reconnect & disconnect
+#### Publish Events
 
 ```dart
-// reconnect
-await Nostr.instance.services.relays.reconnectToRelays(
-       onRelayListening: onRelayListening,
-       onRelayConnectionError: onRelayConnectionError,
-       onRelayConnectionDone: onRelayConnectionDone,
-       retryOnError: retryOnError,
-       retryOnClose: retryOnClose,
-       shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
-       connectionTimeout: connectionTimeout,
-       ignoreConnectionException: ignoreConnectionException,
-       lazyListeningToRelays: lazyListeningToRelays,
-     );
-    
-// disconnect
-await Nostr.instance.services.relays.disconnectFromRelays();
+nostr.relaysService.sendEventToRelays(event);
+
+// Or wait for confirmation
+final ok = await nostr.relaysService.sendEventToRelaysAsync(event);
+print(ok.message);
 ```
 
-#### Send an event
+### More Features
+
+#### NIP-05 Verification
 
 ```dart
-// sending synchronously
-Nostr.instance.services.relays.sendEventToRelays(
-  event,
-  onOk: (ok) => print(ok),
+final verified = await nostr.utilsService.verifyNip05(
+  internetIdentifier: "user@domain.com",
+  pubKey: publicKey,
 );
-
-// sending synchronously with a custom timeout
-final okCommand = await Nostr.instance.services.relays.sendEventToRelaysAsync(
-  event,
-  timeout: const Duration(seconds: 3),
-);
-
-print(okCommand);
 ```
 
-Note: `sendEventToRelaysAsync` will be resolve with an `OkCommand` as soon as one relay accepts the event.
-
-#### Send NIP45 COUNT
+#### NIP-19 Entities
 
 ```dart
-// create a count event
+// Create shareable event links
+final nevent = nostr.utilsService.encodeNevent(
+  eventId: event.id,
+  pubkey: keyPair.public,
+  userRelays: ['wss://relay.damus.io'],
+);
+
+// Create profile links
+final nprofile = nostr.utilsService.encodeNProfile(
+  pubkey: keyPair.public,
+  userRelays: ['wss://relay.damus.io'],
+);
+```
+
+#### Event Counting
+
+```dart
 final countEvent = NostrCountEvent.fromPartialData(
-  eventsFilter: NostrFilter(
-    kinds: const [0],
-    authors: [keyPair.public],
-  ),
+  eventsFilter: NostrFilter(kinds: [1], authors: [keyPair.public]),
 );
 
-// Send the count event synchronously
-Nostr.instance.services.relays.sendCountEventToRelays(
-  countEvent,
-  onCountResponse: (countRes) {
-    print('count: $countRes');
-  },
-);
-
-// Send the count event asynchronously
-final countRes = await Nostr.instance.services.relays.sendCountEventToRelaysAsync(
-  countEvent,
-  timeout: const Duration(seconds: 3),
-);
-
-print("found ${countRes.count} events");
+final count = await nostr.relaysService.sendCountEventToRelaysAsync(countEvent);
+print('User has ${count.count} text notes');
 ```
 
-#### Relay Metadata NIP11
+#### Relay Information
 
 ```dart
-final relayDoc = await Nostr.instance.services.relays.relayInformationsDocumentNip11(
+final info = await nostr.relaysService.relayInformationsDocumentNip11(
   relayUrl: "wss://relay.damus.io",
 );
 
-print(relayDoc?.name);
-print(relayDoc?.description);
-print(relayDoc?.contact);
-print(relayDoc?.pubkey);
-print(relayDoc?.software);
-print(relayDoc?.supportedNips);
-print(relayDoc?.version);
+print(info?.name);
+print(info?.supportedNips);
 ```
 
-#### More functionalities
+## Examples
 
-The package exposes more useful methods, like:
+The [example](example/) directory contains runnable examples showing:
 
-```dart
-// work with nevent and nevent
-final nevent = Nostr.instance.utilsService.encodeNevent(
-  eventId: event.id,
-  pubkey: pubkey,
-  userRelays: [],
-);
-  
-print(nevent);
+- Basic key management
+- Creating and publishing events
+- Subscribing to event streams
+- Working with different event kinds
+- NIP-05 verification flows
+- And more real-world scenarios
 
-final map = Nostr.instance.utilsService.decodeNeventToMap(nevent);
-print(map);
+## API Documentation
 
+Full API documentation is available at [pub.dev](https://pub.dev/documentation/dart_nostr/latest/).
 
-// work with nprofile
-final nprofile = Nostr.instance.utilsService.encodeNProfile(
-  pubkey: pubkey,
-  userRelays: [],
-);
+## Contributing
 
-print(nprofile);
+Found a bug? Have a feature idea? Contributions are welcome!
 
-final map = Nostr.instance.utilsService.decodeNprofileToMap(nprofile);
-print(map);
+1. Check existing issues or create a new one
+2. Fork the repository
+3. Create your feature branch
+4. Make your changes
+5. Submit a pull request
 
-```
+Please ensure your code follows the existing style and includes tests where appropriate.
 
-### More utils
+## License
 
-#### Generate random 64 hex
+MIT License - see [LICENSE](LICENSE) for details.
 
-```dart
-final random = Nostr.instance.utilsService.random64HexChars();
-final randomButBasedOnInput = Nostr.instance.utilsService.consistent64HexChars("input");
+## Links
 
-print(random);
-print(randomButBasedOnInput);
-```
+- [Nostr Protocol](https://nostr.com/)
+- [NIPs Repository](https://github.com/nostr-protocol/nips)
+- [pub.dev Package](https://pub.dev/packages/dart_nostr)
+- [GitHub Repository](https://github.com/anasfik/nostr)
 
-#### NIP05 related
+## Questions?
 
-```dart
-/// verify a nip05 identifier
-final verified = await Nostr.instance.utilsService.verifyNip05(
-  internetIdentifier: "something@domain.com",
-  pubKey: pubKey,
-);
-
-print(verified); // true
-
-  
-/// Validate a nip05 identifier format
-final isValid = Nostr.instance.utilsService.isValidNip05Identifier("work@gwhyyy.com");
-print(isValid); // true
-
-/// Get the pubKey from a nip05 identifier
-final pubKey = await Nostr.instance.utilsService.pubKeyFromIdentifierNip05(
-  internetIdentifier: "something@somain.c",
-);
-  
-print(pubKey);
-```
-
-### NIP13 hex difficulty
-
-```dart
-Nostr.instance.utilsService.countDifficultyOfHex("002f");
-```
+- Open an [issue](https://github.com/anasfik/nostr/issues)
+- Start a [discussion](https://github.com/anasfik/nostr/discussions)
