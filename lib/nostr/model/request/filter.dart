@@ -20,7 +20,7 @@ class NostrFilter extends Equatable {
     this.additionalFilters,
   });
 
-  /// Deserialize aNpstrFilter from a JSON
+  /// Deserialize a NostrFilter from a JSON
   factory NostrFilter.fromJson(Map<String, dynamic> json) {
     final ids =
         json['ids'] == null ? null : List<String>.from(json['ids'] as List);
@@ -39,10 +39,11 @@ class NostrFilter extends Equatable {
     final t = json['#t'] == null ? null : List<String>.from(json['#t'] as List);
 
     final a = json['#a'] == null ? null : List<String>.from(json['#a'] as List);
-    final since =
+    
+    final since = json['since'] == null ? null : 
         DateTime.fromMillisecondsSinceEpoch((json['since'] as int) * 1000);
 
-    final until =
+    final until = json['until'] == null ? null :
         DateTime.fromMillisecondsSinceEpoch((json['until'] as int) * 1000);
 
     final limit = json['limit'] as int?;
