@@ -4,10 +4,10 @@ version: 9.2.1
 repository: https://github.com/anasfik/nostr/
 
 environment:
-  sdk: ">=3.0.0 <=3.9.9"
+  sdk: "^3.10.0"
 
 dependencies:
-  bip340: ^0.1.0
+  bip340: ^0.3.0
   equatable: ^2.0.5
   convert: ^3.1.1
   crypto: ^3.0.2
@@ -18,10 +18,10 @@ dependencies:
   hex: ^0.2.0
   bip32_bip44: ^1.0.0
   bip39: ^1.0.6
-  web_socket_channel: ^2.4.0
+  web_socket_channel: ^3.0.3
 
 dev_dependencies:
   # dart_code_metrics: ^5.7.6
   lints:
   test:
-  very_good_analysis: ^5.1.0
+  very_good_analysis: ^10.0.0
