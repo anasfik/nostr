@@ -31,8 +31,9 @@ class NostrUtils {
   /// ```
 
   bool isValidNip05Identifier(String identifier) {
-    final emailRegEx =
-        RegExp(r'^[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-\.]+\.[a-zA-Z]+$');
+    final emailRegEx = RegExp(
+      r'^[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-\.]+\.[a-zA-Z]+$',
+    );
 
     return emailRegEx.hasMatch(identifier);
   }
@@ -61,9 +62,9 @@ class NostrUtils {
   /// print(randomGeneratedHex); // ...
   /// ```
 
-  String random64HexChars() {
+  String random64HexChars([int length = 32]) {
     final random = Random.secure();
-    final randomBytes = List<int>.generate(32, (i) => random.nextInt(256));
+    final randomBytes = List<int>.generate(length, (i) => random.nextInt(256));
 
     return hex.encode(randomBytes);
   }
@@ -158,10 +159,9 @@ class NostrUtils {
       );
 
       final decoded = jsonDecode(res.body) as Map<String, dynamic>;
-      if (decoded
-          case {
-            'names': final names as Map<String, dynamic>,
-          }) {
+      if (decoded case {
+        'names': final names as Map<String, dynamic>,
+      }) {
         logger.log(
           'Pubkey for $localPart is ${names[localPart] ?? 'not found'} '
           'at $domainPart',
@@ -204,8 +204,10 @@ class NostrUtils {
     idCharsBinary = idCharsBinary.map((charBinary) {
       final charBinaryLength = charBinary.length;
       final charBinaryLengthDiff = 4 - charBinaryLength;
-      final charBinaryPadded =
-          charBinary.padLeft(charBinaryLength + charBinaryLengthDiff, '0');
+      final charBinaryPadded = charBinary.padLeft(
+        charBinaryLength + charBinaryLengthDiff,
+        '0',
+      );
       return charBinaryPadded;
     }).toList();
 
