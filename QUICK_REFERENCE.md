@@ -40,17 +40,18 @@ dart_nostr v9.2.5
 
 **Total: 118 Tests (All Passing ✅)**
 
-| Component | Tests | Coverage |
-|-----------|-------|----------|
-| Key Pairs (Cryptography) | 8 | Binary operations, signing, verification |
-| Keys Service | 11 | Key generation, derivation, caching |
-| Relay Tests (NEW) | 46 | Connection, subscriptions, filtering, parameters |
-| Utils Service | 15 | Hashing, NIP05, Bech32, random generation |
-| Events | 12 | Deserialization, field parsing, tags |
-| Filters | 12 | Filter creation, composition, mapping |
-| Requests | 14 | Request serialization, subscription management |
+| Component                | Tests | Coverage                                         |
+| ------------------------ | ----- | ------------------------------------------------ |
+| Key Pairs (Cryptography) | 8     | Binary operations, signing, verification         |
+| Keys Service             | 11    | Key generation, derivation, caching              |
+| Relay Tests (NEW)        | 46    | Connection, subscriptions, filtering, parameters |
+| Utils Service            | 15    | Hashing, NIP05, Bech32, random generation        |
+| Events                   | 12    | Deserialization, field parsing, tags             |
+| Filters                  | 12    | Filter creation, composition, mapping            |
+| Requests                 | 14    | Request serialization, subscription management   |
 
 ### Relay Tests (46 tests, NEW)
+
 - **Relay Registration** (3): Init methods, async behavior
 - **Subscription Generation** (21): Stream creation, filtering, tag handling
 - **Subscription Closure** (4): Close requests, multiple subscriptions
@@ -163,6 +164,7 @@ final signedEvent = event.copyWith(sig: signature);
 ## Supported NIPs (40+)
 
 Core Protocol:
+
 - NIP-01: Event generation & signing
 - NIP-02: Contact list
 - NIP-03: OpenTimestamps
@@ -170,6 +172,7 @@ Core Protocol:
 - NIP-06: Basic key derivation
 
 Event Types:
+
 - NIP-08: Mentioning users
 - NIP-09: Event deletion
 - NIP-10: Relationships
@@ -179,13 +182,16 @@ Event Types:
 - NIP-18: Reposts
 
 Relay Protocol:
+
 - NIP-11: Relay information document
 
 Encryption/Auth:
+
 - NIP-04: Encrypted direct messages
 - NIP-42: Authentication
 
 Other:
+
 - NIP-19: Bech32-encoded entities (nprofile, nevent, etc.)
 - NIP-25: Reactions
 - NIP-28: Public chat channels
@@ -201,6 +207,7 @@ Other:
 ## Recent Improvements
 
 ### Commit: [tests] add relay and subscription coverage
+
 - **Date:** Feb 10, 2026
 - **Files Modified:** 7
 - **Changes:** +1620 lines, -150 lines
@@ -216,24 +223,28 @@ Other:
 ## Strategic Roadmap (2026)
 
 ### Phase 1: Stability (Q1 2026)
+
 - Expand test suite from 118 → 500+ tests
 - Integration tests
 - Error handling improvements
 - Documentation enhancements
 
 ### Phase 2: Features (Q2 2026)
+
 - Storage adapter implementation
 - Advanced relay management
 - Batch event operations
 - NIP-42 & NIP-44 implementation
 
 ### Phase 3: Performance (Q3 2026)
+
 - Caching layer
 - Serialization optimization
 - Connection pooling
 - Performance benchmarks
 
 ### Phase 4: Developer Experience (Q4 2026)
+
 - CLI tools
 - Code generators
 - Example applications
@@ -243,14 +254,14 @@ Other:
 
 ## Success Metrics
 
-| Metric | Current | Target |
-|--------|---------|--------|
-| Test Count | 118 | 500+ |
-| Code Coverage | ~70% | 85%+ |
-| Monthly Downloads | ~2k | 10k+ |
-| GitHub Stars | ~400 | 500+ |
-| Build Time | <30s | <30s |
-| Package Size | <500KB | <500KB |
+| Metric            | Current | Target |
+| ----------------- | ------- | ------ |
+| Test Count        | 118     | 500+   |
+| Code Coverage     | ~70%    | 85%+   |
+| Monthly Downloads | ~2k     | 10k+   |
+| GitHub Stars      | ~400    | 500+   |
+| Build Time        | <30s    | <30s   |
+| Package Size      | <500KB  | <500KB |
 
 ---
 
@@ -258,26 +269,26 @@ Other:
 
 ```yaml
 # Core
-bip340: ^0.3.0           # Schnorr signatures
-bip32_bip44: ^1.0.0      # Key derivation
-bip39: ^1.0.6            # Mnemonic seeds
-crypto: ^3.0.2           # SHA256, HMAC
-hex: ^0.2.0              # Hex encoding
+bip340: ^0.3.0 # Schnorr signatures
+bip32_bip44: ^1.0.0 # Key derivation
+bip39: ^1.0.6 # Mnemonic seeds
+crypto: ^3.0.2 # SHA256, HMAC
+hex: ^0.2.0 # Hex encoding
 
 # Communication
-web_socket_channel: ^3.0.3  # WebSocket relay
+web_socket_channel: ^3.0.3 # WebSocket relay
 
 # Utilities
-bech32: ^0.2.2           # Bech32 encoding
-http: ^1.1.0             # HTTP client
+bech32: ^0.2.2 # Bech32 encoding
+http: ^1.1.0 # HTTP client
 
 # Code Quality
-equatable: ^2.0.5        # Equality comparison
-async: ^2.13.0           # Async utilities
+equatable: ^2.0.5 # Equality comparison
+async: ^2.13.0 # Async utilities
 
 # Development
-test:                    # Unit testing
-very_good_analysis:      # Linting
+test: # Unit testing
+very_good_analysis: # Linting
 ```
 
 ---
@@ -301,7 +312,7 @@ void main() async {
   await Nostr.instance.services.relays.init(
     relaysUrl: ['wss://relay.damus.io'],
   );
-  
+
   // Subscribe to events
   final stream = Nostr.instance.services.relays
     .startEventsSubscription(
@@ -309,7 +320,7 @@ void main() async {
         filters: [NostrFilter(kinds: [1], limit: 10)],
       ),
     );
-  
+
   // Listen for events
   stream.stream.listen((event) {
     print('${event.pubKey}: ${event.content}');
@@ -380,14 +391,14 @@ lib/
 
 ## Performance Characteristics
 
-| Operation | Typical Time | Notes |
-|-----------|--------------|-------|
-| Key generation | <100ms | BIP39 + BIP32 |
-| Message signing | <10ms | BIP340 |
-| Event serialization | <5ms | JSON |
-| Relay connection | 100-500ms | Network dependent |
-| Event subscription | <20ms | Filter processing |
-| NIP-05 verification | 100-2000ms | HTTP request |
+| Operation           | Typical Time | Notes             |
+| ------------------- | ------------ | ----------------- |
+| Key generation      | <100ms       | BIP39 + BIP32     |
+| Message signing     | <10ms        | BIP340            |
+| Event serialization | <5ms         | JSON              |
+| Relay connection    | 100-500ms    | Network dependent |
+| Event subscription  | <20ms        | Filter processing |
+| NIP-05 verification | 100-2000ms   | HTTP request      |
 
 ---
 
@@ -400,12 +411,12 @@ void main() async {
   // 1. Generate keys
   final keyPair = await Nostr.instance.services.keys
     .generateKeyPair();
-  
+
   // 2. Connect to relays
   await Nostr.instance.services.relays.init(
     relaysUrl: ['wss://relay.damus.io'],
   );
-  
+
   // 3. Create event
   final event = NostrEvent(
     content: 'Hello!',
@@ -413,16 +424,16 @@ void main() async {
     pubKey: keyPair.publicKey,
     createdAt: DateTime.now(),
   );
-  
+
   // 4. Sign event
   final sig = await Nostr.instance.services.keys
     .signMessage(
       privateKey: keyPair.privateKey,
       message: event.toJson(),
     );
-  
+
   final signedEvent = event.copyWith(sig: sig);
-  
+
   // 5. Subscribe to events
   final stream = Nostr.instance.services.relays
     .startEventsSubscription(
@@ -430,7 +441,7 @@ void main() async {
         filters: [NostrFilter(kinds: [1])],
       ),
     );
-  
+
   // 6. Listen
   stream.stream.listen(print);
 }
@@ -483,4 +494,3 @@ final request = NostrRequest(
 - **Pub.dev:** https://pub.dev/packages/dart_nostr
 - **Nostr Protocol:** https://nostr.com/
 - **Nostr NIPs:** https://github.com/nostr-protocol/nips
-

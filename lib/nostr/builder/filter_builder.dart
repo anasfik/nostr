@@ -1,5 +1,7 @@
 import 'package:dart_nostr/nostr/model/request/filter.dart';
 
+// ignore_for_file: avoid_returning_this
+
 /// {@template nostr_filter_builder}
 /// Builder for creating NostrFilter instances with a fluent API.
 /// {@endtemplate}

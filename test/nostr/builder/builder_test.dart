@@ -4,10 +4,7 @@ import 'package:test/test.dart';
 void main() {
   group('NostrFilterBuilder', () {
     test('builds filter with kinds', () {
-      final filter = NostrFilterBuilder()
-          .withKind(1)
-          .withKind(5)
-          .build();
+      final filter = NostrFilterBuilder().withKind(1).withKind(5).build();
 
       expect(filter.kinds, contains(1));
       expect(filter.kinds, contains(5));
@@ -15,27 +12,21 @@ void main() {
 
     test('builds filter with authors', () {
       final authors = ['author1', 'author2'];
-      final filter = NostrFilterBuilder()
-          .withAuthors(authors)
-          .build();
+      final filter = NostrFilterBuilder().withAuthors(authors).build();
 
       expect(filter.authors, authors);
     });
 
     test('builds filter with event ids', () {
       final eventIds = ['event1', 'event2'];
-      final filter = NostrFilterBuilder()
-          .withEventIds(eventIds)
-          .build();
+      final filter = NostrFilterBuilder().withEventIds(eventIds).build();
 
       expect(filter.e, eventIds);
     });
 
     test('builds filter with pubkeys', () {
       final pubkeys = ['pub1', 'pub2'];
-      final filter = NostrFilterBuilder()
-          .withPubkeys(pubkeys)
-          .build();
+      final filter = NostrFilterBuilder().withPubkeys(pubkeys).build();
 
       expect(filter.p, pubkeys);
     });
@@ -43,20 +34,15 @@ void main() {
     test('builds filter with time range', () {
       final since = DateTime(2026, 1, 1);
       final until = DateTime(2026, 12, 31);
-      
-      final filter = NostrFilterBuilder()
-          .since(since)
-          .until(until)
-          .build();
+
+      final filter = NostrFilterBuilder().since(since).until(until).build();
 
       expect(filter.since, since);
       expect(filter.until, until);
     });
 
     test('builds filter with limit', () {
-      final filter = NostrFilterBuilder()
-          .withLimit(50)
-          .build();
+      final filter = NostrFilterBuilder().withLimit(50).build();
 
       expect(filter.limit, 50);
     });
@@ -81,13 +67,11 @@ void main() {
     });
 
     test('reset clears all filters', () {
-      final builder = NostrFilterBuilder()
-          .withKind(1)
-          .withAuthor('author1')
-          .withLimit(50);
+      final builder =
+          NostrFilterBuilder().withKind(1).withAuthor('author1').withLimit(50);
 
       builder.reset();
-      
+
       final filter = builder.build();
       expect(filter.kinds, null);
       expect(filter.authors, null);
@@ -96,10 +80,7 @@ void main() {
 
     test('fluent API is chainable', () {
       expect(
-        NostrFilterBuilder()
-            .withKind(1)
-            .withAuthor('author1')
-            .withLimit(50),
+        NostrFilterBuilder().withKind(1).withAuthor('author1').withLimit(50),
         isNotNull,
       );
     });
@@ -116,10 +97,7 @@ void main() {
 
   group('NostrFilterBuilder - Single Item Methods', () {
     test('withKind adds single kind', () {
-      final filter = NostrFilterBuilder()
-          .withKind(1)
-          .withKind(7)
-          .build();
+      final filter = NostrFilterBuilder().withKind(1).withKind(7).build();
 
       expect(filter.kinds, [1, 7]);
     });
@@ -147,10 +125,8 @@ void main() {
     });
 
     test('withPubkey adds single pubkey', () {
-      final filter = NostrFilterBuilder()
-          .withPubkey('pub1')
-          .withPubkey('pub2')
-          .build();
+      final filter =
+          NostrFilterBuilder().withPubkey('pub1').withPubkey('pub2').build();
 
       expect(filter.p?.length, 2);
       expect(filter.p, contains('pub1'));
@@ -191,7 +167,7 @@ void main() {
 
     test('linear backoff creates constant delays', () {
       final policy = NostrRetryPolicy.linear(delayMs: 1000);
-      
+
       expect(policy.getDelayForAttempt(1).inMilliseconds, 1000);
       expect(policy.getDelayForAttempt(2).inMilliseconds, 1000);
     });
@@ -201,10 +177,10 @@ void main() {
         initialDelayMs: 100,
         maxDelayMs: 5000,
       );
-      
+
       final delay1 = policy.getDelayForAttempt(1).inMilliseconds;
       final delay2 = policy.getDelayForAttempt(2).inMilliseconds;
-      
+
       expect(delay2, greaterThanOrEqualTo(delay1));
     });
 
@@ -216,7 +192,7 @@ void main() {
 
     test('shouldRetry respects max attempts', () {
       const policy = NostrRetryPolicy(maxAttempts: 3);
-      
+
       expect(policy.shouldRetry(1), true);
       expect(policy.shouldRetry(2), true);
       expect(policy.shouldRetry(3), false);
@@ -227,7 +203,7 @@ void main() {
         initialDelayMs: 100,
         maxDelayMs: 1000,
       );
-      
+
       final delay = policy.getDelayForAttempt(10);
       expect(delay.inMilliseconds, lessThanOrEqualTo(1000));
     });
@@ -259,11 +235,8 @@ void main() {
     });
 
     test('filterBuilder can build filter', () {
-      final filter = Nostr.instance
-          .filterBuilder()
-          .withKind(1)
-          .withLimit(50)
-          .build();
+      final filter =
+          Nostr.instance.filterBuilder().withKind(1).withLimit(50).build();
 
       expect(filter.kinds, [1]);
       expect(filter.limit, 50);
@@ -307,13 +280,15 @@ void main() {
 
       final filter2 = NostrFilter(kinds: [7]);
       final updated = request.withAdditionalFilter(filter2);
-      
+
       expect(updated.filters.length, 2);
     });
 
     test('extension methods preserve original request', () {
       final original = NostrRequest(
-        filters: [NostrFilter(kinds: [1])],
+        filters: [
+          NostrFilter(kinds: [1])
+        ],
       );
 
       final updated = original.withLimit(100);
@@ -341,7 +316,7 @@ void main() {
     test('can build text note filter', () {
       final filter = Nostr.instance
           .filterBuilder()
-          .withKind(1)  // Text note
+          .withKind(1) // Text note
           .withLimit(100)
           .build();
 
@@ -352,7 +327,7 @@ void main() {
     test('can build reaction filter', () {
       final filter = Nostr.instance
           .filterBuilder()
-          .withKind(7)  // Reaction
+          .withKind(7) // Reaction
           .withEventId('event_id')
           .build();
 
@@ -363,17 +338,16 @@ void main() {
     test('can build metadata filter', () {
       final filter = Nostr.instance
           .filterBuilder()
-          .withKind(0)  // User metadata
-          .withAuthors(['author1', 'author2'])
-          .build();
+          .withKind(0) // User metadata
+          .withAuthors(['author1', 'author2']).build();
 
       expect(filter.kinds, [0]);
       expect(filter.authors?.length, 2);
     });
 
     test('builder withTag stores custom tags', () {
-      final builder = NostrFilterBuilder()
-          .withTag('custom', ['value1', 'value2']);
+      final builder =
+          NostrFilterBuilder().withTag('custom', ['value1', 'value2']);
 
       // Note: tags are internal to builder for now
       final filter = builder.build();
@@ -382,7 +356,9 @@ void main() {
 
     test('recentOnly with various durations', () {
       final request = NostrRequest(
-        filters: [NostrFilter(kinds: [1])],
+        filters: [
+          NostrFilter(kinds: [1])
+        ],
       );
 
       final recent1h = request.recentOnly(Duration(hours: 1));
@@ -402,7 +378,9 @@ void main() {
 
     test('chaining multiple filter methods', () {
       final request = NostrRequest(
-        filters: [NostrFilter(kinds: [1])],
+        filters: [
+          NostrFilter(kinds: [1])
+        ],
       );
 
       final updated = request

@@ -4,6 +4,7 @@ import 'package:dart_nostr/nostr/builder/defaults.dart';
 import 'package:dart_nostr/nostr/builder/filter_builder.dart';
 import 'package:dart_nostr/nostr/core/utils.dart';
 import 'package:dart_nostr/nostr/model/debug_options.dart';
+import 'package:dart_nostr/nostr/model/nostr_events_stream.dart';
 import 'package:dart_nostr/nostr/model/request/filter.dart';
 import 'package:dart_nostr/nostr/model/request/request.dart';
 import 'package:dart_nostr/nostr/service/services.dart';
@@ -48,14 +49,19 @@ class Nostr {
 
   /// Convenience method to start an event subscription.
   /// Shortcut for: Nostr.instance.services.relays.startEventsSubscription()
-  dynamic subscribe(NostrFilter filter) {
+  ///
+  /// Returns a [NostrEventsStream] that can be listened to for events.
+  NostrEventsStream subscribe(NostrFilter filter) {
     return services.relays.startEventsSubscription(
       request: NostrRequest(filters: [filter]),
     );
   }
 
   /// Convenience method to start multiple event subscriptions.
-  dynamic subscribeFilters(List<NostrFilter> filters) {
+  /// Shortcut for starting a subscription with multiple filters.
+  ///
+  /// Returns a [NostrEventsStream] that receives events matching any of the filters.
+  NostrEventsStream subscribeFilters(List<NostrFilter> filters) {
     return services.relays.startEventsSubscription(
       request: NostrRequest(filters: filters),
     );

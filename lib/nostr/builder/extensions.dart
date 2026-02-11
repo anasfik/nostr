@@ -9,9 +9,7 @@ extension NostrRequestExtensions on NostrRequest {
   /// Create a copy with a specific limit.
   NostrRequest withLimit(int limit) {
     return NostrRequest(
-      filters: filters
-          .map((f) => f.copyWith(limit: limit))
-          .toList(),
+      filters: filters.map((f) => f.copyWith(limit: limit)).toList(),
     );
   }
 
@@ -26,9 +24,7 @@ extension NostrRequestExtensions on NostrRequest {
   NostrRequest recentOnly(Duration duration) {
     final since = DateTime.now().subtract(duration);
     return NostrRequest(
-      filters: filters
-          .map((f) => f.copyWith(since: since))
-          .toList(),
+      filters: filters.map((f) => f.copyWith(since: since)).toList(),
     );
   }
 }

@@ -39,12 +39,14 @@ class NostrFilter extends Equatable {
     final t = json['#t'] == null ? null : List<String>.from(json['#t'] as List);
 
     final a = json['#a'] == null ? null : List<String>.from(json['#a'] as List);
-    
-    final since = json['since'] == null ? null : 
-        DateTime.fromMillisecondsSinceEpoch((json['since'] as int) * 1000);
 
-    final until = json['until'] == null ? null :
-        DateTime.fromMillisecondsSinceEpoch((json['until'] as int) * 1000);
+    final since = json['since'] == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch((json['since'] as int) * 1000);
+
+    final until = json['until'] == null
+        ? null
+        : DateTime.fromMillisecondsSinceEpoch((json['until'] as int) * 1000);
 
     final limit = json['limit'] as int?;
 
