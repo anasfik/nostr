@@ -1,7 +1,11 @@
 import 'dart:core';
 
+import 'package:dart_nostr/nostr/builder/defaults.dart';
+import 'package:dart_nostr/nostr/builder/filter_builder.dart';
 import 'package:dart_nostr/nostr/core/utils.dart';
 import 'package:dart_nostr/nostr/model/debug_options.dart';
+import 'package:dart_nostr/nostr/model/request/filter.dart';
+import 'package:dart_nostr/nostr/model/request/request.dart';
 import 'package:dart_nostr/nostr/service/services.dart';
 
 /// {@template nostr_service}
@@ -38,6 +42,27 @@ class Nostr {
 
   /// {@macro nostr_service}
   static Nostr get instance => _instance;
+
+  /// Default relay URLs.
+  static List<String> get defaultRelays => NostrDefaults.defaultRelays;
+
+  /// Convenience method to start an event subscription.
+  /// Shortcut for: Nostr.instance.services.relays.startEventsSubscription()
+  dynamic subscribe(NostrFilter filter) {
+    return services.relays.startEventsSubscription(
+      request: NostrRequest(filters: [filter]),
+    );
+  }
+
+  /// Convenience method to start multiple event subscriptions.
+  dynamic subscribeFilters(List<NostrFilter> filters) {
+    return services.relays.startEventsSubscription(
+      request: NostrRequest(filters: filters),
+    );
+  }
+
+  /// Create a filter builder for fluent API.
+  NostrFilterBuilder filterBuilder() => NostrFilterBuilder();
 
   /// This method will disable the logs of the library.
 

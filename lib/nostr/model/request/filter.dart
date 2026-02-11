@@ -101,6 +101,37 @@ class NostrFilter extends Equatable {
   /// Additional filters to be used in the filter
   final Map<String, dynamic>? additionalFilters;
 
+  /// Create a copy of this filter with some fields replaced.
+  NostrFilter copyWith({
+    List<String>? ids,
+    List<String>? authors,
+    List<int>? kinds,
+    List<String>? e,
+    List<String>? p,
+    List<String>? t,
+    List<String>? a,
+    DateTime? since,
+    DateTime? until,
+    int? limit,
+    String? search,
+    Map<String, dynamic>? additionalFilters,
+  }) {
+    return NostrFilter(
+      ids: ids ?? this.ids,
+      authors: authors ?? this.authors,
+      kinds: kinds ?? this.kinds,
+      e: e ?? this.e,
+      p: p ?? this.p,
+      t: t ?? this.t,
+      a: a ?? this.a,
+      since: since ?? this.since,
+      until: until ?? this.until,
+      limit: limit ?? this.limit,
+      search: search ?? this.search,
+      additionalFilters: additionalFilters ?? this.additionalFilters,
+    );
+  }
+
   /// Serialize a [NostrFilter] to a [Map<String, dynamic>]
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
