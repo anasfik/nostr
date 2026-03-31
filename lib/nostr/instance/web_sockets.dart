@@ -1,4 +1,5 @@
 import 'package:dart_nostr/nostr/core/utils.dart';
+import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// {@template nostr_web_sockets_service}
@@ -19,16 +20,23 @@ class NostrWebSocketsService {
   }
 
   /// Connects to a [relay] web socket, and trigger the [onConnectionSuccess] callback if the connection is successful, or the [onConnectionError] callback if the connection fails.
+  ///
+  /// If [connectTimeout] is provided, the connection attempt will be aborted
+  /// after the specified duration. If not provided, falls back to the default
+  /// [_connectionTimeout] (5 seconds). This prevents a single unreachable relay
+  /// from blocking the entire connection process indefinitely.
   Future<void> connectRelay({
     required String relay,
+    Duration? connectTimeout,
     bool? shouldIgnoreConnectionException,
     void Function(WebSocketChannel webSocket)? onConnectionSuccess,
   }) async {
     WebSocketChannel? webSocket;
 
     try {
-      webSocket = WebSocketChannel.connect(
-        Uri.parse(relay),
+      webSocket = IOWebSocketChannel.connect(
+        relay,
+        connectTimeout: connectTimeout ?? _connectionTimeout,
       );
 
       await webSocket.ready;

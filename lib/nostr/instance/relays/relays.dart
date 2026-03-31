@@ -755,33 +755,30 @@ class NostrRelays implements NostrRelaysBase {
     required bool lazyListeningToRelays,
     bool relayUnregistered = true,
   }) async {
-    final completer = Completer();
-
     if (relaysList == null || relaysList!.isEmpty) {
       throw Exception(
         'you need to call the init method before calling this method.',
       );
     }
 
-    for (final relay in relaysList!) {
-      await _reconnectToRelay(
-        relayUnregistered: relayUnregistered,
-        relay: relay,
-        onRelayListening: onRelayListening,
-        onRelayConnectionError: onRelayConnectionError,
-        onRelayConnectionDone: onRelayConnectionDone,
-        retryOnError: retryOnError,
-        retryOnClose: retryOnClose,
-        shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
-        connectionTimeout: connectionTimeout,
-        ignoreConnectionException: ignoreConnectionException,
-        lazyListeningToRelays: lazyListeningToRelays,
-      );
-    }
-
-    completer.complete();
-
-    return completer.future;
+    await Future.wait(
+      relaysList!.map((relay) async {
+        await _reconnectToRelay(
+          relayUnregistered: relayUnregistered,
+          relay: relay,
+          onRelayListening: onRelayListening,
+          onRelayConnectionError: onRelayConnectionError,
+          onRelayConnectionDone: onRelayConnectionDone,
+          retryOnError: retryOnError,
+          retryOnClose: retryOnClose,
+          shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
+          connectionTimeout: connectionTimeout,
+          ignoreConnectionException: ignoreConnectionException,
+          lazyListeningToRelays: lazyListeningToRelays,
+        );
+      }),
+      eagerError: false,
+    );
   }
 
   Future<bool> disconnectFromRelays({
@@ -927,56 +924,57 @@ class NostrRelays implements NostrRelaysBase {
     required bool shouldReconnectToRelayOnNotice,
     required Duration connectionTimeout,
   }) async {
-    final completer = Completer();
-
-    for (final relay in relaysUrl) {
+    final relaysToConnect = relaysUrl.where((relay) {
       if (nostrRegistry.isRelayRegisteredAndConnectedSuccesfully(relay)) {
         logger.log(
           'relay with url: $relay is already connected successfully, skipping...',
         );
-
-        continue;
+        return false;
       }
+      return true;
+    }).toList();
 
-      try {
-        await webSocketsService.connectRelay(
-          relay: relay,
-          onConnectionSuccess: (relayWebSocket) {
-            nostrRegistry.registerRelayWebSocket(
-              relayUrl: relay,
-              webSocket: relayWebSocket,
-            );
-            logger.log(
-              'the websocket for the relay with url: $relay, is registered.',
-            );
-            logger.log(
-              'listening to the websocket for the relay with url: $relay...',
-            );
-
-            if (!lazyListeningToRelays) {
-              startListeningToRelay(
-                relay: relay,
-                onRelayListening: onRelayListening,
-                onRelayConnectionError: onRelayConnectionError,
-                onRelayConnectionDone: onRelayConnectionDone,
-                retryOnError: retryOnError,
-                retryOnClose: retryOnClose,
-                shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
-                connectionTimeout: connectionTimeout,
-                ignoreConnectionException: ignoreConnectionException,
-                lazyListeningToRelays: lazyListeningToRelays,
+    await Future.wait(
+      relaysToConnect.map((relay) async {
+        try {
+          await webSocketsService.connectRelay(
+            relay: relay,
+            connectTimeout: connectionTimeout,
+            onConnectionSuccess: (relayWebSocket) {
+              nostrRegistry.registerRelayWebSocket(
+                relayUrl: relay,
+                webSocket: relayWebSocket,
               );
-            }
-          },
-        );
-      } catch (e) {
-        onRelayConnectionError?.call(relay, e, null);
-      }
-    }
+              logger.log(
+                'the websocket for the relay with url: $relay, is registered.',
+              );
+              logger.log(
+                'listening to the websocket for the relay with url: $relay...',
+              );
 
-    completer.complete();
-
-    return completer.future;
+              if (!lazyListeningToRelays) {
+                startListeningToRelay(
+                  relay: relay,
+                  onRelayListening: onRelayListening,
+                  onRelayConnectionError: onRelayConnectionError,
+                  onRelayConnectionDone: onRelayConnectionDone,
+                  retryOnError: retryOnError,
+                  retryOnClose: retryOnClose,
+                  shouldReconnectToRelayOnNotice:
+                      shouldReconnectToRelayOnNotice,
+                  connectionTimeout: connectionTimeout,
+                  ignoreConnectionException: ignoreConnectionException,
+                  lazyListeningToRelays: lazyListeningToRelays,
+                );
+              }
+            },
+          );
+        } catch (e) {
+          onRelayConnectionError?.call(relay, e, null);
+        }
+      }),
+      eagerError: false,
+    );
   }
 
   bool _filterNostrEventsWithId(
