@@ -23,7 +23,7 @@ Source documentation is also available on [pub.dev](https://pub.dev/documentatio
 
 ```yaml
 dependencies:
-  dart_nostr: ^9.2.5
+  dart_nostr: ^10.0.0
 ```
 
 ```bash
