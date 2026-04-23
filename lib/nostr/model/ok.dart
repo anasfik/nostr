@@ -30,6 +30,24 @@ class NostrEventOkCommand extends Equatable {
         message,
       ];
 
+  /// Creates a [NostrEventOkCommand] from an already-decoded relay message list.
+  factory NostrEventOkCommand.fromDecodedMessage(List<dynamic> decoded) {
+    final eventId = decoded[1] as String;
+    final isEventAccepted = decoded.length > 2
+        ? decoded[2] is bool
+            ? decoded[2] as bool
+            : decoded[2] is String
+                ? (decoded[2] as String).toLowerCase() == 'true'
+                : null
+        : null;
+    final message = decoded.length > 3 ? decoded[3] as String? : null;
+    return NostrEventOkCommand(
+      eventId: eventId,
+      isEventAccepted: isEventAccepted,
+      message: message,
+    );
+  }
+
   static bool canBeDeserialized(String dataFromRelay) {
     final decoded = jsonDecode(dataFromRelay) as List;
 

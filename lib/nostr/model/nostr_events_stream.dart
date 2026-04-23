@@ -1,4 +1,3 @@
-import 'package:dart_nostr/nostr/dart_nostr.dart';
 import 'package:dart_nostr/nostr/model/event/event.dart';
 import 'package:dart_nostr/nostr/model/request/request.dart';
 import 'package:equatable/equatable.dart';
@@ -12,6 +11,7 @@ class NostrEventsStream extends Equatable {
     required this.stream,
     required this.subscriptionId,
     required this.request,
+    this.onClose,
   });
 
   /// This the stream of nostr events that you can listen to and get the events.
@@ -22,23 +22,25 @@ class NostrEventsStream extends Equatable {
 
   final NostrRequest request;
 
+  final void Function()? onClose;
+
   /// {@macro close_events_subscription}
   void close() {
-    return Nostr.instance.services.relays
-        .closeEventsSubscription(subscriptionId);
+    onClose?.call();
   }
 
   @override
-  List<Object?> get props => [stream, subscriptionId, request];
+  List<Object?> get props => [stream, subscriptionId, request, onClose];
 }
-/// Represents a holde class for the stream of nostr events and the subscription id.
-/// {@endtemplate}
+
+/// Represents a holde class for the stream of raw Nostr data entities and the subscription id.
 class NostrDataEntitiesStream extends Equatable {
   /// {@macro nostr_events_stream}
   const NostrDataEntitiesStream({
     required this.stream,
     required this.subscriptionId,
     required this.request,
+    this.onClose,
   });
 
   /// This the stream of nostr events that you can listen to and get the events.
@@ -49,12 +51,13 @@ class NostrDataEntitiesStream extends Equatable {
 
   final NostrRequest request;
 
+  final void Function()? onClose;
+
   /// {@macro close_events_subscription}
   void close() {
-    return Nostr.instance.services.relays
-        .closeEventsSubscription(subscriptionId);
+    onClose?.call();
   }
 
   @override
-  List<Object?> get props => [stream, subscriptionId, request, ];
+  List<Object?> get props => [stream, subscriptionId, request, onClose];
 }

@@ -16,6 +16,11 @@ class NostrRequestEoseCommand extends Equatable {
         subscriptionId,
       ];
 
+  /// Creates a [NostrRequestEoseCommand] from an already-decoded relay message list.
+  factory NostrRequestEoseCommand.fromDecodedMessage(List<dynamic> decoded) {
+    return NostrRequestEoseCommand(subscriptionId: decoded[1] as String);
+  }
+
   static bool canBeDeserialized(String dataFromRelay) {
     final decoded = jsonDecode(dataFromRelay) as List;
 

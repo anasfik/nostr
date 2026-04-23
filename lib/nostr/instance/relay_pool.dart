@@ -173,8 +173,7 @@ class RelayPoolManager {
   /// Get relay statistics.
   RelayPoolStatistics getStatistics() {
     final totalRelays = _relayHealth.length;
-    final healthyRelays =
-        _relayHealth.values.where((h) => h.isHealthy).length;
+    final healthyRelays = _relayHealth.values.where((h) => h.isHealthy).length;
     final totalConnections =
         _activeConnections.values.fold<int>(0, (sum, count) => sum + count);
 
@@ -183,9 +182,8 @@ class RelayPoolManager {
       healthyRelays: healthyRelays,
       unhealthyRelays: totalRelays - healthyRelays,
       totalActiveConnections: totalConnections,
-      averageConnectionsPerRelay: totalRelays > 0
-          ? totalConnections / totalRelays
-          : 0,
+      averageConnectionsPerRelay:
+          totalRelays > 0 ? totalConnections / totalRelays : 0,
     );
   }
 }

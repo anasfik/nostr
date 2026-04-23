@@ -1,8 +1,8 @@
 import 'package:bip32_bip44/dart_bip32_bip44.dart' as bip32_bip44;
 import 'package:bip39/bip39.dart' as bip39;
+import 'package:dart_nostr/nostr/core/crypto_utils.dart';
 import 'package:dart_nostr/nostr/core/key_pairs.dart';
 import 'package:dart_nostr/nostr/core/utils.dart';
-import 'package:dart_nostr/nostr/dart_nostr.dart';
 
 /// {@template nostr_keys}
 /// This class is responsible for generating key pairs and deriving public keys from private keys..
@@ -99,7 +99,7 @@ class NostrKeys {
   }) {
     final nostrKeyPairs = _keyPairFrom(privateKey);
 
-    final messageHash = Nostr.instance.services.utils.sha256Hash(message);
+    final messageHash = NostrCryptoUtils.sha256Hash(message);
 
     final signature = nostrKeyPairs.sign(messageHash);
 
@@ -128,7 +128,7 @@ class NostrKeys {
     required String signature,
   }) {
     // Hash the message to get a consistent format for verification
-    final messageHash = Nostr.instance.services.utils.sha256Hash(message);
+    final messageHash = NostrCryptoUtils.sha256Hash(message);
     final isVerified = NostrKeyPairs.verify(publicKey, messageHash, signature);
 
     logger.log(

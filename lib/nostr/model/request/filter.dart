@@ -103,6 +103,44 @@ class NostrFilter extends Equatable {
   /// Additional filters to be used in the filter
   final Map<String, dynamic>? additionalFilters;
 
+  /// Whether this filter contains no criteria.
+  bool get isEmpty =>
+      (ids == null || ids!.isEmpty) &&
+      (authors == null || authors!.isEmpty) &&
+      (kinds == null || kinds!.isEmpty) &&
+      (e == null || e!.isEmpty) &&
+      (p == null || p!.isEmpty) &&
+      (t == null || t!.isEmpty) &&
+      (a == null || a!.isEmpty) &&
+      since == null &&
+      until == null &&
+      limit == null &&
+      search == null &&
+      (additionalFilters == null || additionalFilters!.isEmpty);
+
+  /// Validate filter content for client-side safety checks.
+  List<String> validate() {
+    final errors = <String>[];
+
+    if (limit != null && limit! <= 0) {
+      errors.add('Filter limit must be greater than 0.');
+    }
+
+    if (since != null && until != null && since!.isAfter(until!)) {
+      errors.add('Filter since must be before until.');
+    }
+
+    if (ids != null && ids!.any((value) => value.trim().isEmpty)) {
+      errors.add('Filter ids cannot contain empty values.');
+    }
+
+    if (authors != null && authors!.any((value) => value.trim().isEmpty)) {
+      errors.add('Filter authors cannot contain empty values.');
+    }
+
+    return errors;
+  }
+
   /// Create a copy of this filter with some fields replaced.
   NostrFilter copyWith({
     List<String>? ids,

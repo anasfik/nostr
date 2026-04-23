@@ -1,16 +1,18 @@
-import 'package:dart_nostr/dart_nostr.dart';
+import '_example_shared.dart';
 
-void main() async {
-  const publicKeyToCheckWith =
+Future<void> main() async {
+  final nostr = exampleNostr();
+  const publicKey =
       '32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245';
 
-  final isIdentifierVerifiedWithPublixKey =
-      await Nostr.instance.services.utils.verifyNip05(
-    internetIdentifier: 'jb55@randomshit.com',
-    pubKey: publicKeyToCheckWith,
-  );
+  try {
+    final verified = await nostr.utils.verifyNip05(
+      internetIdentifier: 'jb55@jb55.com',
+      pubKey: publicKey,
+    );
 
-  print(
-    'isIdentifierVerifiedWithPublixKey: $isIdentifierVerifiedWithPublixKey',
-  );
+    print('verified: $verified');
+  } catch (error) {
+    print('verification failed: $error');
+  }
 }

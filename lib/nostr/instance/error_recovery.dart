@@ -21,7 +21,8 @@ class ErrorRecoveryManager {
   static const int maxErrorHistorySize = 1000;
 
   /// Strategy for handling temporary failures.
-  late ErrorRecoveryStrategy _strategy = ErrorRecoveryStrategy.exponentialBackoff();
+  late ErrorRecoveryStrategy _strategy =
+      ErrorRecoveryStrategy.exponentialBackoff();
 
   /// Get the current recovery strategy.
   ErrorRecoveryStrategy get recoveryStrategy => _strategy;
@@ -163,7 +164,8 @@ class ErrorRecoveryManager {
       return aErrors.compareTo(bErrors);
     });
 
-    logger.log('Fallback relay selected: ${healthyRelays.first} for $primaryRelayUrl');
+    logger.log(
+        'Fallback relay selected: ${healthyRelays.first} for $primaryRelayUrl');
     return healthyRelays.first;
   }
 
@@ -183,12 +185,12 @@ class ErrorRecoveryManager {
 
     final errorsByType = <ErrorType, int>{};
     for (final error in relayErrors) {
-      errorsByType[error.errorType] =
-          (errorsByType[error.errorType] ?? 0) + 1;
+      errorsByType[error.errorType] = (errorsByType[error.errorType] ?? 0) + 1;
     }
 
-    final recentErrors =
-        relayErrors.where((e) => DateTime.now().difference(e.timestamp).inMinutes < 5).toList();
+    final recentErrors = relayErrors
+        .where((e) => DateTime.now().difference(e.timestamp).inMinutes < 5)
+        .toList();
 
     return ErrorSummary(
       relayUrl: relayUrl,
@@ -305,13 +307,13 @@ class ErrorRecoveryStrategy {
     // Calculate exponential backoff: initialDelay * (backoffMultiplier ^ attemptNumber)
     double delayMs = initialDelay.inMilliseconds *
         (pow(backoffMultiplier, attemptNumber.clamp(1, 10)) as double);
-    
+
     // Clamp to max delay
     delayMs = delayMs.clamp(
       initialDelay.inMilliseconds.toDouble(),
       maxDelay.inMilliseconds.toDouble(),
     );
-    
+
     return Duration(milliseconds: delayMs.toInt());
   }
 }

@@ -1,19 +1,14 @@
-import 'package:dart_nostr/nostr/dart_nostr.dart';
+import '_example_shared.dart';
 
 void main() {
-  final newKeyPair = Nostr.instance.services.keys.generateKeyPair();
-
-  final relays = ['wss://relay.damus.io'];
-
-  final nProfile = Nostr.instance.services.bech32.encodeNProfile(
-    pubkey: newKeyPair.public,
-    userRelays: relays,
+  final nostr = exampleNostr();
+  final keyPair = nostr.keys.generateKeyPair();
+  final nprofile = nostr.bech32.encodeNProfile(
+    pubkey: keyPair.public,
+    userRelays: exampleRelays,
   );
 
-  print('nProfile: $nProfile');
-
-  final decodedNprofile =
-      Nostr.instance.services.bech32.decodeNprofileToMap(nProfile);
-
-  print('decodedNprofile: $decodedNprofile');
+  print(divider('nprofile'));
+  print('encoded: $nprofile');
+  print('decoded: ${nostr.bech32.decodeNprofileToMap(nprofile)}');
 }

@@ -1,31 +1,30 @@
 import 'package:dart_nostr/dart_nostr.dart';
 
-void main() async {
-  // Waiting first for the connection to be established for all relays.
+import '_example_shared.dart';
 
-  await Nostr.instance.services.relays.init(
-    relaysUrl: <String>[
-      'wss://relay.damus.io',
-      'wss://eden.nostr.land',
-    ],
+Future<void> main() async {
+  final nostr = exampleNostr(enableLogs: true);
+
+  await nostr.relays.init(
+    relaysUrl: exampleRelays,
+    retryOnClose: true,
+    retryOnError: true,
     shouldReconnectToRelayOnNotice: true,
   );
 
-  // sending n different requests to the relays.
-  for (var i = 0; i < 50; i++) {
-    // Creating the request that we will listen with to events.
-
-    final req = NostrRequest(
+  for (var i = 0; i < 5; i++) {
+    final request = NostrRequest(
       filters: <NostrFilter>[
         NostrFilter(
           t: const ['nostr'],
-          kinds: const [0],
-          since: DateTime.now().subtract(const Duration(days: 10)),
+          kinds: const [1],
+          limit: 10,
+          since: DateTime.now().subtract(const Duration(days: 3)),
         ),
       ],
     );
 
-    print('Starting subscription $i');
-    Nostr.instance.services.relays.startEventsSubscription(request: req);
+    final stream = nostr.relays.startEventsSubscription(request: request);
+    print('Started subscription #$i -> ${stream.subscriptionId}');
   }
 }

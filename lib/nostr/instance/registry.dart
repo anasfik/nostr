@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:io';
 
 import 'package:dart_nostr/nostr/core/exceptions.dart';
@@ -24,7 +25,10 @@ class NostrRegistry {
 
   final NostrLogger logger;
 
-  final allDataEntitiesRegister = <String, bool>{};
+  final _allDataEntitiesSet = LinkedHashSet<String>();
+
+  /// Maximum number of raw data entity strings kept for deduplication.
+  static const int _maxDataEntityCacheSize = 5000;
 
   /// This is the registry which will have all relays [WebSocket]s.
   final relaysWebSocketsRegistry = <String, WebSocketChannel>{};
@@ -82,6 +86,7 @@ class NostrRegistry {
     okCommandCallBacks.clear();
     eoseCommandCallBacks.clear();
     countResponseCallBacks.clear();
+    _allDataEntitiesSet.clear();
   }
 
   /// Wether a [WebSocket] is registered with the given [relayUrl].
@@ -168,9 +173,9 @@ class NostrRegistry {
         onCountResponse,
     required String relay,
   }) {
-    final relayCountRegister = countResponseCallBacks[subscriptionId];
-
-    relayCountRegister?[subscriptionId] = onCountResponse;
+    final relayCountRegister =
+        getOrCreateRegister(countResponseCallBacks, relay);
+    relayCountRegister[subscriptionId] = onCountResponse;
   }
 
   /// Returns a count response callback from the registry with the given [subscriptionId].
@@ -220,12 +225,15 @@ class NostrRegistry {
   }
 
   void registerDataEntity(String dataEntity) {
-    allDataEntitiesRegister[dataEntity] = true;
+    if (_allDataEntitiesSet.length >= _maxDataEntityCacheSize) {
+      _allDataEntitiesSet.remove(_allDataEntitiesSet.first);
+    }
+    _allDataEntitiesSet.add(dataEntity);
 
     logger.log('Registered data entity: $dataEntity');
   }
 
   bool isDataEntityRegistered(String dataEntity) {
-    return allDataEntitiesRegister.containsKey(dataEntity);
+    return _allDataEntitiesSet.contains(dataEntity);
   }
 }

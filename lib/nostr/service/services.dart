@@ -7,48 +7,68 @@ import 'package:dart_nostr/nostr/instance/relay_pool.dart';
 import 'package:dart_nostr/nostr/instance/relays/relays.dart';
 import 'package:dart_nostr/nostr/instance/subscription_manager.dart';
 import 'package:dart_nostr/nostr/instance/utils/utils.dart';
+import 'package:dart_nostr/nostr/service/client.dart';
+import 'package:dart_nostr/nostr/service/client_options.dart';
+import 'package:dart_nostr/nostr/service/relay_transport.dart';
 
 class NostrServices {
   NostrServices({
     required this.logger,
-  });
+    NostrKeys? keys,
+    NostrRelays? relays,
+    NostrUtils? utils,
+    NostrBech32? bech32,
+    RelayPoolManager? relayPool,
+    SubscriptionManager? subscriptionManager,
+    ConnectionPoolManager? connectionPool,
+    ErrorRecoveryManager? errorRecovery,
+    NostrRelayTransport? relayTransport,
+    NostrClientOptions clientOptions = const NostrClientOptions(),
+  })  : keys = keys ?? NostrKeys(logger: logger),
+        relays = relays ?? NostrRelays(logger: logger),
+        utils = utils ?? NostrUtils(logger: logger),
+        bech32 = bech32 ?? NostrBech32(logger: logger),
+        relayPool = relayPool ?? RelayPoolManager(logger: logger),
+        subscriptionManager =
+            subscriptionManager ?? SubscriptionManager(logger: logger),
+        connectionPool =
+            connectionPool ?? ConnectionPoolManager(logger: logger),
+        errorRecovery = errorRecovery ?? ErrorRecoveryManager(logger: logger),
+        relayTransport = relayTransport,
+        clientOptions = clientOptions;
+
   final NostrLogger logger;
+  final NostrClientOptions clientOptions;
+
+  final NostrRelayTransport? relayTransport;
 
   /// {@macro nostr_keys}
-  late final keys = NostrKeys(
-    logger: logger,
-  );
+  final NostrKeys keys;
 
   /// {@macro nostr_relays}
-  late final relays = NostrRelays(
-    logger: logger,
-  );
+  final NostrRelays relays;
 
-  late final utils = NostrUtils(
-    logger: logger,
-  );
+  final NostrUtils utils;
 
-  late final bech32 = NostrBech32(
-    logger: logger,
-  );
+  final NostrBech32 bech32;
 
   /// {@macro relay_pool_manager}
-  late final relayPool = RelayPoolManager(
-    logger: logger,
-  );
+  final RelayPoolManager relayPool;
 
   /// {@macro subscription_manager}
-  late final subscriptionManager = SubscriptionManager(
-    logger: logger,
-  );
+  final SubscriptionManager subscriptionManager;
 
   /// {@macro connection_pool_manager}
-  late final connectionPool = ConnectionPoolManager(
-    logger: logger,
-  );
+  final ConnectionPoolManager connectionPool;
 
   /// {@macro error_recovery_manager}
-  late final errorRecovery = ErrorRecoveryManager(
+  final ErrorRecoveryManager errorRecovery;
+
+  /// Enterprise-grade facade with typed errors and retry behavior.
+  late final NostrClient client = NostrClient(
+    transport: relayTransport ?? LegacyNostrRelayTransport(relays),
     logger: logger,
+    options: clientOptions,
+    subscriptionManager: subscriptionManager,
   );
 }

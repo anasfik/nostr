@@ -1,7 +1,8 @@
 import 'dart:convert';
 
-import 'package:dart_nostr/dart_nostr.dart';
+import 'package:dart_nostr/nostr/core/crypto_utils.dart';
 import 'package:dart_nostr/nostr/core/constants.dart';
+import 'package:dart_nostr/nostr/model/request/filter.dart';
 import 'package:equatable/equatable.dart';
 
 class NostrCountEvent extends Equatable {
@@ -17,9 +18,7 @@ class NostrCountEvent extends Equatable {
     required NostrFilter eventsFilter,
   }) {
     final createdSubscriptionId =
-        Nostr.instance.services.utils.consistent64HexChars(
-      eventsFilter.toMap().toString(),
-    );
+        NostrCryptoUtils.deterministicHash(jsonEncode(eventsFilter.toMap()));
 
     return NostrCountEvent(
       eventsFilter: eventsFilter,
@@ -55,15 +54,37 @@ class NostrCountResponse extends Equatable {
     final countMap = decodedData[2];
     assert(countMap is Map);
 
+    final countValue = countMap['count'];
+    final parsedCount = switch (countValue) {
+      int value => value,
+      String value => int.tryParse(value) ?? 0,
+      _ => 0,
+    };
+
     return NostrCountResponse(
       subscriptionId: decodedData[1] as String,
-      count: int.parse(countMap['count'] as String),
+      count: parsedCount,
     );
   }
   final String subscriptionId;
   final int count;
   @override
-  List<Object?> get props => throw UnimplementedError();
+  List<Object?> get props => [subscriptionId, count];
+
+  /// Creates a [NostrCountResponse] from an already-decoded relay message list.
+  factory NostrCountResponse.fromDecodedMessage(List<dynamic> decoded) {
+    final countMap = decoded[2] as Map<String, dynamic>;
+    final countValue = countMap['count'];
+    final parsedCount = switch (countValue) {
+      int value => value,
+      String value => int.tryParse(value) ?? 0,
+      _ => 0,
+    };
+    return NostrCountResponse(
+      subscriptionId: decoded[1] as String,
+      count: parsedCount,
+    );
+  }
 
   static bool canBeDeserialized(String data) {
     final decodedData = jsonDecode(data);

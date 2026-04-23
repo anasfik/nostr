@@ -1,6 +1,7 @@
 import 'package:dart_nostr/nostr/model/count.dart';
 import 'package:dart_nostr/nostr/model/ease.dart';
 import 'package:dart_nostr/nostr/model/event/event.dart';
+import 'package:dart_nostr/nostr/model/notice.dart';
 import 'package:dart_nostr/nostr/model/nostr_events_stream.dart';
 import 'package:dart_nostr/nostr/model/ok.dart';
 import 'package:dart_nostr/nostr/model/relay_informations.dart';
@@ -15,7 +16,7 @@ abstract class NostrRelaysBase {
 
   List<String>? relaysList;
 
-  init({
+  Future<void> init({
     required List<String> relaysUrl,
     void Function(
       String relayUrl,
@@ -31,12 +32,16 @@ abstract class NostrRelaysBase {
       String relayUrl,
       WebSocketChannel? relayWebSocket,
     )? onRelayConnectionDone,
+    void Function(
+      String relay,
+      WebSocketChannel? relayWebSocket,
+      NostrNotice notice,
+    )? onNoticeMessageFromRelay,
     bool lazyListeningToRelays = false,
     bool retryOnError = false,
     bool retryOnClose = false,
   });
 
-  @override
   Future<NostrEventOkCommand> sendEventToRelaysAsync(
     NostrEvent event, {
     required Duration timeout,
@@ -88,6 +93,11 @@ abstract class NostrRelaysBase {
     )? onRelayConnectionError,
     required void Function(String relayUrl, WebSocketChannel? relayWebSocket)?
         onRelayConnectionDone,
+    void Function(
+      String relay,
+      WebSocketChannel? relayWebSocket,
+      NostrNotice notice,
+    )? onNoticeMessageFromRelay,
     required bool retryOnError,
     required bool retryOnClose,
     required bool shouldReconnectToRelayOnNotice,
@@ -113,6 +123,11 @@ abstract class NostrRelaysBase {
     )? onRelayConnectionError,
     required void Function(String relayUrl, WebSocketChannel? relayWebSocket)?
         onRelayConnectionDone,
+    void Function(
+      String relay,
+      WebSocketChannel? relayWebSocket,
+      NostrNotice notice,
+    )? onNoticeMessageFromRelay,
     required bool retryOnError,
     required bool retryOnClose,
     required bool shouldReconnectToRelayOnNotice,

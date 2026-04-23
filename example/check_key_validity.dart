@@ -1,17 +1,13 @@
-import 'package:dart_nostr/nostr/dart_nostr.dart';
+import '_example_shared.dart';
 
 void main() {
-  final nostrKeyPairs = Nostr.instance.services.keys.generateKeyPair();
+  final nostr = exampleNostr();
+  final generated = nostr.keys.generateKeyPair();
+  const invalidKey = '';
 
-  print(nostrKeyPairs.private);
-
-  final firstKey = nostrKeyPairs.private;
-  const secondKey = '';
-
+  print(divider('key validity'));
+  print('generated private key: ${generated.private}');
   print(
-    'is firstKey a valid key? ${Nostr.instance.services.keys.isValidPrivateKey(firstKey)}',
-  );
-  print(
-    'is secondKey a valid key? ${Nostr.instance.services.keys.isValidPrivateKey(secondKey)}',
-  );
+      'generated is valid: ${nostr.keys.isValidPrivateKey(generated.private)}');
+  print('empty string is valid: ${nostr.keys.isValidPrivateKey(invalidKey)}');
 }

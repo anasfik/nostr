@@ -3,7 +3,7 @@
 import 'dart:convert';
 
 import 'package:dart_nostr/nostr/core/constants.dart';
-import 'package:dart_nostr/nostr/dart_nostr.dart';
+import 'package:dart_nostr/nostr/core/crypto_utils.dart';
 import 'package:dart_nostr/nostr/model/request/filter.dart';
 import 'package:equatable/equatable.dart';
 
@@ -27,14 +27,11 @@ class NostrRequest extends Equatable {
 
   /// Serialize the request to send it to the remote relays websockets.
   String serialized({String? subscriptionId}) {
-    this.subscriptionId =
-        subscriptionId ??
+    final fingerprint = jsonEncode(filters.map((e) => e.toMap()).toList());
+
+    this.subscriptionId = subscriptionId ??
         this.subscriptionId ??
-        Nostr.instance.services.utils.consistent64HexChars(
-          filters
-              .map((e) => e.toMap().toString())
-              .reduce((value, element) => value + element),
-        );
+        NostrCryptoUtils.deterministicHash(fingerprint);
 
     //! The old way of doing it is commented below
     // final decodedFilters =
@@ -53,7 +50,7 @@ class NostrRequest extends Equatable {
   }
 
   /// Deserialize a request
-  factory NostrRequest.deserialized(input) {
+  factory NostrRequest.deserialized(dynamic input) {
     final haveThreeElements = input is List && input.length >= 3;
 
     assert(

@@ -79,6 +79,34 @@ class NostrEvent extends Equatable {
   /// This is meant for events that are got from the relays, and not for events that are created by you.
   final String? subscriptionId;
 
+  /// Creates a [NostrEvent] from an already-decoded relay message list.
+  /// Use this when you've already called [jsonDecode] to avoid a second parse.
+  factory NostrEvent.fromDecodedMessage(List<dynamic> decoded) {
+    final event = decoded[2] as Map<String, dynamic>;
+    return NostrEvent(
+      id: event['id'] as String,
+      kind: event['kind'] as int,
+      content: event['content'] == null ? '' : event['content'] as String,
+      sig: event['sig'] as String,
+      pubkey: event['pubkey'] as String,
+      createdAt: DateTime.fromMillisecondsSinceEpoch(
+        (event['created_at'] as int) * 1000,
+      ),
+      tags: List<List<String>>.from(
+        (event['tags'] as List)
+            .map(
+              (nestedElem) => (nestedElem as List)
+                  .map(
+                    (nestedElemContent) => nestedElemContent.toString(),
+                  )
+                  .toList(),
+            )
+            .toList(),
+      ),
+      subscriptionId: decoded[1] as String?,
+    );
+  }
+
   /// Wether the given [dataFromRelay] can be deserialized into a [NostrEvent].
   static bool canBeDeserialized(String dataFromRelay) {
     final decoded = jsonDecode(dataFromRelay) as List;
@@ -91,7 +119,7 @@ class NostrEvent extends Equatable {
     required int kind,
     required String content,
     required DateTime createdAt,
-    required List tags,
+    required List<dynamic> tags,
     required String pubkey,
   }) {
     final data = [

@@ -1,10 +1,10 @@
-import 'package:dart_nostr/dart_nostr.dart';
+import '_example_shared.dart';
 
 Future<void> main() async {
-  final puKey = await Nostr.instance.services.utils.pubKeyFromIdentifierNip05(
-    internetIdentifier:
-        'aljaz@raw.githubusercontent.com/aljazceru/awesome-nostr/main',
+  final nostr = exampleNostr();
+  final publicKey = await nostr.utils.pubKeyFromIdentifierNip05(
+    internetIdentifier: 'jb55@jb55.com',
   );
 
-  print(puKey);
+  print('public key: $publicKey');
 }

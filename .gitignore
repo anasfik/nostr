@@ -25,3 +25,6 @@ doc/api/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+
+# AI-generated technical documentation
+technical_docs/

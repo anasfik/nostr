@@ -1,18 +1,19 @@
-import 'package:dart_nostr/dart_nostr.dart';
+import '_example_shared.dart';
 
 void main() {
-  final keyPair = Nostr.instance.services.keys.generateKeyPair();
-  final signature = Nostr.instance.services.keys.sign(
+  final nostr = exampleNostr();
+  final keyPair = nostr.keys.generateKeyPair();
+  final signature = nostr.keys.sign(
     privateKey: keyPair.private,
     message: 'message',
   );
 
-  print('signature: $signature'); // ...
-  final isVerified = Nostr.instance.services.keys.verify(
+  final isVerified = nostr.keys.verify(
     publicKey: keyPair.public,
     message: 'message',
     signature: signature,
   );
 
-  print('isVerified: $isVerified'); // true
+  print('signature: $signature');
+  print('isVerified: $isVerified');
 }

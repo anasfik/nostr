@@ -1,31 +1,30 @@
 import 'package:dart_nostr/dart_nostr.dart';
 
-void main() async {
-  await Nostr.instance.services.relays.init(
-    relaysUrl: ['wss://relay.damus.io'],
+import '_example_shared.dart';
+
+Future<void> main() async {
+  final nostr = await connectedExampleNostr();
+  const publicKey =
+      '32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245';
+
+  final result = nostr.subscribeRequest(
+    NostrRequest(
+      filters: const <NostrFilter>[
+        NostrFilter(
+          kinds: [0],
+          authors: [publicKey],
+          limit: 3,
+        ),
+      ],
+    ),
   );
 
-  final request = NostrRequest(
-    filters: const <NostrFilter>[
-      NostrFilter(
-        kinds: [0],
-        limit: 10,
-        search: 'something Idk',
-      ),
-    ],
-  );
-
-  final requestStream = Nostr.instance.services.relays.startEventsSubscription(
-    request: request,
-    relays: ['wss://relay.nostr.band/all'],
-    onEose: (relay, ease) {
-      print('ease received for subscription id: ${ease.subscriptionId}');
-
-      Nostr.instance.services.relays.closeEventsSubscription(
-        ease.subscriptionId,
-      );
+  result.fold(
+    (stream) {
+      stream.stream.listen((event) {
+        print('metadata event: ${event.content}');
+      });
     },
+    (failure) => print('metadata lookup failed: $failure'),
   );
-
-  requestStream.stream.listen(print);
 }

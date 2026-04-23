@@ -1,51 +1,41 @@
-import 'package:dart_nostr/dart_nostr.dart';
+import '_example_shared.dart';
 
 Future<void> main() async {
-  await Nostr.instance.services.relays.init(
-    relaysUrl: [
-      /// your relays ...
-    ],
-    onRelayConnectionDone: (relayUrl, relayWebSocket) {
-      print('Connected to relay: $relayUrl');
-    },
-    onRelayListening: (relayUrl, receivedEvent, relayWebSocket) {
-      print('Listening to relay: $relayUrl');
-    },
-    onRelayConnectionError: (relayUrl, error, relayWebSocket) {},
+  final nostr = exampleNostr(enableLogs: true);
+
+  await nostr.relays.init(
+    relaysUrl: exampleRelays,
     retryOnClose: true,
     retryOnError: true,
     shouldReconnectToRelayOnNotice: true,
+    onRelayListening: (relayUrl, _, __) => print('listening: $relayUrl'),
+    onRelayConnectionDone: (relayUrl, _) => print('done: $relayUrl'),
+    onRelayConnectionError: (relayUrl, error, _) {
+      print('error from $relayUrl: $error');
+    },
   );
 
-  await Future.delayed(const Duration(seconds: 5));
+  print('connected relays: ${nostr.relays.relaysList}');
 
-  await Nostr.instance.services.relays.reconnectToRelays(
+  await nostr.relays.reconnectToRelays(
     connectionTimeout: const Duration(seconds: 5),
     ignoreConnectionException: true,
     lazyListeningToRelays: false,
-    onRelayConnectionDone: (relayUrl, relayWebSocket) {
-      print('Connected to relay: $relayUrl');
-    },
-    onRelayListening: (relayUrl, receivedEvent, relayWebSocket) {
-      print('Listening to relay: $relayUrl');
-    },
-    onRelayConnectionError: (relayUrl, error, relayWebSocket) {},
     retryOnClose: true,
     retryOnError: true,
     shouldReconnectToRelayOnNotice: true,
+    onRelayListening: (relayUrl, _, __) => print('re-listening: $relayUrl'),
+    onRelayConnectionDone: (relayUrl, _) => print('re-done: $relayUrl'),
+    onRelayConnectionError: (relayUrl, error, _) {
+      print('reconnect error from $relayUrl: $error');
+    },
   );
 
-  await Future.delayed(const Duration(seconds: 5));
-
-  await Nostr.instance.services.relays.disconnectFromRelays(
-    closeCode: (relayUrl) {
-      return 1000;
-    },
-    closeReason: (relayUrl) {
-      return 'Bye';
-    },
-    onRelayDisconnect: (relayUrl, relayWebSocket, returnedMessage) {
-      print('Disconnected from relay: $relayUrl, $returnedMessage');
+  await nostr.relays.disconnectFromRelays(
+    closeCode: (_) => 1000,
+    closeReason: (_) => 'Example complete',
+    onRelayDisconnect: (relayUrl, _, returnedMessage) {
+      print('disconnected from $relayUrl -> $returnedMessage');
     },
   );
 }

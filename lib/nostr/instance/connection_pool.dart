@@ -121,8 +121,7 @@ class ConnectionPoolManager {
 
     for (final connections in _connectionPools.values) {
       totalConnections += connections.length;
-      totalInUseConnections +=
-          connections.where((c) => c.isInUse).length;
+      totalInUseConnections += connections.where((c) => c.isInUse).length;
     }
 
     for (final connections in _availableConnections.values) {
@@ -150,7 +149,8 @@ class ConnectionPoolManager {
   /// Start idle connection cleanup timer.
   void _startIdleConnectionCleanup() {
     _idleCleanupTimer?.cancel();
-    _idleCleanupTimer = Timer.periodic(Duration(seconds: maxIdleTimeSeconds), (_) {
+    _idleCleanupTimer =
+        Timer.periodic(Duration(seconds: maxIdleTimeSeconds), (_) {
       _cleanupIdleConnections();
     });
   }

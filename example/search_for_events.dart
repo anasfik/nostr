@@ -1,35 +1,29 @@
-import 'dart:async';
-
 import 'package:dart_nostr/dart_nostr.dart';
 
-Future<void> main() async {
-  final instance = Nostr()..disableLogs();
+import '_example_shared.dart';
 
-  // init relays
-  await instance.services.relays.init(
-    relaysUrl: [
-      'wss://relay.nostr.band/all',
-    ],
+Future<void> main() async {
+  final nostr = exampleNostr();
+
+  await nostr.services.relays.init(
+    relaysUrl: exampleRelays,
+    onNoticeMessageFromRelay: (relay, _, notice) {
+      print('[$relay] notice: ${notice.message}');
+    },
   );
 
-  final req = NostrRequest(
+  final request = NostrRequest(
     filters: const [
       NostrFilter(
-        limit: 500,
-        kinds: [10004],
-      ),
-      NostrFilter(
-        kinds: [3],
-        limit: 100,
+        search: 'nostr',
+        kinds: [1],
       ),
     ],
   );
 
-  final sub = instance.services.relays.startEventsSubscription(
-    request: req,
+  final stream = nostr.services.relays.startEventsSubscription(
+    request: request,
   );
 
-  sub.stream.listen((event) {
-    print(event.tags);
-  });
+  stream.stream.listen((event) => print(event.toString()));
 }

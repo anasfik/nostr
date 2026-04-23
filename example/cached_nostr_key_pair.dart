@@ -1,10 +1,14 @@
-import 'package:dart_nostr/dart_nostr.dart';
+import '_example_shared.dart';
 
 void main() {
-  final keyPair = Nostr.instance.services.keys.generateKeyPair();
+  final nostr = exampleNostr();
+  final generated = nostr.keys.generateKeyPair();
+  final cached = nostr.keys.generateKeyPairFromExistingPrivateKey(
+    generated.private,
+  );
 
-  final existentKeyPair = Nostr.instance.services.keys
-      .generateKeyPairFromExistingPrivateKey(keyPair.private);
-
-  print(existentKeyPair.private);
+  print(divider('cached key pair'));
+  print('generated public: ${generated.public}');
+  print('cached public:    ${cached.public}');
+  print('same private:     ${generated.private == cached.private}');
 }

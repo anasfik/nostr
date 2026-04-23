@@ -1,14 +1,14 @@
-import 'package:dart_nostr/dart_nostr.dart';
+import '_example_shared.dart';
 
-void main() async {
+Future<void> main() async {
+  final nostr = exampleNostr();
+
   try {
-    final publicKeyFromNip05 =
-        await Nostr.instance.services.utils.pubKeyFromIdentifierNip05(
+    final publicKey = await nostr.utils.pubKeyFromIdentifierNip05(
       internetIdentifier: 'jb55@jb55.com',
     );
-
-    print('publicKeyFromNip05: $publicKeyFromNip05'); // ...
-  } catch (e) {
-    print(e);
+    print('resolved public key: $publicKey');
+  } catch (error) {
+    print('nip05 lookup failed: $error');
   }
 }

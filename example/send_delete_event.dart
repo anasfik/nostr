@@ -1,26 +1,20 @@
 import 'package:dart_nostr/dart_nostr.dart';
 
-void main() async {
-  // Create a new user key pair
-  final newKeyPair = Nostr.instance.services.keys.generateKeyPair();
+import '_example_shared.dart';
 
-  // set our relays list.
-  final relays = <String>['wss://relay.damus.io'];
+Future<void> main() async {
+  final nostr = await connectedExampleNostr();
+  final keyPair = nostr.keys.generateKeyPair();
 
-  // init relays service with our relays list.
-  await Nostr.instance.services.relays.init(relaysUrl: relays);
-
-  // create a delete event
   final deleteEvent = NostrEvent.deleteEvent(
-    reasonOfDeletion:
-        'As example, the user decided to delete his created note events.',
-    keyPairs: newKeyPair,
-    eventIdsToBeDeleted: [
-      // this is just an example event id.
-      Nostr.instance.services.utils.random64HexChars(),
-    ],
+    keyPairs: keyPair,
+    reasonOfDeletion: 'Example deletion request',
+    eventIdsToBeDeleted: [NostrCryptoUtils.randomHex()],
   );
 
-  // send the delete event
-  Nostr.instance.services.relays.sendEventToRelays(deleteEvent);
+  final result = await nostr.publish(deleteEvent);
+  result.fold(
+    (ok) => print('delete event accepted: ${ok.isEventAccepted}'),
+    (failure) => print('delete event failed: $failure'),
+  );
 }

@@ -1,10 +1,12 @@
-import 'package:dart_nostr/dart_nostr.dart';
+import '_example_shared.dart';
 
-void main() async {
-  final relayDocument =
-      await Nostr.instance.services.relays.relayInformationsDocumentNip11(
-    relayUrl: 'wss://relay.damus.io',
+Future<void> main() async {
+  final nostr = exampleNostr();
+  final relayDocument = await nostr.relays.relayInformationsDocumentNip11(
+    relayUrl: exampleRelays.first,
   );
 
-  print(relayDocument?.name);
+  print('name: ${relayDocument?.name}');
+  print('software: ${relayDocument?.software}');
+  print('supported NIPs: ${relayDocument?.supportedNips}');
 }

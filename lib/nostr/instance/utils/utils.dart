@@ -1,8 +1,7 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:convert/convert.dart';
-import 'package:crypto/crypto.dart';
+import 'package:dart_nostr/nostr/core/crypto_utils.dart';
 import 'package:dart_nostr/nostr/core/exceptions.dart';
 import 'package:dart_nostr/nostr/core/utils.dart';
 
@@ -63,19 +62,13 @@ class NostrUtils {
   /// ```
 
   String random64HexChars([int length = 32]) {
-    final random = Random.secure();
-    final randomBytes = List<int>.generate(length, (i) => random.nextInt(256));
-
-    return hex.encode(randomBytes);
+    return NostrCryptoUtils.randomHex(length);
   }
 
   /// Generates a random 64 length hexadecimal string that is consistent with the given [input].
 
   String consistent64HexChars(String input) {
-    final randomBytes = utf8.encode(input);
-    final hashed = sha256.convert(randomBytes);
-
-    return hex.encode(hashed.bytes);
+    return NostrCryptoUtils.deterministicHash(input);
   }
 
   /// Generates a SHA256 hash of the given [input] and returns it as a hex-encoded string.
@@ -87,9 +80,7 @@ class NostrUtils {
   /// print(hash); // hex-encoded SHA256 hash
   /// ```
   String sha256Hash(String input) {
-    final bytes = utf8.encode(input);
-    final digest = sha256.convert(bytes);
-    return hex.encode(digest.bytes);
+    return NostrCryptoUtils.sha256Hash(input);
   }
 
   /// This method will verify the [internetIdentifier] with a [pubKey] using the NIP05 implementation, and simply will return a [Future] with a [bool] that indicates if the verification was successful or not.
@@ -159,9 +150,10 @@ class NostrUtils {
       );
 
       final decoded = jsonDecode(res.body) as Map<String, dynamic>;
-      if (decoded case {
-        'names': final names as Map<String, dynamic>,
-      }) {
+      if (decoded
+          case {
+            'names': final names as Map<String, dynamic>,
+          }) {
         logger.log(
           'Pubkey for $localPart is ${names[localPart] ?? 'not found'} '
           'at $domainPart',

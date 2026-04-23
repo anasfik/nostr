@@ -196,4 +196,3 @@ class _MockLogger implements NostrLogger {
 }
 
 NostrLogger _createMockLogger() => _MockLogger();
-

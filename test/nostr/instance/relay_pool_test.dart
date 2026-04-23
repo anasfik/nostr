@@ -16,7 +16,8 @@ void main() {
       manager.initialize(relays);
 
       expect(manager.getAllRelayHealth().length, equals(2));
-      expect(manager.getActiveConnections('wss://relay1.example.com'), equals(0));
+      expect(
+          manager.getActiveConnections('wss://relay1.example.com'), equals(0));
     });
 
     test('recordSuccess marks relay as healthy', () {
@@ -129,13 +130,16 @@ void main() {
       manager.initialize(['wss://relay1.example.com']);
 
       manager.incrementConnections('wss://relay1.example.com');
-      expect(manager.getActiveConnections('wss://relay1.example.com'), equals(1));
+      expect(
+          manager.getActiveConnections('wss://relay1.example.com'), equals(1));
 
       manager.incrementConnections('wss://relay1.example.com');
-      expect(manager.getActiveConnections('wss://relay1.example.com'), equals(2));
+      expect(
+          manager.getActiveConnections('wss://relay1.example.com'), equals(2));
 
       manager.decrementConnections('wss://relay1.example.com');
-      expect(manager.getActiveConnections('wss://relay1.example.com'), equals(1));
+      expect(
+          manager.getActiveConnections('wss://relay1.example.com'), equals(1));
     });
   });
 }
@@ -159,4 +163,3 @@ class _MockLogger implements NostrLogger {
 }
 
 NostrLogger _createMockLogger() => _MockLogger();
-

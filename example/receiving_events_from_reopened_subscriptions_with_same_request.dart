@@ -1,83 +1,47 @@
 import 'package:dart_nostr/dart_nostr.dart';
 
-void main() async {
-  final relays = [
-    'wss://nos.lol',
-  ];
+import '_example_shared.dart';
 
-  await Nostr.instance.services.relays.init(relaysUrl: relays);
+Future<void> main() async {
+  final nostr = await connectedExampleNostr(relays: const ['wss://nos.lol']);
+  final keyPair = nostr.keys.generateKeyPair();
 
-  final newKeyPair = Nostr.instance.services.keys.generateKeyPair();
-
-  final event = NostrEvent.fromPartialData(
-    content: newKeyPair.public,
-    kind: 1,
-    keyPairs: newKeyPair,
-    tags: [
-      ['t', newKeyPair.public],
+  final request = NostrRequest(
+    filters: [
+      NostrFilter(
+        kinds: const [1],
+        t: [keyPair.public],
+      ),
     ],
   );
 
-  Nostr.instance.services.relays.sendEventToRelays(
-    event,
-    onOk: (relay, ok) {
-      print('from relay: $relay');
-      print('event sent, ${ok.eventId}');
-    },
+  final first = nostr.relays.startEventsSubscription(
+    request: request,
+    onEose: (_, eose) =>
+        nostr.relays.closeEventsSubscription(eose.subscriptionId),
   );
 
-  await Future.delayed(const Duration(seconds: 5));
+  first.stream.listen((event) => print('first subscription: ${event.content}'));
+  await Future<void>.delayed(const Duration(seconds: 2));
+  first.close();
 
-  // ...
-
-  final filter = NostrFilter(
-    kinds: const [1],
-    t: [newKeyPair.public],
+  final reopened = nostr.relays.startEventsSubscription(
+    request: request,
+    useConsistentSubscriptionIdBasedOnRequestData: true,
   );
 
-  final req = NostrRequest(filters: [filter]);
-
-  final sub = Nostr.instance.services.relays.startEventsSubscription(
-    request: req,
-    onEose: (relay, eose) {
-      Nostr.instance.services.relays
-          .closeEventsSubscription(eose.subscriptionId);
-    },
-  );
-
-  sub.stream.listen((event) {
-    print(event.content);
+  reopened.stream.listen((event) {
+    print('reopened subscription: ${event.content}');
   });
 
-  await Future.delayed(const Duration(seconds: 5));
-
-  for (var index = 0; index < 50; index++) {
-    Nostr.instance.services.relays.startEventsSubscription(
-      request: req,
-    );
-  }
-
-  await Future.delayed(const Duration(seconds: 5));
-
-  Nostr.instance.services.relays.startEventsSubscription(
-    request: req,
-  );
-
-  await Future.delayed(const Duration(seconds: 5));
-
-  final anotherEvent = NostrEvent.fromPartialData(
+  final event = NostrEvent.fromPartialData(
     kind: 1,
-    content: 'another event with different content, but matches same filter',
-    keyPairs: newKeyPair,
+    content: 'event received by reopened request',
+    keyPairs: keyPair,
     tags: [
-      ['t', newKeyPair.public],
+      ['t', keyPair.public],
     ],
   );
 
-  Nostr.instance.services.relays.sendEventToRelays(
-    anotherEvent,
-    onOk: (relay, ok) {
-      print('event sent, ${ok.eventId}');
-    },
-  );
+  await nostr.publish(event);
 }

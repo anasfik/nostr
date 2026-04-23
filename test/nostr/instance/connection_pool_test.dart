@@ -24,7 +24,8 @@ void main() {
     });
 
     test('acquireConnection creates new connection', () async {
-      final connection = await manager.acquireConnection('wss://relay1.example.com');
+      final connection =
+          await manager.acquireConnection('wss://relay1.example.com');
 
       expect(connection, isNotNull);
       expect(connection?.relayUrl, equals('wss://relay1.example.com'));
@@ -32,13 +33,15 @@ void main() {
     });
 
     test('releaseConnection returns connection to pool', () async {
-      final connection1 = await manager.acquireConnection('wss://relay1.example.com');
+      final connection1 =
+          await manager.acquireConnection('wss://relay1.example.com');
       expect(connection1?.isInUse, isTrue);
 
       manager.releaseConnection(connection1!);
       expect(connection1.isInUse, isFalse);
 
-      final connection2 = await manager.acquireConnection('wss://relay1.example.com');
+      final connection2 =
+          await manager.acquireConnection('wss://relay1.example.com');
       expect(connection2?.id, equals(connection1.id));
     });
 
@@ -56,7 +59,8 @@ void main() {
 
       expect(connections.length, equals(maxConnections));
 
-      final excess = await manager.acquireConnection('wss://relay1.example.com');
+      final excess =
+          await manager.acquireConnection('wss://relay1.example.com');
       expect(excess, isNull);
     });
 
@@ -70,7 +74,8 @@ void main() {
     });
 
     test('closeConnection removes from pool', () async {
-      final connection = await manager.acquireConnection('wss://relay1.example.com');
+      final connection =
+          await manager.acquireConnection('wss://relay1.example.com');
       expect(connection, isNotNull);
 
       await manager.closeConnection(connection!);
@@ -93,7 +98,7 @@ void main() {
     test('getStatistics returns correct metrics', () async {
       final conn1 = await manager.acquireConnection('wss://relay1.example.com');
       final conn2 = await manager.acquireConnection('wss://relay1.example.com');
-      
+
       manager.releaseConnection(conn1!);
 
       final stats = manager.getStatistics();
@@ -113,8 +118,9 @@ void main() {
     });
 
     test('PooledConnection tracks age', () async {
-      final connection = await manager.acquireConnection('wss://relay1.example.com');
-      
+      final connection =
+          await manager.acquireConnection('wss://relay1.example.com');
+
       expect(connection?.getAgeInSeconds(), equals(0));
     });
   });
@@ -139,4 +145,3 @@ class _MockLogger implements NostrLogger {
 }
 
 NostrLogger _createMockLogger() => _MockLogger();
-

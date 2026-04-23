@@ -1,3 +1,5 @@
+import 'dart:math';
+
 /// {@template nostr_retry_policy}
 /// Policy for retrying failed operations with configurable backoff strategies.
 /// {@endtemplate}
@@ -57,10 +59,10 @@ class NostrRetryPolicy {
   /// Get the delay for retry attempt.
   Duration getDelayForAttempt(int attemptNumber) {
     // Calculate delay using backoff multiplier
-    final delayMs = (initialDelayMs *
-            (backoffMultiplier.toInt() ^ (attemptNumber - 1).clamp(0, 10)))
-        .toInt()
-        .clamp(initialDelayMs, maxDelayMs);
+    final exponent = (attemptNumber - 1).clamp(0, 10);
+    final multiplier = pow(backoffMultiplier, exponent);
+    final delayMs =
+        (initialDelayMs * multiplier).round().clamp(initialDelayMs, maxDelayMs);
     return Duration(milliseconds: delayMs);
   }
 

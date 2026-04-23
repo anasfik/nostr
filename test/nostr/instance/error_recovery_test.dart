@@ -36,7 +36,8 @@ void main() {
         );
       } catch (_) {}
 
-      final summary = manager.getErrorSummary(relayUrl: 'wss://relay1.example.com');
+      final summary =
+          manager.getErrorSummary(relayUrl: 'wss://relay1.example.com');
 
       expect(summary.relayUrl, equals('wss://relay1.example.com'));
       expect(summary.totalErrors, greaterThanOrEqualTo(1));
@@ -60,7 +61,8 @@ void main() {
       expect(manager.recoveryStrategy.maxRetries, equals(3));
     });
 
-    test('ErrorRecoveryStrategy.exponentialBackoff calculates delays correctly', () {
+    test('ErrorRecoveryStrategy.exponentialBackoff calculates delays correctly',
+        () {
       final strategy = ErrorRecoveryStrategy.exponentialBackoff(
         initialDelay: const Duration(milliseconds: 100),
         maxDelay: const Duration(seconds: 10),
@@ -71,8 +73,10 @@ void main() {
       final delay3 = strategy.getDelayForAttempt(3);
 
       expect(delay1.inMilliseconds, greaterThan(0));
-      expect(delay2.inMilliseconds, greaterThanOrEqualTo(delay1.inMilliseconds));
-      expect(delay3.inMilliseconds, greaterThanOrEqualTo(delay2.inMilliseconds));
+      expect(
+          delay2.inMilliseconds, greaterThanOrEqualTo(delay1.inMilliseconds));
+      expect(
+          delay3.inMilliseconds, greaterThanOrEqualTo(delay2.inMilliseconds));
     });
 
     test('ErrorRecoveryStrategy.linearBackoff has constant delay', () {
@@ -94,7 +98,8 @@ void main() {
       expect(delay, equals(Duration.zero));
     });
 
-    test('getCircuitBreakerState returns correct state based on error count', () async {
+    test('getCircuitBreakerState returns correct state based on error count',
+        () async {
       // Initially closed
       expect(
         manager.getCircuitBreakerState('wss://relay1.example.com'),
@@ -143,7 +148,8 @@ void main() {
 
       manager.clearErrorHistory();
 
-      final summary = manager.getErrorSummary(relayUrl: 'wss://relay1.example.com');
+      final summary =
+          manager.getErrorSummary(relayUrl: 'wss://relay1.example.com');
       expect(summary.totalErrors, equals(0));
     });
 
@@ -157,7 +163,8 @@ void main() {
         );
       } catch (_) {}
 
-      final summary = manager.getErrorSummary(relayUrl: 'wss://relay1.example.com');
+      final summary =
+          manager.getErrorSummary(relayUrl: 'wss://relay1.example.com');
 
       expect(summary.recentErrors.length, greaterThanOrEqualTo(0));
     });
@@ -178,7 +185,8 @@ void main() {
       }
 
       // Summary should still work and history shouldn't be huge
-      final summary = manager.getErrorSummary(relayUrl: 'wss://relay1.example.com');
+      final summary =
+          manager.getErrorSummary(relayUrl: 'wss://relay1.example.com');
       expect(summary.totalErrors, lessThanOrEqualTo(1100));
     });
   });
@@ -203,4 +211,3 @@ class _MockLogger implements NostrLogger {
 }
 
 NostrLogger _createMockLogger() => _MockLogger();
-

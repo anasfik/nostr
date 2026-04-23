@@ -29,6 +29,7 @@ class NostrWebSocketsService {
     required String relay,
     Duration? connectTimeout,
     bool? shouldIgnoreConnectionException,
+    Duration? connectionTimeout,
     void Function(WebSocketChannel webSocket)? onConnectionSuccess,
   }) async {
     WebSocketChannel? webSocket;
@@ -39,7 +40,7 @@ class NostrWebSocketsService {
         connectTimeout: connectTimeout ?? _connectionTimeout,
       );
 
-      await webSocket.ready;
+      await webSocket.ready.timeout(connectionTimeout ?? _connectionTimeout);
 
       onConnectionSuccess?.call(webSocket);
     } catch (e) {

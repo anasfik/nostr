@@ -1,4 +1,7 @@
 export './nostr/core/key_pairs.dart';
+export './nostr/core/failures.dart';
+export './nostr/core/crypto_utils.dart';
+export './nostr/core/result.dart';
 export './nostr/core/utils.dart';
 export './nostr/model/export.dart';
 export 'nostr/dart_nostr.dart';
@@ -6,3 +9,8 @@ export 'nostr/builder/filter_builder.dart';
 export 'nostr/builder/retry_policy.dart';
 export 'nostr/builder/defaults.dart';
 export 'nostr/builder/extensions.dart';
+export 'nostr/service/client.dart';
+export 'nostr/service/client_options.dart';
+export 'nostr/service/relay_transport.dart';
+export 'nostr/service/services.dart';
+export 'nostr/instance/subscription_manager.dart';

@@ -4,6 +4,8 @@ import 'dart:io';
 
 import 'package:async/async.dart';
 import 'package:dart_nostr/dart_nostr.dart';
+import 'package:dart_nostr/nostr/core/constants.dart';
+import 'package:dart_nostr/nostr/core/crypto_utils.dart';
 import 'package:dart_nostr/nostr/core/extensions.dart';
 import 'package:dart_nostr/nostr/instance/registry.dart';
 import 'package:dart_nostr/nostr/instance/relays/base/relays.dart';
@@ -116,6 +118,11 @@ class NostrRelays implements NostrRelaysBase {
     )? onRelayConnectionError,
     void Function(String relayUrl, WebSocketChannel? relayWebSocket)?
         onRelayConnectionDone,
+    void Function(
+      String relay,
+      WebSocketChannel? relayWebSocket,
+      NostrNotice notice,
+    )? onNoticeMessageFromRelay,
     bool lazyListeningToRelays = false,
     bool retryOnError = false,
     bool retryOnClose = false,
@@ -135,6 +142,7 @@ class NostrRelays implements NostrRelaysBase {
       onRelayListening: onRelayListening,
       onRelayConnectionError: onRelayConnectionError,
       onRelayConnectionDone: onRelayConnectionDone,
+      onNoticeMessageFromRelay: onNoticeMessageFromRelay,
       lazyListeningToRelays: lazyListeningToRelays,
       retryOnError: retryOnError,
       retryOnClose: retryOnClose,
@@ -207,9 +215,11 @@ class NostrRelays implements NostrRelaysBase {
         completers.add(completer);
 
         Future.delayed(timeout, () {
-          if (!isSomeOkTriggered) {
-            throw TimeoutException(
-              'the event with id: ${event.id} has timed out after: ${timeout.inSeconds} seconds',
+          if (!isSomeOkTriggered && !completer.isCompleted) {
+            completer.completeError(
+              TimeoutException(
+                'the event with id: ${event.id} has timed out after: ${timeout.inSeconds} seconds',
+              ),
             );
           }
         });
@@ -224,8 +234,10 @@ class NostrRelays implements NostrRelaysBase {
           associatedEventId: event.id!,
           relay: relayUrl,
           onOk: (relay, ok) {
-            isSomeOkTriggered = true;
-            completer.complete(ok);
+            if (!completer.isCompleted) {
+              isSomeOkTriggered = true;
+              completer.complete(ok);
+            }
           },
         );
 
@@ -283,22 +295,27 @@ class NostrRelays implements NostrRelaysBase {
     _runFunctionOverRelationIteration((relay) {
       final relayUrl = relay.url;
       if (relays?.containsRelay(relayUrl) ?? true) {
+        final completer = Completer<NostrCountResponse>();
+        completers.add(completer);
+
+        Future.delayed(timeout, () {
+          if (!isSomeOkTriggered && !completer.isCompleted) {
+            completer.completeError(
+              TimeoutException(
+                'the count event with subscription id: ${countEvent.subscriptionId} has timed out after: ${timeout.inSeconds} seconds',
+              ),
+            );
+          }
+        });
+
         _registerOnCountCallBack(
           relay: relayUrl,
           subscriptionId: countEvent.subscriptionId,
           onCountResponse: (relay, countRes) {
-            final completer = Completer<NostrCountResponse>();
-
-            Future.delayed(timeout, () {
-              if (!isSomeOkTriggered) {
-                throw TimeoutException(
-                  'the count event with subscription id: ${countEvent.subscriptionId} has timed out after: ${timeout.inSeconds} seconds',
-                );
-              }
-            });
-
-            isSomeOkTriggered = true;
-            completer.complete(countRes);
+            if (!isSomeOkTriggered && !completer.isCompleted) {
+              isSomeOkTriggered = true;
+              completer.complete(countRes);
+            }
           },
         );
 
@@ -332,7 +349,7 @@ class NostrRelays implements NostrRelaysBase {
     final serialized = request.serialized(
       subscriptionId: useConsistentSubscriptionIdBasedOnRequestData
           ? null
-          : Nostr.instance.services.utils.random64HexChars(),
+          : NostrCryptoUtils.randomHex(),
     );
 
     _registerNewRelays(relays ?? relaysList!).then((_) {
@@ -365,18 +382,18 @@ class NostrRelays implements NostrRelaysBase {
       request: request,
       stream: subStream,
       subscriptionId: request.subscriptionId!,
+      onClose: () => closeEventsSubscription(request.subscriptionId!),
     );
   }
 
   ///
-  @override
   NostrDataEntitiesStream startEventsSubscriptionWithoutAutoHandling({
     required NostrRequest request,
     List<String>? relays,
     bool includeRequestEntity = false,
   }) {
     final serialized = request.serialized(
-      subscriptionId: Nostr.instance.services.utils.random64HexChars(),
+      subscriptionId: NostrCryptoUtils.randomHex(),
     );
 
     _registerNewRelays(relays ?? relaysList!).then(
@@ -425,6 +442,7 @@ class NostrRelays implements NostrRelaysBase {
       request: request,
       stream: subStream,
       subscriptionId: request.subscriptionId!,
+      onClose: () => closeEventsSubscription(request.subscriptionId!),
     );
   }
 
@@ -600,13 +618,32 @@ class NostrRelays implements NostrRelaysBase {
 
         onRelayListening?.call(relay, d, relayWebSocket);
 
-        if (NostrEvent.canBeDeserialized(data)) {
+        // Decode once and dispatch by type — avoids up to 6 jsonDecode calls
+        // that the old canBeDeserialized + deserialized chain required.
+        List<dynamic> decoded;
+        try {
+          decoded = jsonDecode(data) as List;
+        } catch (_) {
+          logger.log(
+            'received non-JSON message from relay: $relay, message: $data',
+          );
+          return;
+        }
+
+        if (decoded.isEmpty) {
+          logger.log('received empty message array from relay: $relay');
+          return;
+        }
+
+        final messageType = decoded[0] as String?;
+
+        if (messageType == NostrConstants.event) {
           _handleAddingEventToSink(
-            event: NostrEvent.deserialized(data),
+            event: NostrEvent.fromDecodedMessage(decoded),
             relay: relay,
           );
-        } else if (NostrNotice.canBeDeserialized(data)) {
-          final notice = NostrNotice.fromRelayMessage(data);
+        } else if (messageType == NostrConstants.notice) {
+          final notice = NostrNotice.fromDecodedMessage(decoded);
 
           onNoticeMessageFromRelay?.call(relay, relayWebSocket, notice);
 
@@ -619,40 +656,40 @@ class NostrRelays implements NostrRelaysBase {
             lazyListeningToRelays: lazyListeningToRelays,
             onRelayConnectionError: onRelayConnectionError,
             onRelayConnectionDone: onRelayConnectionDone,
+            onNoticeMessageFromRelay: onNoticeMessageFromRelay,
             retryOnError: retryOnError,
             retryOnClose: retryOnClose,
             shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
           );
-        } else if (NostrEventOkCommand.canBeDeserialized(data)) {
+        } else if (messageType == NostrConstants.ok) {
           _handleOkCommandMessageFromRelay(
-            okCommand: NostrEventOkCommand.fromRelayMessage(data),
+            okCommand: NostrEventOkCommand.fromDecodedMessage(decoded),
             relay: relay,
           );
-        } else if (NostrRequestEoseCommand.canBeDeserialized(data)) {
+        } else if (messageType == NostrConstants.eose) {
           _handleEoseCommandMessageFromRelay(
-            eoseCommand: NostrRequestEoseCommand.fromRelayMessage(data),
+            eoseCommand: NostrRequestEoseCommand.fromDecodedMessage(decoded),
             relay: relay,
           );
-        } else if (NostrCountResponse.canBeDeserialized(data)) {
-          final countResponse = NostrCountResponse.deserialized(data);
-
+        } else if (messageType == NostrConstants.count) {
           _handleCountResponseMessageFromRelay(
             relay: relay,
-            countResponse: countResponse,
+            countResponse: NostrCountResponse.fromDecodedMessage(decoded),
           );
         } else {
           logger.log(
-            'received unknown message from relay: $relay, message: $d',
+            'received unknown message from relay: $relay, message: $data',
           );
         }
       },
-      onError: (error) {
+      onError: (Object error) {
         if (retryOnError) {
           _reconnectToRelay(
             relay: relay,
             onRelayListening: onRelayListening,
             onRelayConnectionError: onRelayConnectionError,
             onRelayConnectionDone: onRelayConnectionDone,
+            onNoticeMessageFromRelay: onNoticeMessageFromRelay,
             retryOnError: retryOnError,
             retryOnClose: retryOnClose,
             shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
@@ -678,6 +715,7 @@ class NostrRelays implements NostrRelaysBase {
             onRelayListening: onRelayListening,
             onRelayConnectionError: onRelayConnectionError,
             onRelayConnectionDone: onRelayConnectionDone,
+            onNoticeMessageFromRelay: onNoticeMessageFromRelay,
             retryOnError: retryOnError,
             retryOnClose: retryOnClose,
             shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
@@ -747,6 +785,11 @@ class NostrRelays implements NostrRelaysBase {
     )? onRelayConnectionError,
     required void Function(String relayUrl, WebSocketChannel? relayWebSocket)?
         onRelayConnectionDone,
+    void Function(
+      String relay,
+      WebSocketChannel? relayWebSocket,
+      NostrNotice notice,
+    )? onNoticeMessageFromRelay,
     required bool retryOnError,
     required bool retryOnClose,
     required bool shouldReconnectToRelayOnNotice,
@@ -755,30 +798,34 @@ class NostrRelays implements NostrRelaysBase {
     required bool lazyListeningToRelays,
     bool relayUnregistered = true,
   }) async {
+    final completer = Completer<void>();
+
     if (relaysList == null || relaysList!.isEmpty) {
       throw Exception(
         'you need to call the init method before calling this method.',
       );
     }
 
-    await Future.wait(
-      relaysList!.map((relay) async {
-        await _reconnectToRelay(
-          relayUnregistered: relayUnregistered,
-          relay: relay,
-          onRelayListening: onRelayListening,
-          onRelayConnectionError: onRelayConnectionError,
-          onRelayConnectionDone: onRelayConnectionDone,
-          retryOnError: retryOnError,
-          retryOnClose: retryOnClose,
-          shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
-          connectionTimeout: connectionTimeout,
-          ignoreConnectionException: ignoreConnectionException,
-          lazyListeningToRelays: lazyListeningToRelays,
-        );
-      }),
-      eagerError: false,
-    );
+    for (final relay in relaysList!) {
+      await _reconnectToRelay(
+        relayUnregistered: relayUnregistered,
+        relay: relay,
+        onRelayListening: onRelayListening,
+        onRelayConnectionError: onRelayConnectionError,
+        onRelayConnectionDone: onRelayConnectionDone,
+        onNoticeMessageFromRelay: onNoticeMessageFromRelay,
+        retryOnError: retryOnError,
+        retryOnClose: retryOnClose,
+        shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
+        connectionTimeout: connectionTimeout,
+        ignoreConnectionException: ignoreConnectionException,
+        lazyListeningToRelays: lazyListeningToRelays,
+      );
+    }
+
+    completer.complete();
+
+    return completer.future;
   }
 
   Future<bool> disconnectFromRelays({
@@ -842,6 +889,11 @@ class NostrRelays implements NostrRelaysBase {
     )? onRelayConnectionError,
     required void Function(String relayUrl, WebSocketChannel? relayWebSocket)?
         onRelayConnectionDone,
+    void Function(
+      String relay,
+      WebSocketChannel? relayWebSocket,
+      NostrNotice notice,
+    )? onNoticeMessageFromRelay,
     required bool retryOnError,
     required bool retryOnClose,
     required bool shouldReconnectToRelayOnNotice,
@@ -858,6 +910,7 @@ class NostrRelays implements NostrRelaysBase {
         onRelayListening: onRelayListening,
         onRelayConnectionError: onRelayConnectionError,
         onRelayConnectionDone: onRelayConnectionDone,
+        onNoticeMessageFromRelay: onNoticeMessageFromRelay,
         retryOnError: retryOnError,
         retryOnClose: retryOnClose,
         shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
@@ -882,6 +935,11 @@ class NostrRelays implements NostrRelaysBase {
     )? onRelayConnectionError,
     required void Function(String relayUrl, WebSocketChannel? relayWebSocket)?
         onRelayConnectionDone,
+    void Function(
+      String relay,
+      WebSocketChannel? relayWebSocket,
+      NostrNotice notice,
+    )? onNoticeMessageFromRelay,
     required bool lazyListeningToRelays,
     required bool retryOnError,
     required bool retryOnClose,
@@ -894,6 +952,7 @@ class NostrRelays implements NostrRelaysBase {
       onRelayListening: onRelayListening,
       onRelayConnectionError: onRelayConnectionError,
       onRelayConnectionDone: onRelayConnectionDone,
+      onNoticeMessageFromRelay: onNoticeMessageFromRelay,
       lazyListeningToRelays: lazyListeningToRelays,
       retryOnError: retryOnError,
       retryOnClose: retryOnClose,
@@ -917,6 +976,11 @@ class NostrRelays implements NostrRelaysBase {
     )? onRelayConnectionError,
     required void Function(String relayUrl, WebSocketChannel? relayWebSocket)?
         onRelayConnectionDone,
+    void Function(
+      String relay,
+      WebSocketChannel? relayWebSocket,
+      NostrNotice notice,
+    )? onNoticeMessageFromRelay,
     required bool lazyListeningToRelays,
     required bool retryOnError,
     required bool retryOnClose,
@@ -924,22 +988,20 @@ class NostrRelays implements NostrRelaysBase {
     required bool shouldReconnectToRelayOnNotice,
     required Duration connectionTimeout,
   }) async {
-    final relaysToConnect = relaysUrl.where((relay) {
-      if (nostrRegistry.isRelayRegisteredAndConnectedSuccesfully(relay)) {
-        logger.log(
-          'relay with url: $relay is already connected successfully, skipping...',
-        );
-        return false;
-      }
-      return true;
-    }).toList();
-
     await Future.wait(
-      relaysToConnect.map((relay) async {
+      relaysUrl.map((relay) async {
+        if (nostrRegistry.isRelayRegisteredAndConnectedSuccesfully(relay)) {
+          logger.log(
+            'relay with url: $relay is already connected successfully, skipping...',
+          );
+          return;
+        }
+
         try {
           await webSocketsService.connectRelay(
             relay: relay,
-            connectTimeout: connectionTimeout,
+            connectionTimeout: connectionTimeout,
+            shouldIgnoreConnectionException: ignoreConnectionException,
             onConnectionSuccess: (relayWebSocket) {
               nostrRegistry.registerRelayWebSocket(
                 relayUrl: relay,
@@ -958,6 +1020,7 @@ class NostrRelays implements NostrRelaysBase {
                   onRelayListening: onRelayListening,
                   onRelayConnectionError: onRelayConnectionError,
                   onRelayConnectionDone: onRelayConnectionDone,
+                  onNoticeMessageFromRelay: onNoticeMessageFromRelay,
                   retryOnError: retryOnError,
                   retryOnClose: retryOnClose,
                   shouldReconnectToRelayOnNotice:
@@ -1060,6 +1123,11 @@ class NostrRelays implements NostrRelaysBase {
     )? onRelayConnectionError,
     required void Function(String relayUrl, WebSocketChannel? relayWebSocket)?
         onRelayConnectionDone,
+    void Function(
+      String relay,
+      WebSocketChannel? relayWebSocket,
+      NostrNotice notice,
+    )? onNoticeMessageFromRelay,
     required bool retryOnError,
     required bool retryOnClose,
     required bool shouldReconnectToRelayOnNotice,
@@ -1070,6 +1138,8 @@ class NostrRelays implements NostrRelaysBase {
     logger.log(
       'received notice with message: ${notice.message} from relay: $relay',
     );
+
+    if (!shouldReconnectToRelayOnNotice) return;
 
     if (nostrRegistry.isRelayRegistered(relay)) {
       final registeredRelay = nostrRegistry.getRelayWebSocket(relayUrl: relay);
@@ -1083,6 +1153,7 @@ class NostrRelays implements NostrRelaysBase {
           onRelayListening: onRelayListening,
           onRelayConnectionError: onRelayConnectionError,
           onRelayConnectionDone: onRelayConnectionDone,
+          onNoticeMessageFromRelay: onNoticeMessageFromRelay,
           retryOnError: retryOnError,
           retryOnClose: retryOnClose,
           shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
@@ -1187,6 +1258,10 @@ class NostrRelays implements NostrRelaysBase {
   }
 
   Future<void> _registerNewRelays(List<String> newRelaysList) async {
+    final hasUnconnected = newRelaysList.any(
+      (r) => !nostrRegistry.isRelayRegisteredAndConnectedSuccesfully(r),
+    );
+    if (!hasUnconnected) return;
     return init(
       relaysUrl: newRelaysList,
     );

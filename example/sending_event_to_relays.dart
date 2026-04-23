@@ -1,53 +1,32 @@
 import 'package:dart_nostr/dart_nostr.dart';
 
-void main() async {
-  // This method will enable the logs of the library.
-  Nostr.instance.enableLogs();
-  final relaysList = [
-    'wss://relay.nostr.band/all',
-  ];
+import '_example_shared.dart';
 
-  // initialize the relays service.
-  await Nostr.instance.services.relays.init(
-    relaysUrl: relaysList,
-    onRelayConnectionError: (relay, err, websocket) {
-      print('relay connection error: $err');
+Future<void> main() async {
+  final nostr = exampleNostr(enableLogs: true);
+  await nostr.relays.init(
+    relaysUrl: exampleRelays,
+    onRelayConnectionError: (relay, error, _) {
+      print('relay connection error from $relay: $error');
     },
   );
 
-  // generate a key pair.
-  final keyPair = Nostr.instance.services.keys.generateKeyPair();
+  final keyPair = nostr.keys.generateKeyPair();
 
   final event = NostrEvent.fromPartialData(
     kind: 0,
-    content: 'test ',
+    content: 'example metadata payload',
     keyPairs: keyPair,
   );
 
-  Nostr.instance.services.relays.sendEventToRelays(
+  await nostr.relays.sendEventToRelays(
     event,
-    relays: [
-      ...relaysList,
-      'wss://relay.damus.io',
-    ],
+    relays: exampleRelays,
     onOk: (relay, ok) {
-      print(relay);
-      print(ok.eventId);
-      print(ok.isEventAccepted);
-      print(ok.message);
-      print('\n');
+      print('relay: $relay');
+      print('event id: ${ok.eventId}');
+      print('accepted: ${ok.isEventAccepted}');
+      print('message: ${ok.message}\n');
     },
   );
-
-  Nostr.instance.services.relays.sendEventToRelays(
-    event,
-    relays: [
-      ...relaysList,
-    ],
-    onOk: (relay, ok) {
-      print('second only');
-    },
-  );
-
-// ! check logs and run this code.
 }

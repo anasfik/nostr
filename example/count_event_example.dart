@@ -1,61 +1,22 @@
 import 'package:dart_nostr/dart_nostr.dart';
 
-void main() async {
-  // init relays
-  final relays = [
-    'wss://relay.nostr.band',
-    'wss://eden.nostr.land',
-    'wss://nostr.fmt.wiz.biz',
-    'wss://relay.damus.io',
-    'wss://nostr-pub.wellorder.net',
-    'wss://relay.nostr.info',
-    'wss://offchain.pub',
-    'wss://nos.lol',
-    'wss://brb.io',
-    'wss://relay.snort.social',
-    'wss://relay.current.fyi',
-    'wss://nostr.relayer.se',
-  ];
+import '_example_shared.dart';
 
-  final relayThatSupportsNip45 = <String>[];
+Future<void> main() async {
+  final nostr = await connectedExampleNostr();
 
-  for (final relay in relays) {
-    final relayInfo =
-        await Nostr.instance.services.relays.relayInformationsDocumentNip11(
-      relayUrl: relay,
-      throwExceptionIfExists: false,
-    );
-    if (relayInfo?.supportedNips?.contains(45) ?? false) {
-      relayThatSupportsNip45.add(relay);
-      break;
-    }
-  }
-
-  if (relayThatSupportsNip45.isEmpty) {
-    throw Exception('no relay supports NIP-45');
-  }
-
-  await Nostr.instance.services.relays.init(
-    relaysUrl: relayThatSupportsNip45,
+  final filter = NostrFilter(
+    kinds: [0],
+    since: DateTime.now().subtract(Duration(days: 2)),
   );
 
-// create filter for events to count with.
-  const filter = NostrFilter(
-    kinds: [1],
-    t: ['nostr'],
+  final result = await nostr.count(
+    NostrCountEvent.fromPartialData(eventsFilter: filter),
   );
 
-// create the count event.
-  final countEvent = NostrCountEvent.fromPartialData(
-    eventsFilter: filter,
-  );
-
-  Nostr.instance.services.relays.sendCountEventToRelays(
-    countEvent,
-    onCountResponse: (relay, countRes) {
-      print('from relay: $relay');
-
-      print('your filter matches ${countRes.count} events');
-    },
+  result.fold(
+    (countResponse) =>
+        print('new users in past 2 days: ${countResponse.count}'),
+    (failure) => print('count failed: $failure'),
   );
 }
