@@ -7,20 +7,8 @@ const exampleRelays = <String>[
 ];
 
 Nostr exampleNostr({bool enableLogs = false}) {
-  final nostr = Nostr.enterprise(
-    clientOptions: NostrClientOptions(
-      connectionTimeout: const Duration(seconds: 8),
-      requestTimeout: const Duration(seconds: 12),
-      retryPolicy: NostrRetryPolicy.exponential(
-        maxAttempts: 3,
-        initialDelayMs: 150,
-        maxDelayMs: 1500,
-      ),
-
-    ),
-    
-  );
-
+  final nostr = Nostr.instance;
+  
   if (enableLogs) {
     nostr.enableLogs();
   } else {
