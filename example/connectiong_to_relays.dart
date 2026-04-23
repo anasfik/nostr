@@ -1,41 +1,48 @@
 import '_example_shared.dart';
 
+/// Connect to Nostr relays.
+/// Demonstrates establishing connections with multiple relay servers.
 Future<void> main() async {
+  print(divider('🔗 Relay Connection Example'));
+
   final nostr = exampleNostr(enableLogs: true);
 
-  await nostr.relays.init(
-    relaysUrl: exampleRelays,
-    retryOnClose: true,
-    retryOnError: true,
-    shouldReconnectToRelayOnNotice: true,
-    onRelayListening: (relayUrl, _, __) => print('listening: $relayUrl'),
-    onRelayConnectionDone: (relayUrl, _) => print('done: $relayUrl'),
-    onRelayConnectionError: (relayUrl, error, _) {
-      print('error from $relayUrl: $error');
+  // Connect to relays using the high-level client API
+  print('✅ Connecting to ${exampleRelays.length} relays...');
+
+  final connectResult = await nostr.connect(exampleRelays);
+
+  connectResult.fold(
+    (_) {
+      print('✅ Successfully connected to all relays');
+      print('   Connected relays: ${nostr.connectedRelays}');
+    },
+    (failure) {
+      print('❌ Connection failed: ${failure.message}');
+      return;
     },
   );
 
-  print('connected relays: ${nostr.relays.relaysList}');
+  // Verify connection status
+  print('\n✅ Connection Status:');
+  print('   Is Connected: ${nostr.isConnected}');
+  print('   Connected Relays: ${nostr.connectedRelays.length}');
 
-  await nostr.relays.reconnectToRelays(
-    connectionTimeout: const Duration(seconds: 5),
-    ignoreConnectionException: true,
-    lazyListeningToRelays: false,
-    retryOnClose: true,
-    retryOnError: true,
-    shouldReconnectToRelayOnNotice: true,
-    onRelayListening: (relayUrl, _, __) => print('re-listening: $relayUrl'),
-    onRelayConnectionDone: (relayUrl, _) => print('re-done: $relayUrl'),
-    onRelayConnectionError: (relayUrl, error, _) {
-      print('reconnect error from $relayUrl: $error');
+  // Keep connection open briefly
+  await Future<void>.delayed(const Duration(seconds: 2));
+
+  // Disconnect
+  print('\n✅ Disconnecting...');
+  final disconnectResult = await nostr.disconnect();
+  disconnectResult.fold(
+    (_) {
+      print('✅ Successfully disconnected from all relays');
+    },
+    (failure) {
+      print('⚠️ Disconnect warning: ${failure.message}');
     },
   );
 
-  await nostr.relays.disconnectFromRelays(
-    closeCode: (_) => 1000,
-    closeReason: (_) => 'Example complete',
-    onRelayDisconnect: (relayUrl, _, returnedMessage) {
-      print('disconnected from $relayUrl -> $returnedMessage');
-    },
-  );
+  print('\n${divider()}');
+  print('✅ Connection example completed!');
 }
