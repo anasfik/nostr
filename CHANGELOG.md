@@ -1,5 +1,48 @@
 # Changelog
 
+## 10.0.0
+
+**Major Release — Complete API Modernization**
+
+### Breaking Changes
+
+- Introduce `NostrResult<T>` sealed type — all operations now return typed success/failure instead of throwing exceptions
+- Rename services API: `nostr.services.keys` → `nostr.keys`, `nostr.services.relays` → `nostr.relays`
+- Top-level facade methods now return `NostrResult<T>`: `connect()`, `publish()`, `count()`, `subscribeRequest()`, etc.
+- `NostrFailure` replaces ad-hoc exception strings with structured `message`, `code`, and `isRetryable` fields
+- Replace `NostrRetryPolicy.none` with `NostrRetryPolicy()` (default no retries)
+- `NostrClientOptions` replaces scattered timeout parameters; new `requestTimeout` and `retryPolicy` fields
+- Remove old `services.*` namespace — use `nostr.keys`, `nostr.relays`, `nostr.utils` directly
+
+### New Features
+
+- `NostrClient` facade for typed, error-aware app development
+- Subscription lifecycle tracking via `SubscriptionManager` — inspect active subscriptions and event counts
+- Low-level relay API via `NostrRelayTransport` for custom transport implementations
+- `NostrCryptoUtils` — centralized cryptographic operations
+- Configurable connection and request timeouts per instance
+- Exponential backoff retry policy: `NostrRetryPolicy.exponential(maxAttempts, initialDelayMs, maxDelayMs)`
+- Fixed-interval retry policy: `NostrRetryPolicy.fixed(attempts, delayMs)`
+
+### Documentation
+
+- Complete rewrite of all documentation pages with current API and working examples
+- Restructured docs into Keys, Relays & Events, Identity, and Advanced sections
+- New guides: Quick Start, Error Handling, Client Options, Low-Level API
+- README now leads with Documentation link and Getting Started section
+- All example files cleaned up — removed emojis and AI-style comments, natural human-written style
+
+### Internal Improvements
+
+- Refactor core abstractions: `NostrResult<T>`, `NostrFailure`, `NostrClient`, `NostrCryptoUtils`
+- Improve relay pool management and WebSocket lifecycle
+- Better error recovery and logging
+- Comprehensive test coverage for result types and client options
+
+### Migration Path
+
+See docs/usage/advanced/low-level-api.md for migration guidance from old services API to new surfaces.
+
 ## 9.2.5
 
 - Improved README documentation with better structure and more natural language
