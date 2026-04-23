@@ -1,25 +1,54 @@
---- 
-sidebar_position: 1
-description: Learn how to generate a new key pair of a private and a public keys for a new user.
+---
+sidebar_position: 2
+description: Generate a new key pair or derive one from an existing private key.
 ---
 
-# Generate A New Key Pair
+# Generate Key Pairs
 
-In order to generate a new key pair of a private and a public keys for a new user as example, you can do it by calling the `generateKeyPair()` method of the `Nostr.instance.services.keys`, This method will return a `NostrKeyPairs` that represents the key pair, like this:
+## Generate a new key pair
 
 ```dart
-// Generate a new key pair.
-NostrKeyPairs keyPair = Nostr.instance.services.keys.generateKeyPair();
+final nostr = Nostr.instance;
+final keyPair = nostr.keys.generateKeyPair();
 
-// Now you can use it as you want.
-print(keyPair.private); // ...
-print(keyPair.public); // ...
-
-// A example, creating new events for that user associated with this key pair.
+print(keyPair.public);   // hex public key
+print(keyPair.private);  // hex private key
 ```
 
-You can access and use the private and public keys now in the Nostr operations, such using the public key in events...
+## Generate only a private key
 
-## What's Next
+If you want to store the private key before creating the full key pair:
 
-Learn how you can create only a private key for a new user, [click here](./generate-private-key-directly), and create its key pair later.
+```dart
+final privateKey = nostr.keys.generatePrivateKey();
+// store privateKey ...
+
+// later:
+final keyPair = nostr.keys.generateKeyPairFromExistingPrivateKey(privateKey);
+```
+
+## Reconstruct a key pair from a private key
+
+```dart
+final keyPair = nostr.keys.generateKeyPairFromExistingPrivateKey(
+  'your_hex_private_key',
+);
+print(keyPair.public);
+```
+
+## Derive a public key from a private key
+
+```dart
+final publicKey = nostr.keys.derivePublicKey(
+  privateKey: 'your_hex_private_key',
+);
+```
+
+## Validate a private key
+
+```dart
+final isValid = NostrKeyPairs.isValidPrivateKey('your_hex_private_key');
+print(isValid); // true / false
+```
+
+`isValidPrivateKey` is a static method — it does not require an instance.

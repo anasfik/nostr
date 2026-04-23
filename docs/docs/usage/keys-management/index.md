@@ -1,7 +1,11 @@
 ---
+sidebar_position: 1
 ---
 
-# Keys Management
+# Keys
 
-This section will guide you through the keys management in `dart_nostr`, this includes users key pairs generation, keys derivation, keys encryption, Nostr specific specs for encoding/decoding... etc.
+`nostr.keys` provides all key operations: generation, derivation, validation, signing, and verification.
 
+Key pairs in dart_nostr are represented as `NostrKeyPairs`, which holds both `public` and `private` as hex strings.
+
+All methods below are on `Nostr.instance.keys` (or any `Nostr` instance).

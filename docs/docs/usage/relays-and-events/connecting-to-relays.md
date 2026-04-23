@@ -1,86 +1,86 @@
 ---
-sidebar_position: 2
+sidebar_position: 1
+description: Connect to Nostr relay WebSockets, manage connection lifecycle, and inspect connection state.
 ---
 
+# Connecting to Relays
 
-# Managing Relays Connection
-
-## Connecting To Relays
-
-Now you have your relays up and running, and you have your events ready to be sent to them, but how can you send them to your relays?
-
-Before sending any event to your relays, you will need to initialize/connect to your them at least one time in your Dart/Flutter app before sending any event.
+## Basic connection
 
 ```dart
-// TODO: add the code here.
-```
+final nostr = Nostr.instance;
 
-if you have a Flutter app, I personally recommend you to call this method in the `main()` before the `runApp` is called, so you ensure that the relays are connected before the app starts.
+final result = await nostr.connect([
+  'wss://relay.damus.io',
+  'wss://nos.lol',
+]);
 
-```dart
-void main() async {
-  await Nostr.instance.services.relays.init(
-    relaysUrl: <String>["wss://eden.nostr.land"],
-    connectionTimeout: Duration(seconds: 5),
-    ensureToClearRegistriesBeforeStarting: true,
-    ignoreConnectionException: true,
-    lazyListeningToRelays: false,
-    onRelayConnectionDone: (relayUrl, relayWebSocket) {
-      print("Connected to relay: $relayUrl");
-    },
-    onRelayListening: (relayUrl, receivedEvent, relayWebSocket) {
-      print("Listening to relay: $relayUrl");
-    },
-    onRelayConnectionError: (relayUrl, error, relayWebSocket) {},
-    retryOnClose: true,
-    retryOnError: true,
-    shouldReconnectToRelayOnNotice: true,
-);
-
-// ...
-
-// if it is a flutter app:
-// runApp(MyApp());
- }
-```
-
-## Reconneting to relays
-
-if you already connected to your relays, and you want to reconnect to them again, you can call the `reconnectToRelays()` method:
-
-```dart
-await Nostr.instance.services.relays.reconnectToRelays(
-  connectionTimeout: Duration(seconds: 5),
-  ignoreConnectionException: true,
-  lazyListeningToRelays: false,
-  onRelayConnectionDone: (relayUrl, relayWebSocket) {
-    print("Connected to relay: $relayUrl");
-  },
-  onRelayListening: (relayUrl, receivedEvent, relayWebSocket) {
-    print("Listening to relay: $relayUrl");
-  },
-  onRelayConnectionError: (relayUrl, error, relayWebSocket) {},
-  retryOnClose: true,
-  retryOnError: true,
-  shouldReconnectToRelayOnNotice: true,
+result.fold(
+  (_) => print('connected'),
+  (failure) => print('failed: ${failure.message}'),
 );
 ```
 
-## Disconnecting from relays
+## Connect with defaults
 
-if you want to disconnect from your relays, you can call the `disconnectFromRelays()` method:
+`connectDefaults` uses a built-in list of well-known public relays:
 
 ```dart
-await Nostr.instance.services.relays.disconnectFromRelays(
-  closeCode: (relayUrl) {
-    return WebSocketStatus.normalClosure;
-  },
-  closeReason: (relayUrl) {
-    return "Bye";
-  },
-  onRelayDisconnect: (relayUrl, relayWebSocket, returnedMessage) {
-    print("Disconnected from relay: $relayUrl, $returnedMessage");
-  },
+await nostr.connectDefaults();
+```
+
+## Check connection state
+
+```dart
+print(nostr.isConnected);               // bool
+print(nostr.connectedRelays);           // List<String>
+print(nostr.connectedRelays.length);    // int
+```
+
+## Disconnect
+
+```dart
+final result = await nostr.disconnect();
+result.fold(
+  (_) => print('disconnected'),
+  (failure) => print('disconnect warning: ${failure.message}'),
+);
+```
+
+## Configure timeouts and retry
+
+Pass `NostrClientOptions` when constructing an isolated instance (or use the options on `Nostr.instance` before connecting):
+
+```dart
+final nostr = Nostr(
+  clientOptions: NostrClientOptions(
+    connectionTimeout: const Duration(seconds: 10),
+    requestTimeout: const Duration(seconds: 15),
+    retryPolicy: NostrRetryPolicy.exponential(
+      maxAttempts: 4,
+      initialDelayMs: 150,
+      maxDelayMs: 3000,
+    ),
+  ),
 );
 
+await nostr.connect(['wss://relay.damus.io']);
+```
+
+## Relay information (NIP-11)
+
+Fetch a relay's self-description document:
+
+```dart
+final info = await nostr.relays.relayInformationsDocumentNip11(
+  relayUrl: 'wss://relay.damus.io',
+);
+
+if (info != null) {
+  print(info.name);
+  print(info.description);
+  print(info.supportedNips);
+  print(info.software);
+  print(info.version);
+}
 ```

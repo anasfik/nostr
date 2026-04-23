@@ -1,8 +1,11 @@
 ---
-sidebar_position: 5
+sidebar_position: 99
 ---
 
 # Contributing
 
-If you want to contribute to this project, you can do so by forking its [Github repository](https://github.com/anasfik/nostr), making your changes, and then creating a pull request, I will be grateful for the help, and will be happy to merge your changes into the main project.
+Contributions are welcome. Fork the [GitHub repository](https://github.com/anasfik/nostr), make your changes, and open a pull request.
 
+Useful contributions include protocol correctness fixes, relay handling improvements, additional tests, new transport implementations, and documentation improvements.
+
+Make sure changes include tests where appropriate and keep the public API consistent.

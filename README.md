@@ -1,67 +1,50 @@
 # dart_nostr
 
-dart_nostr is a Dart and Flutter SDK for building Nostr applications with production-ready reliability.
+dart_nostr is a Dart and Flutter SDK for building Nostr applications. It handles relay connections, event signing and publishing, typed subscription management, key tooling, and NIP utilities — so you can focus on your product instead of the protocol.
 
-It is designed for developers who need more than a demo client: reliable relay communication, typed failures, strong key tooling, clean subscription management, sensible defaults, and enough low-level access to build custom protocol workflows when needed.
+## Documentation
 
-Whether you are building a consumer app, a creator tool, a community platform, a wallet-connected product, or a founder-facing Nostr integration, dart_nostr gives you a practical path from prototype to production.
+Full API guides, per-feature references, and advanced configuration are in the documentation site:
 
-## Why developers choose dart_nostr
+- [Introduction and overview](https://anasfik.github.io/nostr/)
+- [Installation](https://anasfik.github.io/nostr/installation)
+- [Quick start](https://anasfik.github.io/nostr/quick-start)
+- [Keys](https://anasfik.github.io/nostr/usage/keys-management/)
+- [Relays and events](https://anasfik.github.io/nostr/usage/relays-and-events/connecting-to-relays)
+- [Identity (NIP-05, NIP-19)](https://anasfik.github.io/nostr/usage/identity/nip05)
+- [Error handling](https://anasfik.github.io/nostr/usage/advanced/error-handling)
+- [Advanced configuration](https://anasfik.github.io/nostr/usage/advanced/client-options)
 
-- Typed success and failure results for predictable error handling
-- High-level facade for app development and low-level relay APIs for protocol experimentation
-- Key generation, signing, verification, encoding, and derivation
-- Event publishing, event counting, request subscriptions, and stream lifecycle management
-- Retry policies, timeout control, and explicit connection management
-- NIP-05 verification and NIP-19 entity encoding support
-- Clean testability through dependency-injectable transports and isolated `Nostr` instances
-- Works in Dart and Flutter projects without forcing app architecture decisions
+Source documentation is also available on [pub.dev](https://pub.dev/documentation/dart_nostr/latest/).
 
-## Who this package is for
+## Getting Started
 
-dart_nostr is a strong fit if you are building:
-
-- Nostr mobile or desktop clients
-- Creator publishing tools
-- Community and membership products
-- Nostr-powered social features inside an existing app
-- Relay-aware backend services in Dart
-- Internal tooling for protocol research, moderation, search, or automation
-
-## Install
-
-Add the package to your project:
+### Install
 
 ```yaml
 dependencies:
   dart_nostr: ^9.2.5
 ```
 
-Or use the CLI:
-
 ```bash
+dart pub add dart_nostr
+# or
 flutter pub add dart_nostr
 ```
 
-```bash
-dart pub add dart_nostr
-```
-
-## How to use it
-
-The package has two levels of API:
-
-- **High-level:** `Nostr.instance` and top-level convenience methods for app development
-- **Low-level:** `Nostr.services` and `Nostr.relays` for advanced protocol work and custom implementations
-
-## Quick start
+### Import
 
 ```dart
 import 'package:dart_nostr/dart_nostr.dart';
+```
 
+### Connect, publish, and subscribe
+
+```dart
 Future<void> main() async {
   final nostr = Nostr.instance;
 
+  // Connect to relays
   final connectResult = await nostr.connect([
     'wss://relay.damus.io',
     'wss://nos.lol',
@@ -72,8 +55,10 @@ Future<void> main() async {
     return;
   }
 
+  // Generate a key pair
   final keyPair = nostr.keys.generateKeyPair();
 
+  // Publish a note
   final event = NostrEvent.fromPartialData(
     kind: 1,
     content: 'Hello from dart_nostr',
@@ -81,283 +66,115 @@ Future<void> main() async {
   );
 
   final publishResult = await nostr.publish(event);
-
   publishResult.fold(
-    (ok) => print('Published: ${ok.message}'),
-    (failure) => print('Publish failed: $failure'),
+    (ok) => print('published: ${ok.isEventAccepted}'),
+    (failure) => print('failed: ${failure.message}'),
+  );
+
+  // Subscribe to recent notes
+  final subResult = nostr.subscribeRequest(
+    NostrRequest(
+      filters: [
+        NostrFilter(
+          kinds: [1],
+          limit: 20,
+          since: DateTime.now().subtract(const Duration(hours: 1)),
+        ),
+      ],
+    ),
+  );
+
+  subResult.fold(
+    (stream) {
+      stream.stream.listen((event) => print(event.content));
+    },
+    (failure) => print('subscribe failed: ${failure.message}'),
   );
 }
 ```
 
-## What the package gives you
+### Error handling pattern
 
-### Product-facing API
-
-The top-level `Nostr` facade is optimized for app developers.
-
-It provides:
-
-- `connect()`
-- `connectDefaults()`
-- `disconnect()`
-- `publish()`
-- `count()`
-- `subscribe()`
-- `subscribeFilters()`
-- `subscribeRequest()`
-- subscription statistics and active subscription inspection
-
-This keeps common app flows readable while still exposing the underlying protocol surface when you need it.
-
-### Protocol-facing API
-
-If you need deeper control, use:
-
-- `nostr.relays` for low-level relay operations
-- `nostr.services` for direct access to specialized components
-- `NostrRelayTransport` for custom transport implementations
-
-This split makes the package suitable both for shipping products and for advanced Nostr engineering.
-
-## Core capabilities
-
-### 1. Key management
-
-Generate, reconstruct, sign, verify, and validate keys.
+Every operation that can fail returns `NostrResult<T>`:
 
 ```dart
-final nostr = Nostr.instance;
-final keyPair = nostr.keys.generateKeyPair();
-
-final signature = nostr.keys.sign(
-  privateKey: keyPair.private,
-  message: 'GM',
-);
-
-final isVerified = nostr.keys.verify(
-  publicKey: keyPair.public,
-  message: 'GM',
-  signature: signature,
-);
-```
-
-### 2. Event creation and publishing
-
-Create signed events with a minimal API.
-
-```dart
-final event = NostrEvent.fromPartialData(
-  kind: 1,
-  content: 'Shipping a real Nostr product in Dart',
-  keyPairs: keyPair,
-  tags: [
-    ['t', 'dart'],
-    ['t', 'nostr'],
-  ],
-);
-
-final result = await nostr.publish(event);
-```
-
-### 3. Typed subscriptions
-
-Subscribe with explicit request objects and handle success and failure clearly.
-
-```dart
-final result = nostr.subscribeRequest(
-  NostrRequest(
-    filters: const [
-      NostrFilter(kinds: [1], limit: 25),
-    ],
-  ),
-);
-
 result.fold(
-  (stream) {
-    stream.stream.listen((event) {
-      print(event.content);
-    });
+  (value) { /* success */ },
+  (failure) {
+    print(failure.message);
+    print(failure.code);
+    print(failure.isRetryable);
   },
-  (failure) => print(failure),
 );
 ```
 
-### 4. Subscription lifecycle tracking
-
-The high-level client integrates with `SubscriptionManager` so applications can inspect active subscriptions and metrics.
+### Key operations
 
 ```dart
-final active = nostr.activeSubscriptions;
-final stats = nostr.subscriptionStatistics;
+final keyPair = nostr.keys.generateKeyPair();
+print(keyPair.public);   // hex pubkey
+print(keyPair.private);  // hex privkey
 
-print('Active subscriptions: ${active.length}');
-print('Tracked events: ${stats.totalEventCount}');
-```
+// Reconstruct from private key
+final same = nostr.keys.generateKeyPairFromExistingPrivateKey(keyPair.private);
 
-### 5. Event counting
-
-Use NIP-45 style count requests where supported by relays.
-
-```dart
-final countResult = await nostr.count(
-  NostrCountEvent.fromPartialData(
-    eventsFilter: const NostrFilter(kinds: [1], limit: 100),
-  ),
-);
-```
-
-### 6. NIP-05 verification
-
-Resolve or verify internet identifiers.
-
-```dart
-final publicKey = await nostr.utils.pubKeyFromIdentifierNip05(
-  internetIdentifier: 'jb55@jb55.com',
-);
-```
-
-```dart
-final verified = await nostr.utils.verifyNip05(
-  internetIdentifier: 'jb55@jb55.com',
-  pubKey: publicKey ?? '',
-);
-```
-
-### 7. NIP-19 encoding
-
-Create and decode `npub`, `nsec`, `nprofile`, and `nevent` values.
-
-```dart
+// NIP-19 bech32 encoding
 final npub = nostr.bech32.encodePublicKeyToNpub(keyPair.public);
-final nprofile = nostr.bech32.encodeNProfile(
-  pubkey: keyPair.public,
-  userRelays: ['wss://relay.damus.io'],
-);
+final nsec = nostr.bech32.encodePrivateKeyToNsec(keyPair.private);
+
+// Sign and verify
+final sig = nostr.keys.sign(privateKey: keyPair.private, message: 'hello');
+final ok  = nostr.keys.verify(publicKey: keyPair.public, message: 'hello', signature: sig);
 ```
 
-### 8. Relay metadata
-
-Fetch relay information documents via NIP-11.
+### NIP-05 identity verification
 
 ```dart
-final relayInfo = await nostr.relays.relayInformationsDocumentNip11(
-  relayUrl: 'wss://relay.damus.io',
+final pubKey = await nostr.utils.pubKeyFromIdentifierNip05(
+  internetIdentifier: 'user@domain.com',
 );
 
-print(relayInfo?.name);
-print(relayInfo?.supportedNips);
+final verified = await nostr.utils.verifyNip05(
+  internetIdentifier: 'user@domain.com',
+  pubKey: pubKey ?? '',
+);
 ```
 
-## Production-ready characteristics
+## What the package provides
 
-This package is a complete SDK, not just a wrapper.
+- `Nostr.instance` — singleton; `Nostr()` — isolated instance with independent relay pool
+- `nostr.connect()` / `nostr.disconnect()` — connection lifecycle with typed results
+- `nostr.publish()` — signed event submission with relay OK response
+- `nostr.subscribeRequest()` / `nostr.subscribeFilters()` — typed stream subscriptions
+- `nostr.count()` — NIP-45 event count requests
+- `nostr.keys` — key generation, derivation, signing, verification
+- `nostr.bech32` — NIP-19 encode/decode (npub, nsec, nprofile, nevent)
+- `nostr.utils` — NIP-05 resolution and verification
+- `nostr.relays` — low-level relay pool for protocol work
+- `NostrResult<T>` / `NostrFailure` — typed error model throughout
+- `NostrClientOptions` / `NostrRetryPolicy` — configurable timeouts and retry
 
-It includes:
+## API surfaces
 
-- Typed `NostrResult<T>` for predictable error handling
-- Structured `NostrFailure` error mapping
-- Configurable retry policies via `NostrRetryPolicy`
-- Configurable timeouts via `NostrClientOptions`
-- Explicit connection lifecycle management
-- Isolated instances for testing or multi-tenant scenarios
-- Dependency injection for transport replacement and mocking
-- Clean separation of concerns in request, key, and count operations
+| Surface | Use when |
+|---|---|
+| Top-level facade (`nostr.connect`, `nostr.publish`, ...) | Building app features, need typed results and lifecycle management |
+| `nostr.relays` | Raw relay operations, protocol research, custom orchestration |
+| `nostr.services` | Direct access to internal components, building abstractions |
 
-## Recommended usage pattern
+## Example files
 
-For most applications:
+The [example](example/) directory contains runnable samples:
 
-1. Create a `Nostr` instance per app or account scope
-2. Connect during startup; disconnect on shutdown
-3. Keep event publishing and subscriptions behind your domain layer
-4. Use typed failures for logging and error handling
-5. Use low-level relay APIs only when you need protocol control
+- [main.dart](example/main.dart) — end-to-end workflow covering all major features
+- [generate_key_pair.dart](example/generate_key_pair.dart) — key generation and validation
+- [sending_event_to_relays.dart](example/sending_event_to_relays.dart) — publish metadata and notes
+- [listening_to_events.dart](example/listening_to_events.dart) — subscriptions and filters
+- [signing_and_verfiying_messages.dart](example/signing_and_verfiying_messages.dart) — sign and verify
+- [verify_nip05.dart](example/verify_nip05.dart) — NIP-05 verification
+- [relay_document_nip_11.dart](example/relay_document_nip_11.dart) — relay info fetch
 
-This keeps Nostr concerns isolated without leaking relay details throughout your app.
-
-## API overview
-
-### Top-level facade
-
-Use these directly in most apps:
-
-- `nostr.connect()`
-- `nostr.connectDefaults()`
-- `nostr.disconnect()`
-- `nostr.publish()`
-- `nostr.count()`
-- `nostr.subscribe()`
-- `nostr.subscribeFilters()`
-- `nostr.subscribeRequest()`
-- `nostr.closeAllSubscriptions()`
-
-### Direct surfaces
-
-- `nostr.keys`
-- `nostr.utils`
-- `nostr.bech32`
-- `nostr.relays`
-- `nostr.subscriptions`
-- `nostr.services`
-
-## Example directory
-
-The [example](example/) folder includes practical samples for:
-
-- Key generation and validation
-- Publishing events
-- Asynchronous publish flows
-- Relay connection management
-- Request subscriptions
-- Raw relay entity streams
-- NIP-05 verification
-- NIP-11 relay documents
-- NIP-19 entity encoding
-- Request reopening and subscription reuse
-
-Start here to understand the SDK patterns and capabilities.
-
-## Supported protocol areas
-
-dart_nostr covers a broad set of Nostr capabilities across core events, relay communication, key handling, identity, counting, metadata, and entity encoding.
-
-The project historically tracked a large set of NIPs, including major coverage around:
-
-- core protocol and relay messaging
-- metadata and text notes
-- delete events
-- relay information documents
-- internet identifiers
-- entity encoding and sharing
-- counting and other higher-level relay interactions
-
-If you need exact NIP-by-NIP coverage for a production requirement, review the codebase and docs for the specific feature path you plan to ship.
-
-## Choosing between `client`, `relays`, and `services`
-
-Use `client` or top-level `Nostr` methods when:
-
-- you want typed results
-- you want retries and timeout handling
-- you want managed subscriptions
-- you are building application features
-
-Use `relays` when:
-
-- you need lower-level relay behavior
-- you need raw request and EOSE handling
-- you need protocol experimentation or migration work
-
-Use `services` when:
-
-- you want direct access to specialized internals
-- you are composing your own higher-level abstraction
-
-## Running examples and tests
-
-Examples are in [example](example/).
-
-Run tests with:
+## Tests
 
 ```bash
 dart test
@@ -365,17 +182,7 @@ dart test
 
 ## Contributing
 
-Contributions are welcome.
-
-Useful contributions include:
-
-- protocol correctness improvements
-- performance work in relay handling and subscriptions
-- documentation and examples
-- stronger tests around edge cases and relay behavior
-- new transport implementations or better observability patterns
-
-Before opening a pull request, make sure your change includes tests when appropriate and keeps the public API clear.
+Fork the [repository](https://github.com/anasfik/nostr), make changes, and open a pull request. Include tests where appropriate.
 
 ## License
 
@@ -384,11 +191,8 @@ MIT. See [LICENSE](LICENSE).
 ## Links
 
 - [pub.dev package](https://pub.dev/packages/dart_nostr)
-- [API documentation](https://pub.dev/documentation/dart_nostr/latest/)
+- [Documentation](https://anasfik.github.io/nostr/)
+- [API reference](https://pub.dev/documentation/dart_nostr/latest/)
 - [GitHub repository](https://github.com/anasfik/nostr)
 - [Nostr protocol](https://nostr.com/)
-- [NIPs repository](https://github.com/nostr-protocol/nips)
-
-## Philosophy
-
-dart_nostr is built for developers who want reliability without unnecessary complexity. Whether you're building creator tools, consumer apps, community platforms, or experimenting with Nostr, this SDK provides a solid foundation with sensible defaults and enough flexibility for advanced use cases.
+- [NIPs specification](https://github.com/nostr-protocol/nips)

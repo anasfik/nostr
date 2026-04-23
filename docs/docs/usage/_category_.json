@@ -2,6 +2,7 @@
   "label": "Usage",
   "position": 4,
   "link": {
-    "type": "generated-index"
+    "type": "generated-index",
+    "description": "Per-feature guides for dart_nostr."
   }
 }
