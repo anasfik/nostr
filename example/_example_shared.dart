@@ -3,12 +3,11 @@ import 'package:dart_nostr/dart_nostr.dart';
 const exampleRelays = <String>[
   'wss://relay.damus.io',
   'wss://nos.lol',
-  
 ];
 
 Nostr exampleNostr({bool enableLogs = false}) {
   final nostr = Nostr.instance;
-  
+
   if (enableLogs) {
     nostr.enableLogs();
   } else {

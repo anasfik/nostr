@@ -4,98 +4,67 @@ import 'package:dart_nostr/dart_nostr.dart';
 
 import '_example_shared.dart';
 
-/// Complete Nostr Client Workflow Example
-///
-/// Demonstrates:
-/// 1. Key generation and validation
-/// 2. Connecting to relays
-/// 3. Publishing events with error handling
-/// 4. Subscribing to events
-/// 5. Counting events (NIP-45)
-/// 6. Deleting events
-/// 7. Signing & verifying messages
-/// 8. NIP-05 verification
-/// 9. Error handling
-/// 10. Cleanup & disconnect
+// End-to-end demo: keys, relay connection, publish, subscribe, count,
+// delete, sign/verify, NIP-05 verification, and error handling.
 Future<void> main() async {
-  // STEP 1: Initialize Nostr instance
-  print(divider('🚀 Nostr Client Initialization'));
   final nostr = exampleNostr(enableLogs: true);
-  print('✅ Nostr instance created');
 
-  // STEP 2: Key Generation & Validation
-  print(divider('🔑 Key Generation & Validation'));
-
+  // keys
+  print(divider('keys'));
   final keyPair = nostr.keys.generateKeyPair();
-  print('Generated Key Pair:');
-  print('  Public Key: ${keyPair.public}');
-  print('  Private Key: ${keyPair.private}');
-
-  final isValidPrivateKey =
-      NostrKeyPairs.isValidPrivateKey(keyPair.private);
-  print('  Valid Private Key: $isValidPrivateKey');
+  print('public : ${keyPair.public}');
+  print('private: ${keyPair.private}');
+  print('valid  : ${NostrKeyPairs.isValidPrivateKey(keyPair.private)}');
 
   final npub = nostr.bech32.encodePublicKeyToNpub(keyPair.public);
   final nsec = nostr.bech32.encodePrivateKeyToNsec(keyPair.private);
-  print('  Npub: $npub');
-  print('  Nsec: $nsec');
+  print('npub   : $npub');
+  print('nsec   : $nsec');
 
-  // STEP 3: Connect to Relays
-  print(divider('🔗 Connecting to Relays'));
-
+  // connect
+  print(divider('connect'));
   final connectResult = await nostr.connect(exampleRelays);
-  printResult('Connection', connectResult);
+  printResult('connect', connectResult);
 
-  // Get relay info (NIP-11)
-  print(divider('ℹ️ Relay Information'));
   for (final relay in exampleRelays) {
     try {
-      final relayInfo =
-          await nostr.relays.relayInformationsDocumentNip11(relayUrl: relay);
-      if (relayInfo != null) {
-        print('Relay: $relay');
-        print('  Name: ${relayInfo.name ?? 'N/A'}');
-        print('  Software: ${relayInfo.software ?? 'N/A'}');
-        print(
-            '  Supported NIPs: ${relayInfo.supportedNips?.join(', ') ?? 'N/A'}');
+      final info = await nostr.relays
+          .relayInformationsDocumentNip11(relayUrl: relay);
+      if (info != null) {
+        final nips = info.supportedNips?.join(', ') ?? 'none';
+        print('$relay -> ${info.name}, NIPs: $nips');
       }
     } catch (e) {
-      print('  Could not fetch relay info: $e');
+      print('NIP-11 fetch failed for $relay: $e');
     }
   }
 
-  // STEP 4: Publish Events (with typed error handling)
-  print(divider('📤 Publishing Events'));
+  // publish
+  print(divider('publish'));
 
-  // Create metadata event
-  final metadataEvent = NostrEvent.fromPartialData(
+  final metadata = NostrEvent.fromPartialData(
     kind: 0,
     content: jsonEncode({
       'name': 'dart_nostr example',
-      'about': 'Complete workflow demo',
+      'about': 'example run',
     }),
     keyPairs: keyPair,
   );
 
-  final publishMetadataResult = await nostr.publish(metadataEvent);
-  publishMetadataResult.fold(
+  final metaResult = await nostr.publish(metadata);
+  metaResult.fold(
     (ok) {
-      print('✅ Metadata published:');
-      print('   Event ID: ${ok.eventId}');
-      print('   Accepted: ${ok.isEventAccepted}');
-      print('   Message: ${ok.message}');
+      print('metadata accepted: ${ok.isEventAccepted}, message: ${ok.message}');
     },
     (failure) {
-      print('❌ Metadata publish failed: ${failure.message}');
-      print('   Code: ${failure.code}');
-      print('   Retryable: ${failure.isRetryable}');
+      print('metadata failed: ${failure.message} (${failure.code})');
+      print('retryable: ${failure.isRetryable}');
     },
   );
 
-  // Create text note
-  final noteEvent = NostrEvent.fromPartialData(
+  final note = NostrEvent.fromPartialData(
     kind: 1,
-    content: 'Hello from dart_nostr! ${DateTime.now().toIso8601String()}',
+    content: 'hello from dart_nostr ${DateTime.now().toIso8601String()}',
     keyPairs: keyPair,
     tags: [
       ['t', 'dart'],
@@ -103,22 +72,16 @@ Future<void> main() async {
     ],
   );
 
-  final publishNoteResult = await nostr.publish(noteEvent);
-  publishNoteResult.fold(
-    (ok) {
-      print('✅ Note published:');
-      print('   Event ID: ${ok.eventId}');
-      print('   Accepted: ${ok.isEventAccepted}');
-    },
-    (failure) {
-      print('❌ Note publish failed: ${failure.message}');
-    },
+  final noteResult = await nostr.publish(note);
+  noteResult.fold(
+    (ok) => print('note accepted: ${ok.isEventAccepted}'),
+    (failure) => print('note failed: ${failure.message}'),
   );
 
-  // STEP 5: Subscribe to Events
-  print(divider('📥 Subscribing to Events'));
+  // subscribe
+  print(divider('subscribe'));
 
-  final subscriptionResult = nostr.subscribeRequest(
+  final subResult = nostr.subscribeRequest(
     NostrRequest(
       filters: [
         NostrFilter(
@@ -135,172 +98,109 @@ Future<void> main() async {
     ),
   );
 
-  subscriptionResult.fold(
+  subResult.fold(
     (stream) {
-      print('✅ Subscription established');
-      print('   Subscription ID: ${stream.subscriptionId}');
+      print('subscription id: ${stream.subscriptionId}');
 
-      var eventCount = 0;
+      var count = 0;
 
       stream.stream.listen(
         (event) {
-          eventCount++;
-          final content = event.content ?? '';
-          final contentPreview = content.length > 60
-              ? '${content.substring(0, 60)}...'
-              : content;
-          print('\n📨 Event $eventCount:');
-          print('   ID: ${event.id}');
-          print('   Kind: ${event.kind}');
-          print('   Author: ${event.pubkey.substring(0, 16)}...');
-          print('   Content: $contentPreview');
-          print('   Tags: ${event.tags?.length ?? 0} tags');
+          count++;
+          final raw = event.content ?? '';
+          final preview =
+              raw.length > 60 ? '${raw.substring(0, 60)}...' : raw;
+          final author = event.pubkey.substring(0, 8);
+          print('[$count] kind=${event.kind} author=$author "$preview"');
         },
-        onError: (Object error) {
-          print('❌ Stream error: $error');
-        },
-        onDone: () {
-          print('\n✅ Stream closed. Received $eventCount events.');
-        },
+        onError: (Object e) => print('stream error: $e'),
+        onDone: () => print('stream closed, $count events received'),
       );
 
-      // Show subscription statistics after 3 seconds
       Future.delayed(const Duration(seconds: 3), () {
-        final activeSubscriptions = nostr.activeSubscriptions;
         final stats = nostr.subscriptionStatistics;
-
-        print(divider('📊 Subscription Statistics'));
-        print('Active Subscriptions: ${activeSubscriptions.length}');
-        print('Total Tracked Events: ${stats.totalEventCount}');
-        print(
-            'Average Events/Sub: ${stats.averageEventsPerSubscription.toStringAsFixed(2)}');
-
+        print('active subs: ${nostr.activeSubscriptions.length}');
+        print('total events tracked: ${stats.totalEventCount}');
         stream.close();
       });
     },
-    (failure) {
-      print('❌ Subscription failed: ${failure.message}');
-      print('   Code: ${failure.code}');
-    },
+    (failure) => print('subscribe failed: ${failure.message}'),
   );
 
-  // STEP 6: Count Events (NIP-45)
-  print(divider('🔢 Counting Events'));
+  // count (NIP-45)
+  print(divider('count'));
 
-  final countEvent = NostrCountEvent.fromPartialData(
-    eventsFilter: NostrFilter(kinds: [1], limit: 100),
+  final countResult = await nostr.count(
+    NostrCountEvent.fromPartialData(
+      eventsFilter: NostrFilter(kinds: [1], limit: 100),
+    ),
   );
 
-  final countResult = await nostr.count(countEvent);
   countResult.fold(
-    (countResponse) {
-      print('✅ Event count retrieved:');
-      print('   Count: ${countResponse.count}');
-      print('   Subscription ID: ${countResponse.subscriptionId}');
-    },
-    (failure) {
-      print('❌ Count failed: ${failure.message}');
-    },
+    (r) => print('count: ${r.count}'),
+    (failure) => print('count failed: ${failure.message}'),
   );
 
-  // STEP 7: Delete Event
-  print(divider('🗑️ Deleting Events'));
+  // delete
+  print(divider('delete'));
 
-  final deleteEvent = NostrEvent.deleteEvent(
+  final deletion = NostrEvent.deleteEvent(
     keyPairs: keyPair,
-    reasonOfDeletion: 'Example deletion',
-    eventIdsToBeDeleted: [
-      noteEvent.id ?? '',
-    ],
+    reasonOfDeletion: 'cleanup',
+    eventIdsToBeDeleted: [note.id ?? ''],
   );
 
-  final deleteResult = await nostr.publish(deleteEvent);
+  final deleteResult = await nostr.publish(deletion);
   deleteResult.fold(
-    (ok) {
-      print('✅ Delete event published:');
-      print('   Event ID: ${ok.eventId}');
-      print('   Accepted: ${ok.isEventAccepted}');
-    },
-    (failure) {
-      print('❌ Delete failed: ${failure.message}');
-    },
+    (ok) => print('delete accepted: ${ok.isEventAccepted}'),
+    (failure) => print('delete failed: ${failure.message}'),
   );
 
-  // STEP 8: Sign & Verify Messages
-  print(divider('🔐 Sign & Verify Messages'));
+  // sign / verify
+  print(divider('sign / verify'));
 
-  const messageToSign = 'Hello Nostr!';
-  final signature = nostr.keys.sign(
-    privateKey: keyPair.private,
-    message: messageToSign,
-  );
-
-  final isVerified = nostr.keys.verify(
+  const msg = 'hello nostr';
+  final sig = nostr.keys.sign(privateKey: keyPair.private, message: msg);
+  final valid = nostr.keys.verify(
     publicKey: keyPair.public,
-    message: messageToSign,
-    signature: signature,
+    message: msg,
+    signature: sig,
   );
 
-  print('Message: "$messageToSign"');
-  print('Signature: ${signature.substring(0, 32)}...');
-  print('Verification: ${isVerified ? '✅ Valid' : '❌ Invalid'}');
+  print('message  : $msg');
+  print('signature: ${sig.substring(0, 32)}...');
+  print('valid    : $valid');
 
-  // STEP 9: NIP-05 Verification
-  print(divider('✉️ NIP-05 Verification'));
+  // NIP-05
+  print(divider('nip-05'));
 
-  const testIdentifier = 'jb55@jb55.com';
-  const testPublicKey =
+  const knownPubkey =
       '32e1827635450ebb3c5a7d12c1f8e7b2b514439ac10a67eef3d9fd9c5c68e245';
 
   try {
     final verified = await nostr.utils.verifyNip05(
-      internetIdentifier: testIdentifier,
-      pubKey: testPublicKey,
+      internetIdentifier: 'jb55@jb55.com',
+      pubKey: knownPubkey,
     );
-    print('✅ NIP-05 verification: $verified');
+    print('jb55@jb55.com verified: $verified');
   } catch (e) {
-    print('⚠️ NIP-05 verification error: $e');
+    print('nip-05 error: $e');
   }
 
-  // STEP 10: Error Handling Examples
-  print(divider('⚠️ Error Handling Examples'));
+  // error handling
+  print(divider('error handling'));
 
-  final invalidConnectResult =
-      await nostr.client.connect(['https://invalid.com']);
-  printResult('Invalid relay URL', invalidConnectResult);
+  final badConnect = await nostr.client.connect(['https://invalid.com']);
+  printResult('bad relay url', badConnect);
 
-  final invalidSubscriptionResult = nostr.subscribeRequest(
-    NostrRequest(filters: []),
-  );
-  printResult('Empty subscription', invalidSubscriptionResult);
+  final badSub = nostr.subscribeRequest(NostrRequest(filters: []));
+  printResult('empty filter', badSub);
 
-  // STEP 11: Cleanup & Disconnect
-  print(divider('🛑 Cleanup & Disconnect'));
+  // cleanup
+  print(divider('cleanup'));
 
   nostr.closeAllSubscriptions();
-  print('✅ All subscriptions closed');
 
   final disconnectResult = await nostr.disconnect();
-  disconnectResult.fold(
-    (_) {
-      print('✅ Disconnected from all relays');
-    },
-    (failure) {
-      print('⚠️ Disconnect warning: ${failure.message}');
-    },
-  );
-
-  // Final summary
-  print(divider('📋 Workflow Summary'));
-  print('✅ Key generation: Complete');
-  print('✅ Relay connection: Complete');
-  print('✅ Event publishing: Complete');
-  print('✅ Event subscription: Complete');
-  print('✅ Event counting: Complete');
-  print('✅ Event deletion: Complete');
-  print('✅ Message signing: Complete');
-  print('✅ NIP-05 verification: Complete');
-  print('✅ Error handling: Complete');
-  print('✅ Cleanup: Complete');
-  print('\n🎉 Full Nostr workflow demo completed!');
+  printResult('disconnect', disconnectResult);
 }

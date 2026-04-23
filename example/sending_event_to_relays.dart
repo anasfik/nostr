@@ -4,34 +4,25 @@ import 'package:dart_nostr/dart_nostr.dart';
 
 import '_example_shared.dart';
 
-/// Send events to Nostr relays.
-/// Demonstrates publishing metadata and note events with error handling.
 Future<void> main() async {
-  print(divider('📤 Sending Events Example'));
-
   final nostr = exampleNostr(enableLogs: true);
 
-  // Connect to relays
-  print('✅ Connecting to relays...');
-  final connectResult = await nostr.connect(exampleRelays);
+  print(divider('publish'));
 
+  final connectResult = await nostr.connect(exampleRelays);
   if (connectResult.isFailure) {
-    print('❌ Connection failed');
+    print('connection failed');
     return;
   }
 
-  // Generate a key pair
   final keyPair = nostr.keys.generateKeyPair();
-  print('✅ Generated key pair');
 
-  // Create and send metadata event (kind 0)
-  print('\n📝 Sending metadata event...');
+  // metadata event (kind 0)
   final metadataEvent = NostrEvent.fromPartialData(
     kind: 0,
     content: jsonEncode({
       'name': 'dart_nostr user',
-      'about': 'Nostr SDK example',
-      'picture': 'https://example.com/pic.jpg',
+      'about': 'nostr sdk example',
     }),
     keyPairs: keyPair,
   );
@@ -39,20 +30,16 @@ Future<void> main() async {
   final metadataResult = await nostr.publish(metadataEvent);
   metadataResult.fold(
     (ok) {
-      print('✅ Metadata published:');
-      print('   Event ID: ${ok.eventId}');
-      print('   Accepted: ${ok.isEventAccepted}');
+      print('metadata event id: ${ok.eventId}');
+      print('metadata accepted: ${ok.isEventAccepted}');
     },
-    (failure) {
-      print('❌ Metadata failed: ${failure.message}');
-    },
+    (failure) => print('metadata failed: ${failure.message}'),
   );
 
-  // Create and send text note (kind 1)
-  print('\n📝 Sending text note...');
+  // text note (kind 1)
   final noteEvent = NostrEvent.fromPartialData(
     kind: 1,
-    content: 'Hello from dart_nostr! ${DateTime.now()}',
+    content: 'hello from dart_nostr ${DateTime.now()}',
     keyPairs: keyPair,
     tags: [
       ['t', 'nostr'],
@@ -63,19 +50,11 @@ Future<void> main() async {
   final noteResult = await nostr.publish(noteEvent);
   noteResult.fold(
     (ok) {
-      print('✅ Note published:');
-      print('   Event ID: ${ok.eventId}');
-      print('   Accepted: ${ok.isEventAccepted}');
+      print('note event id: ${ok.eventId}');
+      print('note accepted: ${ok.isEventAccepted}');
     },
-    (failure) {
-      print('❌ Note failed: ${failure.message}');
-    },
+    (failure) => print('note failed: ${failure.message}'),
   );
 
-  // Disconnect
-  print('\n✅ Disconnecting...');
   await nostr.disconnect();
-
-  print('\n${divider()}');
-  print('✅ Event sending example completed!');
 }
