@@ -1,5 +1,9 @@
 # dart_nostr
 
+> [!NOTE]
+> Maintained by **[Anas Fikhi](https://gwhyyy.com)** — Flutter & AI engineer. Available for contract work: [work@gwhyyy.com](mailto:work@gwhyyy.com) · [book a call](https://calendly.com/ffikhi-aanas/30min)
+
+
 dart_nostr is a Dart and Flutter SDK for building Nostr applications. It handles relay connections, event signing and publishing, typed subscription management, key tooling, and NIP utilities — so you can focus on your product instead of the protocol.
 
 ## Documentation
@@ -196,3 +200,11 @@ MIT. See [LICENSE](LICENSE).
 - [GitHub repository](https://github.com/anasfik/nostr)
 - [Nostr protocol](https://nostr.com/)
 - [NIPs specification](https://github.com/nostr-protocol/nips)
+
+## Maintainer
+
+Built and maintained by **[Anas Fikhi](https://gwhyyy.com)** — Flutter & AI engineer.
+
+- Portfolio & case studies: <https://gwhyyy.com>
+- Contract work: <work@gwhyyy.com>
+- Book a call: <https://calendly.com/ffikhi-aanas/30min>
