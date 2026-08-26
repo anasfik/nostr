@@ -1,5 +1,6 @@
+import 'dart:async';
+
 import 'package:dart_nostr/nostr/core/utils.dart';
-import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// {@template nostr_web_sockets_service}
@@ -25,6 +26,9 @@ class NostrWebSocketsService {
   /// after the specified duration. If not provided, falls back to the default
   /// [_connectionTimeout] (5 seconds). This prevents a single unreachable relay
   /// from blocking the entire connection process indefinitely.
+  ///
+  /// Uses the platform-independent [WebSocketChannel.connect] factory so this
+  /// works on VM, Flutter Web and WASM targets alike.
   Future<void> connectRelay({
     required String relay,
     Duration? connectTimeout,
@@ -35,12 +39,21 @@ class NostrWebSocketsService {
     WebSocketChannel? webSocket;
 
     try {
-      webSocket = IOWebSocketChannel.connect(
-        relay,
-        connectTimeout: connectTimeout ?? _connectionTimeout,
+      webSocket = WebSocketChannel.connect(
+        Uri.parse(relay),
       );
 
-      await webSocket.ready.timeout(connectionTimeout ?? _connectionTimeout);
+      final effectiveTimeout =
+          connectionTimeout ?? connectTimeout ?? _connectionTimeout;
+
+      try {
+        await webSocket.ready.timeout(effectiveTimeout);
+      } on TimeoutException {
+        // The handshake timed out; make sure we do not leak a half-open
+        // socket underneath us.
+        await _closeQuietly(webSocket);
+        rethrow;
+      }
 
       onConnectionSuccess?.call(webSocket);
     } catch (e) {
@@ -59,15 +72,35 @@ class NostrWebSocketsService {
     }
   }
 
-  /// Changes the protocol of a websocket url to http.
-  Uri getHttpUrlFromWebSocketUrl(String relayUrl) {
-    assert(
-      relayUrl.startsWith('ws://') || relayUrl.startsWith('wss://'),
-      'invalid relay url',
-    );
+  Future<void> _closeQuietly(WebSocketChannel? webSocket) async {
+    if (webSocket == null) {
+      return;
+    }
 
     try {
-      var removeWebsocketSign = relayUrl.replaceFirst('ws://', 'http://');
+      await webSocket.sink.close().timeout(
+            const Duration(seconds: 2),
+            onTimeout: () {},
+          );
+    } catch (_) {
+      // Best-effort close; the original error matters more than this one.
+    }
+  }
+
+  /// Changes the protocol of a websocket url to http.
+  Uri getHttpUrlFromWebSocketUrl(String relayUrl) {
+    final normalized = relayUrl.trim();
+
+    if (!normalized.startsWith('ws://') && !normalized.startsWith('wss://')) {
+      throw ArgumentError.value(
+        relayUrl,
+        'relayUrl',
+        'invalid relay url, expected ws:// or wss:// scheme',
+      );
+    }
+
+    try {
+      var removeWebsocketSign = normalized.replaceFirst('ws://', 'http://');
       removeWebsocketSign =
           removeWebsocketSign.replaceFirst('wss://', 'https://');
       return Uri.parse(removeWebsocketSign);

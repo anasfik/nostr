@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:dart_nostr/nostr/core/failures.dart';
 import 'package:dart_nostr/nostr/core/result.dart';
@@ -12,6 +11,8 @@ import 'package:dart_nostr/nostr/model/ok.dart';
 import 'package:dart_nostr/nostr/model/request/request.dart';
 import 'package:dart_nostr/nostr/service/client_options.dart';
 import 'package:dart_nostr/nostr/service/relay_transport.dart';
+import 'package:dart_nostr/nostr/signers/signer.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class NostrClient {
   NostrClient({
@@ -32,7 +33,8 @@ class NostrClient {
   bool get isConnected => _connected;
   List<String> get connectedRelays => List.unmodifiable(_connectedRelays);
 
-  Future<NostrResult<void>> connect(List<String> relays) async {
+  Future<NostrResult<void>> connect(List<String> relays,
+      {NostrEventSigner? signer}) async {
     if (relays.isEmpty) {
       return NostrFailureResult<void>(
         NostrFailure.invalidArgument(
@@ -73,6 +75,7 @@ class NostrClient {
         await transport.connect(
           relays: normalizedRelays,
           connectionTimeout: options.connectionTimeout,
+          signer: signer,
         );
       },
       relayContext: normalizedRelays.join(','),
@@ -362,6 +365,22 @@ class NostrClient {
     );
   }
 
+  /// Detects connection-level errors without importing `dart:io`, so this
+  /// class stays compilable on Flutter Web/WASM. `dart:io`'s SocketException
+  /// and WebSocketException are matched by their runtime type name; wrapped
+  /// causes inside [WebSocketChannelException] are checked too.
+  static bool _isConnectionError(Object error) {
+    if (error is WebSocketChannelException) {
+      return true;
+    }
+
+    final typeName = error.runtimeType.toString();
+
+    return typeName == 'SocketException' ||
+        typeName == 'WebSocketException' ||
+        typeName == 'WebSocketChannelException';
+  }
+
   NostrFailure _mapErrorToFailure({
     required String operationName,
     required Object error,
@@ -391,7 +410,7 @@ class NostrClient {
       );
     }
 
-    if (error is SocketException || error is WebSocketException) {
+    if (_isConnectionError(error)) {
       return NostrFailure.connection(
         'Connection error while performing $operationName.',
         cause: error,

@@ -16,6 +16,15 @@ class NostrStreamsControllers {
   /// This is the controller which will receive all notices from all relays.
   final noticesController = StreamController<NostrNotice>.broadcast();
 
+  /// Receives `CLOSED` messages (subscription id + reason) from relays,
+  /// per NIP-01.
+  final closedSubscriptionsController =
+      StreamController<({String subscriptionId, String? reason})>.broadcast();
+
+  /// Stream of relay `CLOSED` messages.
+  Stream<({String subscriptionId, String? reason})> get closedSubscriptions =>
+      closedSubscriptionsController.stream;
+
   ///
   Stream<String> get allDataEntities => allDataEntittyEventController.stream;
 
@@ -38,12 +47,13 @@ class NostrStreamsControllers {
       eventsController.close(),
       noticesController.close(),
       allDataEntittyEventController.close(),
+      closedSubscriptionsController.close(),
     ]);
   }
 
   bool get isClosed {
-    return eventsController.isClosed ||
-        noticesController.isClosed ||
-        allDataEntittyEventController.isClosed;
+    // Only the events controller gates event delivery; the notices and data
+    // entities controllers are independent channels.
+    return eventsController.isClosed;
   }
 }

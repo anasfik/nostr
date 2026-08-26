@@ -5,10 +5,15 @@ abstract class NostrConstants {
   static const String count = 'COUNT';
   static const String ok = 'OK';
   static const String close = 'CLOSE';
+  static const String closed = 'CLOSED';
   static const String eose = 'EOSE';
+  static const String auth = 'AUTH';
 
   static const String npub = 'npub';
   static const String nsec = 'nsec';
   static const String nProfile = 'nprofile';
   static const String nEvent = 'nevent';
+
+  /// NIP-19 parameterized replaceable event entity (e.g. `naddr1...`).
+  static const String nAddress = 'naddr';
 }

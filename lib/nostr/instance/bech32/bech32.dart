@@ -323,6 +323,133 @@ class NostrBech32 {
     return Uint8List.fromList(ascii.encode(asciiString));
   }
 
+  /// Generates an `naddr` entity (NIP-19 parameterized replaceable event).
+  ///
+  /// [identifier] is the event's `d` tag value (empty for no identifier).
+  Map<String, dynamic> _nAddrTlvList({
+    required int kind,
+    required String authorPubkey,
+    required String identifier,
+    required List<String> userRelays,
+  }) {
+    final tlvList = <TLV>[
+      // Type 0: kind, u32 big-endian.
+      TLV(
+        type: 0,
+        length: 4,
+        value: Uint8List(4)
+          ..[0] = (kind >> 24) & 0xff
+          ..[1] = (kind >> 16) & 0xff
+          ..[2] = (kind >> 8) & 0xff
+          ..[3] = kind & 0xff,
+      ),
+      // Type 1: author pubkey.
+      TLV(
+        type: 1,
+        length: 32,
+        value: _hexDecodeToUint8List(authorPubkey),
+      ),
+    ];
+
+    // Type 2: identifier (d tag), only when non-empty.
+    if (identifier.isNotEmpty) {
+      final idBytes = _asciiEncodeToUint8List(identifier);
+      tlvList.add(TLV(type: 2, length: idBytes.length, value: idBytes));
+    }
+
+    // Type 3: relay hints.
+    for (final relay in userRelays) {
+      final relayBytes = _asciiEncodeToUint8List(relay);
+      tlvList.add(TLV(type: 3, length: relayBytes.length, value: relayBytes));
+    }
+
+    return <String, dynamic>{'tlv': tlvList};
+  }
+
+  /// Encodes an `naddr` bech32 entity from its coordinate parts.
+  ///
+  /// ```dart
+  /// final naddr = NostrBech32(...).encodeNAddr(
+  ///   kind: 30023,
+  ///   authorPubkey: 'hex...',
+  ///   identifier: 'article-slug',
+  ///   userRelays: ['wss://relay.example.com'],
+  /// );
+  /// ```
+  String encodeNAddr({
+    required int kind,
+    required String authorPubkey,
+    String identifier = '',
+    List<String> userRelays = const [],
+  }) {
+    if (kind < 0 || kind > 0xffffffff) {
+      throw ArgumentError.value(kind, 'kind', 'must fit in a u32');
+    }
+
+    final generated = _nAddrTlvList(
+      kind: kind,
+      authorPubkey: authorPubkey,
+      identifier: identifier,
+      userRelays: userRelays,
+    );
+
+    final dataString = HEX.encode(
+      tlv.encode(generated['tlv'] as List<TLV>),
+    );
+
+    return encodeBech32(dataString, NostrConstants.nAddress);
+  }
+
+  /// Decodes an `naddr` entity into its parts:
+  /// `{kind, pubkey, identifier, relays}`.
+  Map<String, dynamic> decodeNaddrToMap(String bech32String) {
+    final decodedBech32 = decodeBech32(bech32String);
+
+    if (decodedBech32[1] != NostrConstants.nAddress) {
+      throw ArgumentError(
+        'expected an naddr entity, got hrp: ${decodedBech32[1]}',
+      );
+    }
+
+    final data = HEX.decode(decodedBech32[0]);
+    final tlvList = tlv.decode(Uint8List.fromList(data));
+
+    var kind = -1;
+    var pubkey = '';
+    var identifier = '';
+    final relays = <String>[];
+
+    for (final entry in tlvList) {
+      switch (entry.type) {
+        case 0:
+          if (entry.value.length != 4) {
+            throw Exception('invalid kind length in naddr');
+          }
+          kind = (entry.value[0] << 24) |
+              (entry.value[1] << 16) |
+              (entry.value[2] << 8) |
+              entry.value[3];
+        case 1:
+          pubkey = HEX.encode(entry.value);
+        case 2:
+          identifier = ascii.decode(entry.value);
+        case 3:
+          relays.add(ascii.decode(entry.value));
+      }
+    }
+
+    if (kind < 0 || pubkey.length != 64) {
+      throw Exception('invalid naddr: missing kind or pubkey');
+    }
+
+    return {
+      'kind': kind,
+      'pubkey': pubkey,
+      'identifier': identifier,
+      'relays': relays,
+    };
+  }
+
   /// Convert bits from one base to another
   /// [data] - the data to convert
   /// [fromBits] - the number of bits per input value

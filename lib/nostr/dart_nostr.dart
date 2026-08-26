@@ -6,6 +6,7 @@ import 'package:dart_nostr/nostr/core/result.dart';
 import 'package:dart_nostr/nostr/core/utils.dart';
 import 'package:dart_nostr/nostr/instance/bech32/bech32.dart';
 import 'package:dart_nostr/nostr/instance/keys/keys.dart';
+import 'package:dart_nostr/nostr/signers/signer.dart';
 import 'package:dart_nostr/nostr/instance/relays/relays.dart';
 import 'package:dart_nostr/nostr/instance/subscription_manager.dart';
 import 'package:dart_nostr/nostr/instance/utils/utils.dart';
@@ -104,8 +105,12 @@ class Nostr {
   SubscriptionManager get subscriptions => services.subscriptionManager;
 
   /// Connect with the enterprise client facade.
-  Future<NostrResult<void>> connect(List<String> relays) {
-    return client.connect(relays);
+  ///
+  /// Pass [signer] to enable automatic NIP-42 relay authentication when a
+  /// relay sends an AUTH challenge.
+  Future<NostrResult<void>> connect(List<String> relays,
+      {NostrEventSigner? signer}) {
+    return client.connect(relays, signer: signer);
   }
 
   /// Connect using package defaults.

@@ -19,6 +19,7 @@ class _FakeTransport implements NostrRelayTransport {
   Future<void> connect({
     required List<String> relays,
     required Duration connectionTimeout,
+    dynamic signer,
   }) async {
     connectCalled = true;
     connectedRelays = relays;

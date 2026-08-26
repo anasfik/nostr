@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:bip32_bip44/dart_bip32_bip44.dart' as bip32_bip44;
 import 'package:bip39/bip39.dart' as bip39;
 import 'package:dart_nostr/nostr/core/crypto_utils.dart';
@@ -18,6 +20,13 @@ class NostrKeys {
   /// A caching system for the key pairs, so we don't have to generate them again.
   /// A cache key is the private key, and the value is the [NostrKeyPairs] instance.
   static final _keyPairsCache = <String, NostrKeyPairs>{};
+
+  /// Insertion order of the cache keys, used for FIFO eviction.
+  static final _keyPairsCacheKeys = Queue<String>();
+
+  /// Maximum number of cached key pairs. Private keys are sensitive material;
+  /// they must not accumulate in memory without bound.
+  static const int _maxKeyPairsCacheSize = 32;
 
   /// Derives a public key from a [privateKey] directly, use this if you want a quick way to get a public key from a private key.
   ///
@@ -176,7 +185,10 @@ class NostrKeys {
     var hexChildKey = '';
 
     if (childKey.key != null) {
-      hexChildKey = childKey.key!.toRadixString(16);
+      // The BIP-32 key bytes are a big-endian 32-byte integer; converting to a
+      // hex string via toRadixString drops leading zero bytes, producing keys
+      // shorter than 64 chars (invalid). Left-pad to exactly 64 chars.
+      hexChildKey = childKey.key!.toRadixString(16).padLeft(64, '0');
     }
 
     return hexChildKey;
@@ -185,6 +197,7 @@ class NostrKeys {
   /// Clears all the cached key pairs.
   Future<bool> freeAllResources() async {
     _keyPairsCache.clear();
+    _keyPairsCacheKeys.clear();
 
     return true;
   }
@@ -192,20 +205,36 @@ class NostrKeys {
   /// Creates a [NostrKeyPairs] from a [privateKey] if it's not already cached, and returns it.
   /// if it's already cached, it returns the cached [NostrKeyPairs] instance and saves the regeneration time and resources.
   NostrKeyPairs _keyPairFrom(String privateKey) {
-    if (_keyPairsCache[privateKey] != null) {
-      return _keyPairsCache[privateKey]!;
-    } else {
-      _keyPairsCache[privateKey] = NostrKeyPairs(private: privateKey);
+    final cached = _keyPairsCache[privateKey];
 
-      return _keyPairsCache[privateKey]!;
+    if (cached != null) {
+      return cached;
     }
+
+    final keyPair = NostrKeyPairs(private: privateKey);
+    _cacheKeyPair(privateKey, keyPair);
+
+    return keyPair;
   }
 
   /// Generates a [NostrKeyPairs] and caches it, and returns it.
   NostrKeyPairs _generateKeyPair() {
     final keyPair = NostrKeyPairs.generate();
-    _keyPairsCache[keyPair.private] = keyPair;
+    _cacheKeyPair(keyPair.private, keyPair);
 
     return keyPair;
+  }
+
+  /// Caches a key pair, evicting the oldest entry when the cache is full.
+  /// Holding private keys in memory forever is both an unbounded-memory and a
+  /// security concern, so the cache is capped at [_maxKeyPairsCacheSize].
+  void _cacheKeyPair(String privateKey, NostrKeyPairs keyPair) {
+    while (_keyPairsCache.length >= _maxKeyPairsCacheSize) {
+      final oldest = _keyPairsCacheKeys.removeFirst();
+      _keyPairsCache.remove(oldest);
+    }
+
+    _keyPairsCache[privateKey] = keyPair;
+    _keyPairsCacheKeys.addLast(privateKey);
   }
 }

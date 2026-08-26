@@ -1,5 +1,4 @@
 import 'dart:collection';
-import 'dart:io';
 
 import 'package:dart_nostr/nostr/core/exceptions.dart';
 import 'package:dart_nostr/nostr/core/utils.dart';
@@ -35,6 +34,13 @@ class NostrRegistry {
 
   ///  This is the registry which will have all events.
   final eventsRegistry = <String, NostrEvent>{};
+
+  /// Insertion order of registered events, used for FIFO eviction so that
+  /// long-running clients do not grow the registry without bound.
+  final _eventsRegistryOrder = Queue<String>();
+
+  /// Maximum number of received events kept in memory.
+  static const int _maxEventsRegistrySize = 5000;
 
   /// This is the registry which will have all ok commands callbacks.
   final okCommandCallBacks = RelayCallbackRegister<NostrEventOkCommand>();
@@ -101,9 +107,21 @@ class NostrRegistry {
 
   /// Registers an event to the registry with the given [event].
   NostrEvent registerEvent(NostrEvent event) {
-    eventsRegistry[eventUniqueId(event)] = event;
+    final key = eventUniqueId(event);
 
-    return eventsRegistry[eventUniqueId(event)]!;
+    while (eventsRegistry.length >= _maxEventsRegistrySize &&
+        _eventsRegistryOrder.isNotEmpty) {
+      final oldest = _eventsRegistryOrder.removeFirst();
+      eventsRegistry.remove(oldest);
+    }
+
+    if (!eventsRegistry.containsKey(key)) {
+      _eventsRegistryOrder.addLast(key);
+    }
+
+    eventsRegistry[key] = event;
+
+    return eventsRegistry[key]!;
   }
 
   /// REturns an [event] unique id, See also [NostrEvent.uniqueKey].
@@ -130,6 +148,8 @@ class NostrRegistry {
   }
 
   /// Returns an ok command callback from the registry with the given [associatedEventId].
+  /// OK commands are strictly one-shot per event id, so the returned callback
+  /// is removed from the register to prevent unbounded memory growth.
   void Function(
     String relay,
     NostrEventOkCommand ok,
@@ -139,7 +159,13 @@ class NostrRegistry {
   }) {
     final relayOkRegister = getOrCreateRegister(okCommandCallBacks, relay);
 
-    return relayOkRegister[associatedEventIdWithOkCommand];
+    final callback = relayOkRegister.remove(associatedEventIdWithOkCommand);
+
+    if (relayOkRegister.isEmpty) {
+      okCommandCallBacks.remove(relay);
+    }
+
+    return callback;
   }
 
   /// Registers an eose command callback to the registry with the given [subscriptionId].
@@ -179,6 +205,8 @@ class NostrRegistry {
   }
 
   /// Returns a count response callback from the registry with the given [subscriptionId].
+  /// Count responses are strictly one-shot per subscription id, so the
+  /// returned callback is removed to prevent unbounded memory growth.
   void Function(
     String relay,
     NostrCountResponse countResponse,
@@ -189,7 +217,34 @@ class NostrRegistry {
     final relayCountRegister =
         getOrCreateRegister(countResponseCallBacks, relay);
 
-    return relayCountRegister[subscriptionId];
+    final callback = relayCountRegister.remove(subscriptionId);
+
+    if (relayCountRegister.isEmpty) {
+      countResponseCallBacks.remove(relay);
+    }
+
+    return callback;
+  }
+
+  /// Removes all callbacks registered for the given [subscriptionId], for
+  /// every relay. Called when a subscription is closed.
+  void removeCallBacksForSubscription(String subscriptionId) {
+    final relays = [
+      ...eoseCommandCallBacks.keys,
+      ...countResponseCallBacks.keys,
+    ];
+
+    for (final relay in relays) {
+      eoseCommandCallBacks[relay]?.remove(subscriptionId);
+      countResponseCallBacks[relay]?.remove(subscriptionId);
+
+      if (eoseCommandCallBacks[relay]?.isEmpty ?? false) {
+        eoseCommandCallBacks.remove(relay);
+      }
+      if (countResponseCallBacks[relay]?.isEmpty ?? false) {
+        countResponseCallBacks.remove(relay);
+      }
+    }
   }
 
   /// Clears the events registry.

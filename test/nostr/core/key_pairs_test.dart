@@ -51,10 +51,16 @@ void main() {
       expect(NostrKeyPairs.isValidPrivateKey('a' * 65), isFalse);
     });
 
-    test('factory with invalid private key throws assertion error', () {
+    test('factory with invalid private key throws ArgumentError', () {
       expect(
         () => NostrKeyPairs(private: 'invalid'),
-        throwsA(isA<AssertionError>()),
+        throwsA(isA<ArgumentError>()),
+      );
+      // Validation must work in release/AOT builds too, where asserts are
+      // stripped — hence ArgumentError, not AssertionError.
+      expect(
+        () => NostrKeyPairs(private: 'z' * 64),
+        throwsA(isA<ArgumentError>()),
       );
     });
 

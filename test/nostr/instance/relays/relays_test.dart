@@ -127,14 +127,26 @@ void main() {
         // Initial request has custom ID
         expect(request.subscriptionId, equals(customSubId));
 
-        // When subscription is started, default behavior generates random ID
+        // An explicitly-set subscription ID must be honored: overriding it
+        // with a random one silently breaks caller-side stream filtering.
         final stream = Nostr.instance.services.relays.startEventsSubscription(
           request: request,
         );
 
-        // The stream gets a random subscription ID (not the custom one)
+        expect(stream.subscriptionId, equals(customSubId));
+      });
+
+      test('subscription generates an id when none is provided', () {
+        final filter = const NostrFilter(kinds: [1], limit: 10);
+
+        final request = NostrRequest(filters: [filter]);
+        expect(request.subscriptionId, isNull);
+
+        final stream = Nostr.instance.services.relays.startEventsSubscription(
+          request: request,
+        );
+
         expect(stream.subscriptionId, isNotEmpty);
-        expect(stream.subscriptionId, isNot(customSubId));
       });
 
       test('subscription with kind filter 1 (text notes)', () {

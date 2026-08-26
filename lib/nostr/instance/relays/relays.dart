@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:async/async.dart';
 import 'package:dart_nostr/dart_nostr.dart';
@@ -15,6 +16,7 @@ import 'package:dart_nostr/nostr/model/ease.dart';
 import 'package:dart_nostr/nostr/model/ok.dart';
 import 'package:dart_nostr/nostr/model/relay.dart';
 import 'package:dart_nostr/nostr/model/relay_informations.dart';
+import 'package:dart_nostr/nostr/signers/signer.dart';
 import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -56,6 +58,38 @@ class NostrRelays implements NostrRelaysBase {
   late final NostrRegistry nostrRegistry;
 
   final NostrLogger logger;
+
+  /// Signer used for NIP-42 relay authentication challenges, if provided.
+  NostrEventSigner? _authSigner;
+
+  /// Callbacks invoked when a relay sends an AUTH challenge (NIP-42).
+  final _authChallengeCallbacks =
+      <void Function(String relay, String challenge)>[];
+
+  /// Registers a callback for NIP-42 AUTH challenges. The library answers
+  /// challenges automatically when a signer was passed to [init]; this
+  /// callback lets applications observe the process.
+  void onAuthChallenge(void Function(String relay, String challenge) handler) {
+    _authChallengeCallbacks.add(handler);
+  }
+
+  /// Configuration captured from the last [init] call, so that implicit
+  /// re-registrations (e.g. when sending to a new relay) preserve the caller's
+  /// callbacks and options instead of silently resetting them.
+  _RelayInitConfig? _lastInitConfig;
+
+  /// Tracks consecutive reconnect attempts per relay, used to compute the
+  /// exponential backoff delay and prevent hot reconnect loops.
+  final Map<String, int> _reconnectAttempts = {};
+
+  /// Base delay for the exponential reconnect backoff.
+  static const Duration _reconnectBaseDelay = Duration(milliseconds: 500);
+
+  /// Maximum reconnect backoff delay.
+  static const Duration _reconnectMaxDelay = Duration(seconds: 30);
+
+  /// Random source used for reconnect backoff jitter.
+  static final math.Random random = math.Random();
 
   /// This method is responsible for initializing the connection to all relays.
   /// It takes a [List<String>] of relays urls, then it connects to each relay and registers it for future use, if [relayUrl] is empty, it will throw an [AssertionError] since it doesn't make sense to connect to an empty list of relays.
@@ -130,12 +164,33 @@ class NostrRelays implements NostrRelaysBase {
     bool ignoreConnectionException = true,
     bool shouldReconnectToRelayOnNotice = false,
     Duration connectionTimeout = const Duration(seconds: 5),
+    NostrEventSigner? signer,
   }) async {
     assert(
       relaysUrl.isNotEmpty,
       "initiating relays with an empty list doesn't make sense, please provide at least one relay url.",
     );
     relaysList = List.of(relaysUrl);
+
+    _authSigner = signer;
+
+    _lastInitConfig = _RelayInitConfig(
+      onRelayListening: onRelayListening,
+      onRelayConnectionError: onRelayConnectionError,
+      onRelayConnectionDone: onRelayConnectionDone,
+      onNoticeMessageFromRelay: onNoticeMessageFromRelay,
+      retryOnError: retryOnError,
+      retryOnClose: retryOnClose,
+      shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
+      ignoreConnectionException: ignoreConnectionException,
+      connectionTimeout: connectionTimeout,
+    );
+
+    if (ensureToClearRegistriesBeforeStarting) {
+      // Drop stale websocket registrations from previous sessions so they
+      // don't receive sends or dispatch messages.
+      nostrRegistry.clearWebSocketsRegistry();
+    }
 
     return _startConnectingAndRegisteringRelays(
       relaysUrl: relaysUrl,
@@ -206,6 +261,7 @@ class NostrRelays implements NostrRelaysBase {
     var isSomeOkTriggered = false;
 
     final completers = <Completer<NostrEventOkCommand>>[];
+    final timeoutTimers = <Timer>[];
 
     _runFunctionOverRelationIteration((relay) {
       final relayUrl = relay.url;
@@ -214,19 +270,26 @@ class NostrRelays implements NostrRelaysBase {
         final completer = Completer<NostrEventOkCommand>();
         completers.add(completer);
 
-        Future.delayed(timeout, () {
-          if (!isSomeOkTriggered && !completer.isCompleted) {
-            completer.completeError(
-              TimeoutException(
-                'the event with id: ${event.id} has timed out after: ${timeout.inSeconds} seconds',
-              ),
-            );
-          }
-        });
+        // A cancellable timer per relay; cancelled as soon as any OK arrives
+        // so completers/timers don't linger until expiry.
+        timeoutTimers.add(
+          Timer(timeout, () {
+            if (!isSomeOkTriggered && !completer.isCompleted) {
+              completer.completeError(
+                TimeoutException(
+                  'the event with id: ${event.id} has timed out after: ${timeout.inSeconds} seconds',
+                ),
+              );
+            }
+          }),
+        );
 
         final serialized = event.serialized();
 
         if (event.id == null) {
+          for (final timer in timeoutTimers) {
+            timer.cancel();
+          }
           throw Exception('event id cannot be null');
         }
 
@@ -248,7 +311,18 @@ class NostrRelays implements NostrRelaysBase {
       }
     });
 
-    return Future.any(completers.map((e) => e.future));
+    if (completers.isEmpty) {
+      throw StateError(
+        'No matching connected relay found to send the event to. '
+        'Make sure the relays are registered via init() or pass an explicit relays list.',
+      );
+    }
+
+    return Future.any(completers.map((e) => e.future)).whenComplete(() {
+      for (final timer in timeoutTimers) {
+        timer.cancel();
+      }
+    });
   }
 
   @override
@@ -291,6 +365,7 @@ class NostrRelays implements NostrRelaysBase {
     var isSomeOkTriggered = false;
 
     final completers = <Completer<NostrCountResponse>>[];
+    final timeoutTimers = <Timer>[];
 
     _runFunctionOverRelationIteration((relay) {
       final relayUrl = relay.url;
@@ -298,15 +373,17 @@ class NostrRelays implements NostrRelaysBase {
         final completer = Completer<NostrCountResponse>();
         completers.add(completer);
 
-        Future.delayed(timeout, () {
-          if (!isSomeOkTriggered && !completer.isCompleted) {
-            completer.completeError(
-              TimeoutException(
-                'the count event with subscription id: ${countEvent.subscriptionId} has timed out after: ${timeout.inSeconds} seconds',
-              ),
-            );
-          }
-        });
+        timeoutTimers.add(
+          Timer(timeout, () {
+            if (!isSomeOkTriggered && !completer.isCompleted) {
+              completer.completeError(
+                TimeoutException(
+                  'the count event with subscription id: ${countEvent.subscriptionId} has timed out after: ${timeout.inSeconds} seconds',
+                ),
+              );
+            }
+          }),
+        );
 
         _registerOnCountCallBack(
           relay: relayUrl,
@@ -327,7 +404,18 @@ class NostrRelays implements NostrRelaysBase {
       }
     });
 
-    return Future.any(completers.map((e) => e.future));
+    if (completers.isEmpty) {
+      throw StateError(
+        'No matching connected relay found to send the count event to. '
+        'Make sure the relays are registered via init() or pass an explicit relays list.',
+      );
+    }
+
+    return Future.any(completers.map((e) => e.future)).whenComplete(() {
+      for (final timer in timeoutTimers) {
+        timer.cancel();
+      }
+    });
   }
 
   /// This method will send a [request] to all relays that you did registered with the [init] method, and gets your a [Stream] of [NostrEvent]s that will be filtered by the [request]'s [subscriptionId] automatically.
@@ -346,10 +434,12 @@ class NostrRelays implements NostrRelaysBase {
     bool useConsistentSubscriptionIdBasedOnRequestData = false,
     List<String>? relays,
   }) {
+    // Honor an explicitly-set subscriptionId on the request; only fall back
+    // to a random one when the caller didn't provide any.
     final serialized = request.serialized(
       subscriptionId: useConsistentSubscriptionIdBasedOnRequestData
           ? null
-          : NostrCryptoUtils.randomHex(),
+          : (request.subscriptionId ?? NostrCryptoUtils.randomHex()),
     );
 
     _registerNewRelays(relays ?? relaysList!).then((_) {
@@ -393,7 +483,7 @@ class NostrRelays implements NostrRelaysBase {
     bool includeRequestEntity = false,
   }) {
     final serialized = request.serialized(
-      subscriptionId: NostrCryptoUtils.randomHex(),
+      subscriptionId: request.subscriptionId ?? NostrCryptoUtils.randomHex(),
     );
 
     _registerNewRelays(relays ?? relaysList!).then(
@@ -496,26 +586,49 @@ class NostrRelays implements NostrRelaysBase {
       }
     });
 
-    subscription.stream.listen(events.add);
+    if (completers.isEmpty) {
+      throw StateError(
+        'No matching connected relay found for the subscription. '
+        'Make sure the relays are registered via init() or pass an explicit relays list.',
+      );
+    }
 
-    Future.delayed(
+    final eventsSubscription = subscription.stream.listen(events.add);
+
+    Timer? timeoutTimer;
+
+    timeoutTimer = Timer(
       timeout,
       () {
-        if (!isSomeEoseTriggered) {
+        if (!isSomeEoseTriggered && !completers.every((c) => c.isCompleted)) {
           if (shouldThrowErrorOnTimeoutWithoutEose) {
-            throw TimeoutException(
-              'the subscription with id: $subId has timed out after: ${timeout.inSeconds} seconds',
-            );
+            for (final completer in completers) {
+              if (!completer.isCompleted) {
+                completer.completeError(
+                  TimeoutException(
+                    'the subscription with id: $subId has timed out after: ${timeout.inSeconds} seconds',
+                  ),
+                );
+              }
+            }
           } else {
             for (final completer in completers) {
-              completer.complete(events);
+              if (!completer.isCompleted) {
+                completer.complete(events);
+              }
             }
           }
         }
       },
     );
 
-    return Future.any(completers.map((e) => e.future));
+    try {
+      final result = await Future.any(completers.map((e) => e.future));
+      return result;
+    } finally {
+      timeoutTimer.cancel();
+      unawaited(eventsSubscription.cancel());
+    }
   }
 
   /// {@template close_events_subscription}
@@ -536,6 +649,9 @@ class NostrRelays implements NostrRelaysBase {
     );
 
     final serialized = close.serialized();
+
+    // Free the per-subscription callbacks so closed subscriptions don't leak.
+    nostrRegistry.removeCallBacksForSubscription(subscriptionId);
 
     if (relay != null) {
       final registeredRelay = nostrRegistry.getRelayWebSocket(relayUrl: relay);
@@ -676,6 +792,30 @@ class NostrRelays implements NostrRelaysBase {
             relay: relay,
             countResponse: NostrCountResponse.fromDecodedMessage(decoded),
           );
+        } else if (messageType == NostrConstants.closed) {
+          // NIP-01 CLOSED: a REQ was rejected/closed by the relay.
+          if (decoded.length >= 2 && decoded[1] is String) {
+            streamsController.closedSubscriptionsController.sink.add(
+              (
+                subscriptionId: decoded[1] as String,
+                reason: decoded.length >= 3 ? '${decoded[2]}' : null,
+              ),
+            );
+          }
+          logger.log('relay $relay closed subscription: $data');
+        } else if (messageType == NostrConstants.auth) {
+          // NIP-42: ["AUTH", <challenge-string>]
+          if (decoded.length >= 2) {
+            final challenge = '${decoded[1]}';
+
+            for (final callback in List.of(_authChallengeCallbacks)) {
+              try {
+                callback(relay, challenge);
+              } catch (_) {}
+            }
+
+            unawaited(_answerAuthChallenge(relay: relay, challenge: challenge));
+          }
         } else {
           logger.log(
             'received unknown message from relay: $relay, message: $data',
@@ -904,6 +1044,20 @@ class NostrRelays implements NostrRelaysBase {
   }) async {
     logger.log('retrying to listen to relay with url: $relay...');
 
+    // Exponential backoff with jitter: reconnecting immediately in a loop
+    // against a down relay burns CPU and battery and hammers the relay.
+    final attempts = (_reconnectAttempts[relay] ?? 0);
+    _reconnectAttempts[relay] = attempts + 1;
+
+    final backoffMs = math.min(
+      _reconnectBaseDelay.inMilliseconds * math.pow(2, attempts).toInt(),
+      _reconnectMaxDelay.inMilliseconds,
+    );
+    final jitteredDelay =
+        Duration(milliseconds: backoffMs + random.nextInt(backoffMs + 1));
+
+    await Future<void>.delayed(jitteredDelay);
+
     if (relayUnregistered) {
       await _startConnectingAndRegisteringRelay(
         relayUrl: relay,
@@ -1007,6 +1161,7 @@ class NostrRelays implements NostrRelaysBase {
                 relayUrl: relay,
                 webSocket: relayWebSocket,
               );
+              _reconnectAttempts.remove(relay);
               logger.log(
                 'the websocket for the relay with url: $relay, is registered.',
               );
@@ -1177,6 +1332,53 @@ class NostrRelays implements NostrRelaysBase {
     );
   }
 
+  /// Answers a NIP-42 AUTH challenge with a signed kind-22242 event.
+  /// No-op when no signer is configured or signing fails.
+  Future<void> _answerAuthChallenge({
+    required String relay,
+    required String challenge,
+  }) async {
+    final signer = _authSigner;
+
+    if (signer == null) {
+      logger.log(
+        'relay $relay requested auth but no signer is configured; '
+        'pass a signer to init() to answer NIP-42 challenges.',
+      );
+      return;
+    }
+
+    try {
+      final normalizedRelay =
+          webSocketsService.getHttpUrlFromWebSocketUrl(relay).toString();
+
+      final authEvent = await signer.sign(
+        NostrEvent(
+          id: null,
+          kind: 22242,
+          content: '',
+          sig: null,
+          pubkey: signer.publicKey,
+          createdAt: DateTime.now(),
+          tags: [
+            ['relay', normalizedRelay],
+            ['challenge', challenge],
+          ],
+        ),
+      );
+
+      final socket = nostrRegistry.getRelayWebSocket(relayUrl: relay);
+
+      socket?.sink.add(
+        jsonEncode([NostrConstants.auth, authEvent.toMap()]),
+      );
+
+      logger.log('answered NIP-42 auth challenge for relay: $relay');
+    } catch (e) {
+      logger.log('failed to answer auth challenge for relay: $relay', e);
+    }
+  }
+
   void _handleOkCommandMessageFromRelay({
     required NostrEventOkCommand okCommand,
     required String relay,
@@ -1264,6 +1466,19 @@ class NostrRelays implements NostrRelaysBase {
     if (!hasUnconnected) return;
     return init(
       relaysUrl: newRelaysList,
+      onRelayListening: _lastInitConfig?.onRelayListening,
+      onRelayConnectionError: _lastInitConfig?.onRelayConnectionError,
+      onRelayConnectionDone: _lastInitConfig?.onRelayConnectionDone,
+      onNoticeMessageFromRelay: _lastInitConfig?.onNoticeMessageFromRelay,
+      retryOnError: _lastInitConfig?.retryOnError ?? false,
+      retryOnClose: _lastInitConfig?.retryOnClose ?? false,
+      shouldReconnectToRelayOnNotice:
+          _lastInitConfig?.shouldReconnectToRelayOnNotice ?? false,
+      ignoreConnectionException:
+          _lastInitConfig?.ignoreConnectionException ?? true,
+      connectionTimeout:
+          _lastInitConfig?.connectionTimeout ?? const Duration(seconds: 5),
+      ensureToClearRegistriesBeforeStarting: false,
     );
   }
 }
@@ -1272,4 +1487,47 @@ extension on Stream<String> {
   Stream<String> mergeWith(List<Stream<String>> list) {
     return StreamGroup.merge<String>([this, ...list]);
   }
+}
+
+/// Captures the configuration passed to [NostrRelays.init] so implicit
+/// re-connections and re-registrations preserve it.
+class _RelayInitConfig {
+  const _RelayInitConfig({
+    this.onRelayListening,
+    this.onRelayConnectionError,
+    this.onRelayConnectionDone,
+    this.onNoticeMessageFromRelay,
+    required this.retryOnError,
+    required this.retryOnClose,
+    required this.shouldReconnectToRelayOnNotice,
+    required this.ignoreConnectionException,
+    required this.connectionTimeout,
+  });
+
+  final void Function(
+    String relayUrl,
+    dynamic receivedData,
+    WebSocketChannel? relayWebSocket,
+  )? onRelayListening;
+
+  final void Function(
+    String relayUrl,
+    Object? error,
+    WebSocketChannel? relayWebSocket,
+  )? onRelayConnectionError;
+
+  final void Function(String relayUrl, WebSocketChannel? relayWebSocket)?
+      onRelayConnectionDone;
+
+  final void Function(
+    String relay,
+    WebSocketChannel? relayWebSocket,
+    NostrNotice notice,
+  )? onNoticeMessageFromRelay;
+
+  final bool retryOnError;
+  final bool retryOnClose;
+  final bool shouldReconnectToRelayOnNotice;
+  final bool ignoreConnectionException;
+  final Duration connectionTimeout;
 }

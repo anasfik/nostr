@@ -15,13 +15,33 @@ class NostrKeyPairs extends Equatable {
   }
 
   /// {@macro nostr_key_pairs}
-  NostrKeyPairs._({required this.private}) {
-    assert(
-      private.length == 64,
-      'Private key should be 64 chars length (32 bytes hex encoded)',
-    );
-
+  NostrKeyPairs._({required String private})
+      : private = _validatePrivate(private) {
     public = bip340.getPublicKey(private);
+  }
+
+  /// Validates a private key hex string. Unlike `assert`, this works in
+  /// release/AOT builds where assertions are stripped.
+  static String _validatePrivate(String private) {
+    final normalized = private.trim().toLowerCase();
+
+    if (normalized.length != 64) {
+      throw ArgumentError.value(
+        private,
+        'private',
+        'Private key should be 64 chars length (32 bytes hex encoded)',
+      );
+    }
+
+    if (!RegExp(r'^[0-9a-f]+$').hasMatch(normalized)) {
+      throw ArgumentError.value(
+        private,
+        'private',
+        'Private key must be a valid hexadecimal string',
+      );
+    }
+
+    return normalized;
   }
 
   /// {@macro nostr_key_pairs}
