@@ -57,6 +57,9 @@ class NostrSocialBuilder {
   }
 
   /// Kind 0 profile metadata (JSON string per NIP-01).
+  ///
+  /// [lud16] is the Lightning Address (`user@wallet.co`) that enables zap
+  /// buttons across clients; [lud06] is a raw LNURL for legacy wallets.
   Future<NostrEvent> updateProfile({
     required String name,
     String? about,
@@ -65,6 +68,8 @@ class NostrSocialBuilder {
     String? website,
     String? banner,
     String? displayName,
+    String? lud16,
+    String? lud06,
     Map<String, dynamic>? extraFields,
     DateTime? createdAt,
   }) async {
@@ -76,6 +81,8 @@ class NostrSocialBuilder {
       if (nip05 != null) 'nip05': nip05,
       if (website != null) 'website': website,
       if (banner != null) 'banner': banner,
+      if (lud16 != null) 'lud16': lud16,
+      if (lud06 != null) 'lud06': lud06,
       ...?extraFields,
     };
 
@@ -205,7 +212,8 @@ class NostrSocialBuilder {
 
   /// Kind 30023 long-form article (NIP-23). [dTagIdentifier] is required so
   /// updates replace prior versions; [image], [title], [summary],
-  /// [publishedAt], [hashtags] map onto standard tags.
+  /// [publishedAt], [hashtags] map onto standard tags; [references] produce
+  /// `r` tags for external URLs/IPFS refs as Yakihonne and other readers do.
   Future<NostrEvent> createLongFormArticle({
     required String content,
     required String dTagIdentifier,
@@ -214,6 +222,7 @@ class NostrSocialBuilder {
     String? summary,
     DateTime? publishedAt,
     List<String> hashtags = const [],
+    List<String> references = const [],
     DateTime? createdAt,
   }) async {
     final tags = <List<String>>[
@@ -227,6 +236,7 @@ class NostrSocialBuilder {
           '${publishedAt.millisecondsSinceEpoch ~/ 1000}',
         ],
       for (final hashtag in hashtags) ['t', hashtag],
+      for (final reference in references) ['r', reference],
     ];
 
     return _sign(30023, content, tags, createdAt);

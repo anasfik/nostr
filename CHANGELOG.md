@@ -24,6 +24,8 @@
 - `NostrFailure.unknown` messages now include the underlying error type and text instead of hiding the cause
 - `nostr.nip21` convenience accessor for URI parsing; `NostrBech32` logger is now optional
 - Real-network suite hardened: runtime-relay selection, cross-relay publish fallbacks, scoped retry config (`test/real/dart_test.yaml`)
+- Cross-client interoperability validated against content written by Damus, Primal, Amethyst and reader apps: every sampled real event re-derives its id correctly through our serialization, nostr: mentions resolve through NIP-21 parsing, wild articles/profiles round-trip field-complete through our builders
+- Profile builder now supports Lightning Address fields (`lud16`/`lud06`) so zap buttons light up across clients; article builder supports `r` reference tags as readers expect
 
 - NIP-06 derivation no longer drops leading zero bytes (produced invalid keys for ~1/256 mnemonics; silent in release builds)
 - Publishing to a set of relays where none is connected now fails fast instead of hanging forever
