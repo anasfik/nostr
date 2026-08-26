@@ -1,5 +1,45 @@
 # Changelog
 
+## 11.0.0
+
+**Major Release — Full Client-Feature NIP Coverage**
+
+### New Features
+
+- **NIP-44 v2 encryption** (`Nip44`): secp256k1 ECDH → HKDF → ChaCha20 + HMAC-SHA256, verified against all official paulmillr/nip44 vectors including extended-length prefixes and invalid-payload cases
+- **NIP-59 gift wrap pipeline** (`Nip59`): rumor → seal (kind 13) → gift wrap (kind 1059) with ephemeral keys and randomized timestamps
+- **NIP-17 private direct messages** (`NostrNip17`): kind-14 chat rumors, kind-15 file messages, group-chat wrapping per member
+- **NIP-42 relay authentication**: automatic AUTH challenge answering when a signer is provided to `init()`; `CLOSED` messages are now surfaced on a typed stream instead of being discarded
+- **Pluggable signers** (`NostrEventSigner`): local key signer included; interface ready for NIP-07 / NIP-46 / NIP-55 implementations
+- **Social event builders** (`NostrSocialBuilder`): text notes with NIP-10 threading & NIP-27 mentions, profiles, follows (NIP-02), deletions (NIP-09), reposts (NIP-18), reactions (NIP-25), comments (NIP-22), relay lists (NIP-65), long-form articles (NIP-23/30023), generic lists (NIP-51)
+- **NIP-57 zaps** (`NostrZaps`): zap request building, LNURL-pay resolution, invoice requesting, zap receipt parsing
+- **NIP-49 encrypted keys** (`NostrNip49`): scrypt + XChaCha20-Poly1305 `ncryptsec`, verified against the spec vector
+- **Blossom media client** (BUD-01/02) + NIP-96 uploader + NIP-94 file metadata
+- **NIP-19 `naddr`** encode/decode; **NIP-21** `nostr:` URI parsing/building (`NostrNip21`)
+- **NIP-13 proof-of-work**: difficulty counting, target checks, event miner
+
+### Fixes
+
+- NIP-06 derivation no longer drops leading zero bytes (produced invalid keys for ~1/256 mnemonics; silent in release builds)
+- Publishing to a set of relays where none is connected now fails fast instead of hanging forever
+- Subscription streams honor explicitly-set subscription IDs (previously overwritten by random IDs, breaking stream filtering)
+- Cancellable timeouts in async publish/count/subscribe — timers no longer linger until expiry
+- Reconnect uses exponential backoff with jitter instead of hot-looping against a down relay; reconnects preserve the original init callbacks/options
+- One-shot OK/count callbacks are removed after dispatch and EOSE callbacks on subscription close (unbounded memory growth fixed)
+- Received-event registry is FIFO-bounded (5000) — long-running clients no longer leak memory
+- Key-pair cache is capped at 32 entries (private keys no longer accumulate indefinitely)
+- `init()` honors `ensureToClearRegistriesBeforeStarting` (previously documented but never implemented — stale sockets leaked across sessions)
+- WebSocket is closed on connection timeout instead of leaking a half-open socket
+- Input validation now throws `ArgumentError`/returns failures in release/AOT builds (asserts were silently stripped)
+- `RelayInformations` never crashes on missing NIP-11 fields and parses the full document (`limitation`, `fees`, `retention`, …)
+- Flutter Web/WASM compatible: `dart:io` removed from the transport layer; platform-independent WebSocket factory
+- `connect()` now reports real connectivity: fails fast with a clear message when none of the provided relays are reachable, instead of returning success over dead sockets (found during live-relay testing)
+
+### Testing
+
+- 400+ unit and fake-relay integration tests, including an in-process relay harness driving real websocket flows (publish/OK, subscriptions, AUTH handshakes)
+- Opt-in real-network suite (`RUN_REAL_NETWORK_TESTS=1 dart test test/real`) validated against live public relays: publishes as fresh identities, exchanges gift-wrapped DMs between two users over the wire, verifies deletion propagation, parses real zap receipts from feeds, answers NIP-42 challenges on auth-gated relays, and soaks concurrent subscriptions
+
 ## 10.0.0
 
 **Major Release — Complete API Modernization**

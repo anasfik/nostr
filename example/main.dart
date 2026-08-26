@@ -28,8 +28,8 @@ Future<void> main() async {
 
   for (final relay in exampleRelays) {
     try {
-      final info = await nostr.relays
-          .relayInformationsDocumentNip11(relayUrl: relay);
+      final info =
+          await nostr.relays.relayInformationsDocumentNip11(relayUrl: relay);
       if (info != null) {
         final nips = info.supportedNips?.join(', ') ?? 'none';
         print('$relay -> ${info.name}, NIPs: $nips');
@@ -108,8 +108,7 @@ Future<void> main() async {
         (event) {
           count++;
           final raw = event.content ?? '';
-          final preview =
-              raw.length > 60 ? '${raw.substring(0, 60)}...' : raw;
+          final preview = raw.length > 60 ? '${raw.substring(0, 60)}...' : raw;
           final author = event.pubkey.substring(0, 8);
           print('[$count] kind=${event.kind} author=$author "$preview"');
         },

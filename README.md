@@ -1,210 +1,287 @@
 # dart_nostr
 
+[![pub package](https://img.shields.io/pub/v/dart_nostr.svg)](https://pub.dev/packages/dart_nostr)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![SDK](https://img.shields.io/badge/SDK-%E2%89%A53.0.0-green)](https://dart.dev)
+
 > [!NOTE]
 > Maintained by **[Anas Fikhi](https://gwhyyy.com)** — Flutter & AI engineer. Available for contract work: [work@gwhyyy.com](mailto:work@gwhyyy.com) · [book a call](https://calendly.com/ffikhi-aanas/30min)
 
+A production-grade Dart & Flutter SDK for building Nostr applications. One import gives you relay transport, event signing, typed subscription streams, encryption, zaps, media uploads and identity tooling — everything a modern Nostr client needs.
 
-dart_nostr is a Dart and Flutter SDK for building Nostr applications. It handles relay connections, event signing and publishing, typed subscription management, key tooling, and NIP utilities — so you can focus on your product instead of the protocol.
+**Works everywhere Dart runs:** Android · iOS · Web/WASM · macOS · Windows · Linux.
 
-## Documentation
+---
 
-Full API guides, per-feature references, and advanced configuration are in the documentation site:
+## Why dart_nostr
 
-- [Introduction and overview](https://anasfik.github.io/nostr/)
-- [Installation](https://anasfik.github.io/nostr/installation)
-- [Quick start](https://anasfik.github.io/nostr/quick-start)
-- [Keys](https://anasfik.github.io/nostr/usage/keys-management/)
-- [Relays and events](https://anasfik.github.io/nostr/usage/relays-and-events/connecting-to-relays)
-- [Identity (NIP-05, NIP-19)](https://anasfik.github.io/nostr/usage/identity/nip05)
-- [Error handling](https://anasfik.github.io/nostr/usage/advanced/error-handling)
-- [Advanced configuration](https://anasfik.github.io/nostr/usage/advanced/client-options)
+- **Complete protocol surface** — 25+ NIPs implemented and integration-tested against live relays
+- **Spec-vector verified crypto** — NIP-44 v2 passes every official test vector; NIP-49 decrypts the reference payload byte-for-byte
+- **Typed error handling** — `NostrResult<T>` instead of exceptions; nothing throws unexpectedly
+- **Real-world resilient** — exponential reconnect backoff with jitter, bounded caches, fail-fast on dead relays, automatic NIP-42 authentication
+- **Pluggable signing** — local keys today; NIP-07 / NIP-46 / NIP-55 signers via one interface
+- **Tested like you'd use it** — publishes notes, sends DMs, verifies deletions and answers AUTH challenges against public relays as part of the development workflow
 
-Source documentation is also available on [pub.dev](https://pub.dev/documentation/dart_nostr/latest/).
+## Installation
 
-## Getting Started
-
-### Install
+```bash
+flutter pub add dart_nostr
+# or
+dart pub add dart_nostr
+```
 
 ```yaml
 dependencies:
-  dart_nostr: ^10.0.0
+  dart_nostr: ^11.0.0
 ```
 
-```bash
-dart pub add dart_nostr
-# or
-flutter pub add dart_nostr
-```
-
-### Import
+## Quick start
 
 ```dart
 import 'package:dart_nostr/dart_nostr.dart';
-```
 
-### Connect, publish, and subscribe
-
-```dart
 Future<void> main() async {
-  final nostr = Nostr.instance;
+  final nostr = Nostr();
 
-  // Connect to relays
-  final connectResult = await nostr.connect([
+  // 1. Connect — returns a typed result; fails fast if no relay is reachable.
+  final connected = await nostr.connect([
     'wss://relay.damus.io',
     'wss://nos.lol',
   ]);
 
-  if (connectResult.isFailure) {
-    print(connectResult.failureOrNull);
+  if (connected.isFailure) {
+    print('could not reach any relay: ${connected.failureOrNull?.message}');
     return;
   }
 
-  // Generate a key pair
+  // 2. Create an identity.
   final keyPair = nostr.keys.generateKeyPair();
+  final npub = nostr.bech32.encodePublicKeyToNpub(keyPair.public);
 
-  // Publish a note
+  // 3. Publish a note.
   final event = NostrEvent.fromPartialData(
     kind: 1,
-    content: 'Hello from dart_nostr',
+    content: 'Hello nostr from $npub!',
     keyPairs: keyPair,
   );
 
-  final publishResult = await nostr.publish(event);
-  publishResult.fold(
-    (ok) => print('published: ${ok.isEventAccepted}'),
-    (failure) => print('failed: ${failure.message}'),
+  final ok = await nostr.publish(event);
+  ok.fold(
+    (receipt) => print('accepted by relay: ${receipt.isEventAccepted}'),
+    (failure) => print('publish failed: ${failure.message}'),
   );
 
-  // Subscribe to recent notes
-  final subResult = nostr.subscribeRequest(
+  // 4. Subscribe to the firehose.
+  final sub = nostr.subscribeRequest(
     NostrRequest(
       filters: [
-        NostrFilter(
-          kinds: [1],
-          limit: 20,
-          since: DateTime.now().subtract(const Duration(hours: 1)),
-        ),
+        const NostrFilter(kinds: [1], limit: 20),
       ],
     ),
   );
 
-  subResult.fold(
-    (stream) {
-      stream.stream.listen((event) => print(event.content));
-    },
+  sub.fold(
+    (stream) => stream.stream.listen(print),
     (failure) => print('subscribe failed: ${failure.message}'),
   );
 }
 ```
 
-### Error handling pattern
+## What's inside
 
-Every operation that can fail returns `NostrResult<T>`:
+### Protocol core
+
+| Capability | API | Notes |
+|---|---|---|
+| Connect / disconnect | `nostr.connect(relays)` | Typed result; reports real connectivity, not blind optimism |
+| Publish events | `nostr.publish(event)` | Relay `OK` receipts surfaced directly |
+| Subscriptions | `nostr.subscribeRequest()`, `subscribeFilters()` | Buffered streams; explicit subscription IDs are honored |
+| Event counts | `nostr.count()` | NIP-45 |
+| Relay info documents | `relays.relayInformationsDocumentNip11()` | Full NIP-11 schema: limitations, fees, retention, supported NIPs |
+| AUTH-gated relays | `nostr.connect(relays, signer: …)` | Automatic NIP-42 challenge answering |
+| Reconnection | built-in | Exponential backoff + jitter; preserves your callbacks |
+
+### Identity & keys
 
 ```dart
-result.fold(
-  (value) { /* success */ },
-  (failure) {
-    print(failure.message);
-    print(failure.code);
-    print(failure.isRetryable);
-  },
+// Mnemonic → keys (NIP-06)
+final privateKey = NostrKeys.getPrivateKeyFromMnemonic(mnemonic);
+
+// bech32 entities (NIP-19): npub, nsec, nprofile, nevent, naddr
+final naddr = bech32.encodeNAddr(
+  kind: 30023,
+  authorPubkey: pubkey,
+  identifier: 'article-slug',
+);
+
+// nostr: URIs (NIP-21) — parse or build, bare entities tolerated
+final parsed = NostrNip21().parseFully('nostr:$nprofile');
+
+// Password-encrypted backups (NIP-49) — scrypt + XChaCha20-Poly1305
+final ncryptsec = NostrNip49.encryptKey(
+  privateKeyHex: keyPair.private,
+  password: 'correct horse battery staple',
+);
+final recovered = NostrNip49.decryptKey(
+  ncryptsec: ncryptsec,
+  password: 'correct horse battery staple',
 );
 ```
 
-### Key operations
+### Private messages (NIP-17 + NIP-59 + NIP-44)
+
+The modern DM stack: unsigned rumors → signed seals → anonymous gift wraps, encrypted with spec-vector-verified NIP-44 v2.
 
 ```dart
-final keyPair = nostr.keys.generateKeyPair();
-print(keyPair.public);   // hex pubkey
-print(keyPair.private);  // hex privkey
+final aliceSigner = NostrLocalKeySigner(keyPair);
+final alice = NostrNip17(signer: aliceSigner);
 
-// Reconstruct from private key
-final same = nostr.keys.generateKeyPairFromExistingPrivateKey(keyPair.private);
+// Alice → Bob
+final rumor = alice.createChatMessageRumor(
+  content: 'hey bob!',
+  recipientPubkeys: [bobPubkey],
+);
+final giftWrap = await alice.wrapMessage(rumor, bobPubkey);
+await nostr.publish(giftWrap); // kind 1059, ephemeral author, p-tagged to Bob
 
-// NIP-19 bech32 encoding
-final npub = nostr.bech32.encodePublicKeyToNpub(keyPair.public);
-final nsec = nostr.bech32.encodePrivateKeyToNsec(keyPair.private);
-
-// Sign and verify
-final sig = nostr.keys.sign(privateKey: keyPair.private, message: 'hello');
-final ok  = nostr.keys.verify(publicKey: keyPair.public, message: 'hello', signature: sig);
+// Bob's side
+final bob = NostrNip17(signer: bobSigner);
+final unwrapped = await bob.unwrapMessage(receivedGiftWrap);
+print(unwrapped.content); // 'hey bob!'
 ```
 
-### NIP-05 identity verification
+### Social features
 
-```dart
-final pubKey = await nostr.utils.pubKeyFromIdentifierNip05(
-  internetIdentifier: 'user@domain.com',
-);
+`NostrSocialBuilder` covers the kinds real clients need:
 
-final verified = await nostr.utils.verifyNip05(
-  internetIdentifier: 'user@domain.com',
-  pubKey: pubKey ?? '',
-);
-```
-
-## What the package provides
-
-- `Nostr.instance` — singleton; `Nostr()` — isolated instance with independent relay pool
-- `nostr.connect()` / `nostr.disconnect()` — connection lifecycle with typed results
-- `nostr.publish()` — signed event submission with relay OK response
-- `nostr.subscribeRequest()` / `nostr.subscribeFilters()` — typed stream subscriptions
-- `nostr.count()` — NIP-45 event count requests
-- `nostr.keys` — key generation, derivation, signing, verification
-- `nostr.bech32` — NIP-19 encode/decode (npub, nsec, nprofile, nevent)
-- `nostr.utils` — NIP-05 resolution and verification
-- `nostr.relays` — low-level relay pool for protocol work
-- `NostrResult<T>` / `NostrFailure` — typed error model throughout
-- `NostrClientOptions` / `NostrRetryPolicy` — configurable timeouts and retry
-
-## API surfaces
-
-| Surface | Use when |
+| Feature | Method |
 |---|---|
-| Top-level facade (`nostr.connect`, `nostr.publish`, ...) | Building app features, need typed results and lifecycle management |
-| `nostr.relays` | Raw relay operations, protocol research, custom orchestration |
-| `nostr.services` | Direct access to internal components, building abstractions |
+| Profiles (kind 0) | `updateProfile()` |
+| Notes with threading (NIP-10) & mentions (NIP-27) | `createTextNote()` |
+| Follow lists (NIP-02) | `updateFollowList()` |
+| Reposts (NIP-18) | `createRepost()` |
+| Reactions (NIP-25) | `createReaction()` |
+| Comments (NIP-22) | `createComment()` |
+| Deletions (NIP-09) | `createDeletionRequest()` |
+| Long-form articles (NIP-23) | `createLongFormArticle()` |
+| Any list (NIP-51) | `createListEvent()` |
+| Relay list metadata (NIP-65) | `updateRelayList()` |
 
-## Example files
+### Zaps & money (NIP-57)
 
-The [example](example/) directory contains runnable samples:
+```dart
+final zaps = NostrZaps(signer: signer);
 
-- [main.dart](example/main.dart) — end-to-end workflow covering all major features
-- [generate_key_pair.dart](example/generate_key_pair.dart) — key generation and validation
-- [sending_event_to_relays.dart](example/sending_event_to_relays.dart) — publish metadata and notes
-- [listening_to_events.dart](example/listening_to_events.dart) — subscriptions and filters
-- [signing_and_verfiying_messages.dart](example/signing_and_verfiying_messages.dart) — sign and verify
-- [verify_nip05.dart](example/verify_nip05.dart) — NIP-05 verification
-- [relay_document_nip_11.dart](example/relay_document_nip_11.dart) — relay info fetch
+// Build a signed zap request.
+final request = await zaps.createZapRequest(
+  recipientPubkey: author,
+  amountMillisats: 21000,
+  lnurl: lnurlString,
+);
 
-## Tests
+// Resolve a Lightning Address to an invoice — no payment required to test.
+final payUrl = lightningAddressToLnurlPayUrl('author@wallet.co');
+final invoice = await zaps.requestInvoice(
+  lnurlPayUrl: payUrl,
+  amountMillisats: 21000,
+  zapRequest: request,
+);
+
+// Parse incoming zap receipts (kind 9735), including anonymous ones.
+final receipt = NostrZaps.parseZapReceipt(incomingReceipt);
+final sender = NostrZaps.zapSenderPubkey(receipt.zapRequest); // null = anon
+```
+
+### Media
+
+```dart
+// Blossom blob storage (BUD-01/02).
+final blossom = NostrBlossomClient(signer: signer);
+final exists = await blossom.headBlob(serverUrl, sha256);
+final bytes = await blossom.getBlob(serverUrl, sha256);
+final descriptor = await blossom.uploadBlob(
+  serverUrl: serverUrl,
+  bytes: fileBytes,
+  sha256Hex: sha256Hex,
+);
+
+// NIP-96 legacy upload + NIP-94 discoverable file metadata events.
+```
+
+### Proof of work (NIP-13)
+
+```dart
+final difficulty = NostrProofOfWork.getDifficulty(eventId);
+final mined = await NostrProofOfWork.mineEvent(
+  signer: signer,
+  kind: 1,
+  content: 'pow note',
+  tags: [],
+  targetDifficulty: 20,
+);
+```
+
+### Pluggable signing
+
+Ship apps that never touch raw private keys:
+
+```dart
+abstract interface class NostrEventSigner {
+  String get publicKey;
+  Future<NostrEvent> sign(NostrEvent event);
+  Future<String> nip44Encrypt(String plaintext, String recipientPublicKey);
+  Future<String> nip44Decrypt(String payload, String senderPublicKey);
+}
+```
+
+`NostrLocalKeySigner` is included. Implement this interface once to support browser extensions (NIP-07), remote bunkers (NIP-46) or Android signer apps (NIP-55) — every feature above works through it.
+
+## Architecture at a glance
+
+```
+Nostr() ─┬─ connect / publish / subscribe / count   ← typed facade (NostrResult<T>)
+         ├─ keys · bech32 · utils                    ← identity services
+         └─ relays                                   ← raw transport for power users
+              ├─ NostrRelays.init(...)               ← callbacks, lazy listening
+              ├─ startEventsSubscriptionAsync(...)   ← EOSE-bounded fetches
+              └─ streams                             ← global EVENT/NOTICE/CLOSED streams
+```
+
+- `Nostr()` creates isolated instances (independent pools — ideal for tests).
+- `Nostr.instance` is a process-wide singleton.
+- All fallible operations return `NostrResult<T>`: call `.fold(success, failure)`, inspect `.isSuccess`, `.message`, `.code`, `.isRetryable`.
+
+## NIP support matrix
+
+| Status | NIPs |
+|---|---|
+| ✅ Implemented & live-tested | 01 · 02 · 05 · 06 · 09 · 10 · 11 · 13 · 17 · 18 · 19 · 21 · 22 · 23/30023 · 25 · 42 · 44 v2 · 45 · 49 · 51 · 57 · 59 · 65 |
+| ✅ Implemented (client-side) | 94 · 96 · Blossom BUD-01/02 |
+| 🔌 Via signer interface | 07 · 46 · 55 |
+
+## Testing
+
+Three tiers, all part of CI:
 
 ```bash
-dart test
+dart test                          # 400+ unit & fake-relay integration tests (default)
+
+# Real-network suite against live public relays (opt-in):
+RUN_REAL_NETWORK_TESTS=1 dart test test/real
 ```
+
+The real-network suite publishes actual events as fresh identities, exchanges gift-wrapped DMs between two generated users over live relays, verifies NIP-09 deletion propagation, parses real zap receipts found in feeds, and soaks concurrent subscriptions for consistency. Relays go down regularly, so the suite picks healthy relays at runtime and skips gracefully when an external dependency (e.g. a wallet endpoint) is unreachable.
+
+## Documentation & examples
+
+- Full docs: [anasfik.github.io/nostr](https://anasfik.github.io/nostr/)
+- API reference: [pub.dev/documentation/dart_nostr](https://pub.dev/documentation/dart_nostr/latest/)
+- Runnable samples: [`example/`](example/) — key generation, publishing, subscriptions, NIP-05 verification, NIP-11 relay info
 
 ## Contributing
 
-Fork the [repository](https://github.com/anasfik/nostr), make changes, and open a pull request. Include tests where appropriate.
+Issues and PRs are welcome. Please run `dart analyze`, `dart format`, and the full default test suite before submitting. Real-network changes should be validated with `RUN_REAL_NETWORK_TESTS=1 dart test test/real`.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
-
-## Links
-
-- [pub.dev package](https://pub.dev/packages/dart_nostr)
-- [Documentation](https://anasfik.github.io/nostr/)
-- [API reference](https://pub.dev/documentation/dart_nostr/latest/)
-- [GitHub repository](https://github.com/anasfik/nostr)
-- [Nostr protocol](https://nostr.com/)
-- [NIPs specification](https://github.com/nostr-protocol/nips)
-
-## Maintainer
-
-Built and maintained by **[Anas Fikhi](https://gwhyyy.com)** — Flutter & AI engineer.
-
-- Portfolio & case studies: <https://gwhyyy.com>
-- Contract work: <work@gwhyyy.com>
-- Book a call: <https://calendly.com/ffikhi-aanas/30min>
+[MIT](LICENSE)
