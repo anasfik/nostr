@@ -1,5 +1,5 @@
-import 'package:test/test.dart';
 import 'package:dart_nostr/dart_nostr.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('NostrRelays - Connection and Subscription', () {
@@ -39,19 +39,19 @@ void main() {
           lazyListeningToRelays: true,
         );
 
-        expect(future, isA<Future>());
+        expect(future, isA<Future<dynamic>>());
       });
     });
 
     group('Subscription Request Generation', () {
       test('startEventsSubscription creates NostrEventsStream', () {
-        final filter = NostrFilter(
+        const filter = NostrFilter(
           kinds: [1],
           limit: 10,
         );
 
         final request = NostrRequest(
-          filters: [filter],
+          filters: const [filter],
         );
 
         final stream = Nostr.instance.services.relays.startEventsSubscription(
@@ -62,13 +62,13 @@ void main() {
       });
 
       test('NostrEventsStream has correct subscription ID', () {
-        final filter = NostrFilter(
+        const filter = NostrFilter(
           kinds: [1],
           limit: 10,
         );
 
         final request = NostrRequest(
-          filters: [filter],
+          filters: const [filter],
         );
 
         final stream = Nostr.instance.services.relays.startEventsSubscription(
@@ -80,13 +80,13 @@ void main() {
       });
 
       test('NostrEventsStream contains original request', () {
-        final filter = NostrFilter(
+        const filter = NostrFilter(
           kinds: [1],
           authors: ['author1'],
         );
 
         final request = NostrRequest(
-          filters: [filter],
+          filters: const [filter],
         );
 
         final stream = Nostr.instance.services.relays.startEventsSubscription(
@@ -97,11 +97,11 @@ void main() {
       });
 
       test('multiple subscriptions have different IDs', () {
-        final filter1 = NostrFilter(kinds: [1]);
-        final filter2 = NostrFilter(kinds: [2]);
+        const filter1 = NostrFilter(kinds: [1]);
+        const filter2 = NostrFilter(kinds: [2]);
 
-        final request1 = NostrRequest(filters: [filter1]);
-        final request2 = NostrRequest(filters: [filter2]);
+        final request1 = NostrRequest(filters: const [filter1]);
+        final request2 = NostrRequest(filters: const [filter2]);
 
         final stream1 = Nostr.instance.services.relays.startEventsSubscription(
           request: request1,
@@ -116,11 +116,11 @@ void main() {
       });
 
       test('subscription request generates random ID by default', () {
-        final filter = NostrFilter(kinds: [1]);
-        final customSubId = 'custom-sub-123';
+        const filter = NostrFilter(kinds: [1]);
+        const customSubId = 'custom-sub-123';
 
         final request = NostrRequest(
-          filters: [filter],
+          filters: const [filter],
           subscriptionId: customSubId,
         );
 
@@ -137,9 +137,9 @@ void main() {
       });
 
       test('subscription generates an id when none is provided', () {
-        final filter = const NostrFilter(kinds: [1], limit: 10);
+        const filter = NostrFilter(kinds: [1], limit: 10);
 
-        final request = NostrRequest(filters: [filter]);
+        final request = NostrRequest(filters: const [filter]);
         expect(request.subscriptionId, isNull);
 
         final stream = Nostr.instance.services.relays.startEventsSubscription(
@@ -150,12 +150,12 @@ void main() {
       });
 
       test('subscription with kind filter 1 (text notes)', () {
-        final filter = NostrFilter(
+        const filter = NostrFilter(
           kinds: [1],
           limit: 50,
         );
 
-        final request = NostrRequest(filters: [filter]);
+        final request = NostrRequest(filters: const [filter]);
         final stream = Nostr.instance.services.relays.startEventsSubscription(
           request: request,
         );
@@ -165,12 +165,12 @@ void main() {
       });
 
       test('subscription with kind filter 0 (metadata)', () {
-        final filter = NostrFilter(
+        const filter = NostrFilter(
           kinds: [0],
           limit: 10,
         );
 
-        final request = NostrRequest(filters: [filter]);
+        final request = NostrRequest(filters: const [filter]);
         final stream = Nostr.instance.services.relays.startEventsSubscription(
           request: request,
         );
@@ -179,13 +179,13 @@ void main() {
       });
 
       test('subscription with author filter', () {
-        final authorPubkey = 'abcdef1234567890';
-        final filter = NostrFilter(
+        const authorPubkey = 'abcdef1234567890';
+        const filter = NostrFilter(
           authors: [authorPubkey],
           kinds: [1],
         );
 
-        final request = NostrRequest(filters: [filter]);
+        final request = NostrRequest(filters: const [filter]);
         final stream = Nostr.instance.services.relays.startEventsSubscription(
           request: request,
         );
@@ -195,11 +195,11 @@ void main() {
 
       test('subscription with time filter (since)', () {
         final now = DateTime.now();
-        final sinceTime = now.subtract(Duration(hours: 1));
+        final sinceTime = now.subtract(const Duration(hours: 1));
 
         final filter = NostrFilter(
           since: sinceTime,
-          kinds: [1],
+          kinds: const [1],
         );
 
         final request = NostrRequest(filters: [filter]);
@@ -212,11 +212,11 @@ void main() {
 
       test('subscription with time filter (until)', () {
         final now = DateTime.now();
-        final untilTime = now.add(Duration(hours: 1));
+        final untilTime = now.add(const Duration(hours: 1));
 
         final filter = NostrFilter(
           until: untilTime,
-          kinds: [1],
+          kinds: const [1],
         );
 
         final request = NostrRequest(filters: [filter]);
@@ -228,12 +228,12 @@ void main() {
       });
 
       test('subscription with limit filter', () {
-        final filter = NostrFilter(
+        const filter = NostrFilter(
           kinds: [1],
           limit: 100,
         );
 
-        final request = NostrRequest(filters: [filter]);
+        final request = NostrRequest(filters: const [filter]);
         final stream = Nostr.instance.services.relays.startEventsSubscription(
           request: request,
         );
@@ -242,13 +242,13 @@ void main() {
       });
 
       test('subscription with tag filter (e tags)', () {
-        final eventId = 'event123';
-        final filter = NostrFilter(
+        const eventId = 'event123';
+        const filter = NostrFilter(
           kinds: [1],
           e: [eventId],
         );
 
-        final request = NostrRequest(filters: [filter]);
+        final request = NostrRequest(filters: const [filter]);
         final stream = Nostr.instance.services.relays.startEventsSubscription(
           request: request,
         );
@@ -257,13 +257,13 @@ void main() {
       });
 
       test('subscription with tag filter (p tags)', () {
-        final pubkey = 'pubkey123';
-        final filter = NostrFilter(
+        const pubkey = 'pubkey123';
+        const filter = NostrFilter(
           kinds: [1],
           p: [pubkey],
         );
 
-        final request = NostrRequest(filters: [filter]);
+        final request = NostrRequest(filters: const [filter]);
         final stream = Nostr.instance.services.relays.startEventsSubscription(
           request: request,
         );
@@ -272,10 +272,10 @@ void main() {
       });
 
       test('subscription with multiple filters', () {
-        final filter1 = NostrFilter(kinds: [1]);
-        final filter2 = NostrFilter(kinds: [0]);
+        const filter1 = NostrFilter(kinds: [1]);
+        const filter2 = NostrFilter(kinds: [0]);
 
-        final request = NostrRequest(filters: [filter1, filter2]);
+        final request = NostrRequest(filters: const [filter1, filter2]);
         final stream = Nostr.instance.services.relays.startEventsSubscription(
           request: request,
         );
@@ -284,16 +284,16 @@ void main() {
       });
 
       test('subscription with complex filter composition', () {
-        final authorPubkey = 'author123';
-        final limit = 50;
+        const authorPubkey = 'author123';
+        const limit = 50;
 
-        final filter = NostrFilter(
+        const filter = NostrFilter(
           kinds: [1],
           authors: [authorPubkey],
           limit: limit,
         );
 
-        final request = NostrRequest(filters: [filter]);
+        final request = NostrRequest(filters: const [filter]);
         final stream = Nostr.instance.services.relays.startEventsSubscription(
           request: request,
         );
@@ -305,8 +305,8 @@ void main() {
       });
 
       test('subscription stream is filtered by subscription ID', () {
-        final filter = NostrFilter(kinds: [1]);
-        final request = NostrRequest(filters: [filter]);
+        const filter = NostrFilter(kinds: [1]);
+        final request = NostrRequest(filters: const [filter]);
 
         final stream = Nostr.instance.services.relays.startEventsSubscription(
           request: request,
@@ -318,7 +318,7 @@ void main() {
 
       test('subscription with no filters', () {
         final request = NostrRequest(
-          filters: [NostrFilter()],
+          filters: const [NostrFilter()],
         );
 
         final stream = Nostr.instance.services.relays.startEventsSubscription(
@@ -329,8 +329,8 @@ void main() {
       });
 
       test('subscription request is serializable', () {
-        final filter = NostrFilter(kinds: [1]);
-        final request = NostrRequest(filters: [filter]);
+        const filter = NostrFilter(kinds: [1]);
+        final request = NostrRequest(filters: const [filter]);
 
         // Request should be able to be serialized for sending to relay
         final serialized = request.serialized();
@@ -340,12 +340,12 @@ void main() {
       });
 
       test('subscription with search filter', () {
-        final filter = NostrFilter(
+        const filter = NostrFilter(
           kinds: [1],
           search: 'hello world',
         );
 
-        final request = NostrRequest(filters: [filter]);
+        final request = NostrRequest(filters: const [filter]);
         final stream = Nostr.instance.services.relays.startEventsSubscription(
           request: request,
         );
@@ -354,7 +354,7 @@ void main() {
       });
 
       test('subscription filter toMap includes all fields', () {
-        final filter = NostrFilter(
+        const filter = NostrFilter(
           kinds: [1],
           authors: ['author1'],
           limit: 10,
@@ -369,7 +369,7 @@ void main() {
 
     group('Subscription Closure', () {
       test('closeEventsSubscription creates proper close request', () {
-        final subscriptionId = 'test-sub-id';
+        const subscriptionId = 'test-sub-id';
 
         // Verify the method can be called without error
         expect(
@@ -380,7 +380,7 @@ void main() {
       });
 
       test('closeEventsSubscription without relay parameter works', () {
-        final subscriptionId = 'test-sub-id';
+        const subscriptionId = 'test-sub-id';
 
         // Verify the method can be called without error (no relay specified)
         expect(
@@ -391,8 +391,8 @@ void main() {
       });
 
       test('multiple subscriptions can be closed independently', () {
-        final subId1 = 'sub-1';
-        final subId2 = 'sub-2';
+        const subId1 = 'sub-1';
+        const subId2 = 'sub-2';
 
         // Both should complete without error
         expect(
@@ -425,8 +425,8 @@ void main() {
 
     group('Subscription Stream Operations', () {
       test('NostrEventsStream has non-empty subscription ID', () {
-        final filter = NostrFilter(kinds: [1]);
-        final request = NostrRequest(filters: [filter]);
+        const filter = NostrFilter(kinds: [1]);
+        final request = NostrRequest(filters: const [filter]);
 
         final stream = Nostr.instance.services.relays.startEventsSubscription(
           request: request,
@@ -437,8 +437,8 @@ void main() {
       });
 
       test('startEventsSubscription without autoHandling creates stream', () {
-        final filter = NostrFilter(kinds: [1]);
-        final request = NostrRequest(filters: [filter]);
+        const filter = NostrFilter(kinds: [1]);
+        final request = NostrRequest(filters: const [filter]);
 
         final stream = Nostr.instance.services.relays
             .startEventsSubscriptionWithoutAutoHandling(
@@ -449,11 +449,11 @@ void main() {
       });
 
       test('subscription stream is unique per subscription', () {
-        final filter1 = NostrFilter(kinds: [1]);
-        final filter2 = NostrFilter(kinds: [2]);
+        const filter1 = NostrFilter(kinds: [1]);
+        const filter2 = NostrFilter(kinds: [2]);
 
-        final request1 = NostrRequest(filters: [filter1]);
-        final request2 = NostrRequest(filters: [filter2]);
+        final request1 = NostrRequest(filters: const [filter1]);
+        final request2 = NostrRequest(filters: const [filter2]);
 
         final stream1 = Nostr.instance.services.relays.startEventsSubscription(
           request: request1,
@@ -467,8 +467,8 @@ void main() {
       });
 
       test('subscription with consistent ID based on request data', () {
-        final filter = NostrFilter(kinds: [1], authors: ['author1']);
-        final request = NostrRequest(filters: [filter]);
+        const filter = NostrFilter(kinds: [1], authors: ['author1']);
+        final request = NostrRequest(filters: const [filter]);
 
         final stream1 = Nostr.instance.services.relays.startEventsSubscription(
           request: request,
@@ -479,8 +479,8 @@ void main() {
       });
 
       test('subscription stream request is immutable', () {
-        final filter = NostrFilter(kinds: [1]);
-        final request = NostrRequest(filters: [filter]);
+        const filter = NostrFilter(kinds: [1]);
+        final request = NostrRequest(filters: const [filter]);
 
         final stream = Nostr.instance.services.relays.startEventsSubscription(
           request: request,
@@ -492,11 +492,11 @@ void main() {
 
       test('subscription creates stream for multiple filter types', () {
         final timeFilter = NostrFilter(
-          kinds: [1],
-          since: DateTime.now().subtract(Duration(days: 1)),
+          kinds: const [1],
+          since: DateTime.now().subtract(const Duration(days: 1)),
         );
 
-        final authorFilter = NostrFilter(
+        const authorFilter = NostrFilter(
           kinds: [0],
           authors: ['author1'],
         );
@@ -514,23 +514,23 @@ void main() {
       test('NostrRequest can be created with empty filters list', () {
         // This should handle edge case
         expect(
-          () => NostrRequest(filters: []),
+          () => NostrRequest(filters: const []),
           returnsNormally,
         );
       });
 
       test('NostrFilter can be created with no parameters', () {
         expect(
-          () => NostrFilter(),
+          NostrFilter.new,
           returnsNormally,
         );
       });
 
       test('NostrRequest filters list is preserved', () {
         final filters = [
-          NostrFilter(kinds: [1]),
-          NostrFilter(kinds: [0]),
-          NostrFilter(authors: ['author1']),
+          const NostrFilter(kinds: [1]),
+          const NostrFilter(kinds: [0]),
+          const NostrFilter(authors: ['author1']),
         ];
 
         final request = NostrRequest(filters: filters);
@@ -539,7 +539,7 @@ void main() {
       });
 
       test('NostrFilter with only kind parameter', () {
-        final filter = NostrFilter(kinds: [1, 2, 3]);
+        const filter = NostrFilter(kinds: [1, 2, 3]);
 
         expect(filter.kinds, equals([1, 2, 3]));
         expect(filter.authors, isNull);
@@ -557,7 +557,7 @@ void main() {
         final now = DateTime.now();
         final filter = NostrFilter(
           since: now,
-          kinds: [1],
+          kinds: const [1],
         );
 
         final map = filter.toMap();
@@ -566,8 +566,8 @@ void main() {
       });
 
       test('subscription ID is generated consistently', () {
-        final filter = NostrFilter(kinds: [1]);
-        final request = NostrRequest(filters: [filter]);
+        const filter = NostrFilter(kinds: [1]);
+        final request = NostrRequest(filters: const [filter]);
 
         final stream1 = Nostr.instance.services.relays.startEventsSubscription(
           request: request,
@@ -586,7 +586,7 @@ void main() {
         expect(
           () => Nostr.instance.services.relays.init(
             relaysUrl: ['wss://relay.damus.io'],
-            connectionTimeout: Duration(seconds: 10),
+            connectionTimeout: const Duration(seconds: 10),
             lazyListeningToRelays: true,
           ),
           returnsNormally,

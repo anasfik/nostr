@@ -5,13 +5,27 @@ import 'package:bech32/bech32.dart';
 import 'package:dart_nostr/nostr/core/constants.dart';
 import 'package:dart_nostr/nostr/core/utils.dart';
 import 'package:dart_nostr/nostr/instance/tlv/tlv_utils.dart';
+import 'package:dart_nostr/nostr/model/debug_options.dart';
 import 'package:dart_nostr/nostr/model/tlv.dart';
 import 'package:hex/hex.dart';
 
 class NostrBech32 {
+  /// {@template nostr_bech32}
+  /// NIP-19 entity encoding and decoding helpers.
+  ///
+  /// [logger] is optional; when omitted, logging is disabled.
+  /// {@endtemplate}
   NostrBech32({
-    required this.logger,
-  });
+    NostrLogger? logger,
+  }) : logger = logger ?? _quietLogger();
+
+  static NostrLogger _quietLogger() {
+    final logger = NostrLogger(
+      passedDebugOptions: NostrDebugOptions.general(),
+    );
+    logger.disableLogs();
+    return logger;
+  }
 
   /// {@macro nostr_utils}
   final tlv = NostrTLV();

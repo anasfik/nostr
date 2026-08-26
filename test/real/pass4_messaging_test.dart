@@ -1,10 +1,8 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:dart_nostr/dart_nostr.dart';
 import 'package:dart_nostr/nostr/nips/nip17/nip17.dart';
 import 'package:dart_nostr/nostr/nips/nip57/zaps.dart';
-import 'package:dart_nostr/nostr/nips/nip59/nip59.dart';
 import 'package:dart_nostr/nostr/signers/signer.dart';
 import 'package:test/test.dart';
 
@@ -38,12 +36,16 @@ void main() {
         final giftWrap = await aliceNip17.wrapMessage(rumor, bob.publicKey);
 
         // Publish via a client connected as anyone (relays don't care who
-        // publishes; the crypto protects the content).
+        // publishes; the crypto protects the content). Rate limits are
+        // common, so fall through to other live relays when refused.
         final publisher = Nostr();
-        await publisher.connect(liveRelays);
-        final ok = await publisher.publish(giftWrap);
-        expect(ok.valueOrNull?.isEventAccepted, isTrue,
-            reason: 'relay rejected the gift wrap');
+        final acceptedReceipt = await publishWithFallback(
+          publisher,
+          giftWrap,
+          {...liveRelays, ...kPrimaryRelays}.toList(),
+        );
+        expect(acceptedReceipt, isNotNull,
+            reason: 'every relay rejected the gift wrap');
         expect(giftWrap.kind, 1059);
         expect(giftWrap.pubkey != alice.publicKey, isTrue,
             reason: 'gift wrap author must be ephemeral');

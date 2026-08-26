@@ -229,8 +229,8 @@ void main() {
         }
 
         final resolved = await Nostr().utils.pubKeyFromIdentifierNip05(
-          internetIdentifier: handle,
-        );
+              internetIdentifier: handle,
+            );
 
         expect(resolved, isNotNull, reason: 'failed to resolve $handle');
         // Resolution must return a syntactically-valid pubkey.
@@ -239,9 +239,9 @@ void main() {
         // Cross-checking against the sampled author is best-effort: public
         // relays may serve stale profiles for users who rotated keys.
         final verified = await Nostr().utils.verifyNip05(
-          internetIdentifier: handle,
-          pubKey: pubkey!,
-        );
+              internetIdentifier: handle,
+              pubKey: pubkey!,
+            );
         if (!verified) {
           markTestSkipped(
             'relay-served profile for $handle is stale (key rotation); '

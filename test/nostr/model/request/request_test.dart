@@ -4,12 +4,12 @@ import 'package:test/test.dart';
 void main() {
   group('NostrRequest Serialization', () {
     test('request can be serialized to JSON', () {
-      final filter = NostrFilter(
+      const filter = NostrFilter(
         kinds: [1],
         authors: ['author1'],
       );
       final request = NostrRequest(
-        filters: [filter],
+        filters: const [filter],
         subscriptionId: 'sub-123',
       );
 
@@ -22,8 +22,8 @@ void main() {
     });
 
     test('request without subscription ID generates one', () {
-      final filter = NostrFilter(kinds: [1]);
-      final request = NostrRequest(filters: [filter]);
+      const filter = NostrFilter(kinds: [1]);
+      final request = NostrRequest(filters: const [filter]);
 
       final serialized = request.serialized();
 
@@ -33,10 +33,10 @@ void main() {
     });
 
     test('request with multiple filters includes all', () {
-      final filter1 = NostrFilter(kinds: [0, 1]);
-      final filter2 = NostrFilter(authors: ['author1']);
+      const filter1 = NostrFilter(kinds: [0, 1]);
+      const filter2 = NostrFilter(authors: ['author1']);
       final request = NostrRequest(
-        filters: [filter1, filter2],
+        filters: const [filter1, filter2],
         subscriptionId: 'sub-123',
       );
 
@@ -47,9 +47,9 @@ void main() {
     });
 
     test('request serialization is consistent', () {
-      final filter = NostrFilter(kinds: [1]);
+      const filter = NostrFilter(kinds: [1]);
       final request = NostrRequest(
-        filters: [filter],
+        filters: const [filter],
         subscriptionId: 'sub-123',
       );
 
@@ -60,9 +60,9 @@ void main() {
     });
 
     test('request copyWith creates modified copy', () {
-      final filter = NostrFilter(kinds: [1]);
+      const filter = NostrFilter(kinds: [1]);
       final request1 = NostrRequest(
-        filters: [filter],
+        filters: const [filter],
         subscriptionId: 'sub-123',
       );
 
@@ -74,9 +74,9 @@ void main() {
     });
 
     test('request copyWith with null preserves original', () {
-      final filter = NostrFilter(kinds: [1]);
+      const filter = NostrFilter(kinds: [1]);
       final request1 = NostrRequest(
-        filters: [filter],
+        filters: const [filter],
         subscriptionId: 'sub-123',
       );
 
@@ -86,14 +86,14 @@ void main() {
     });
 
     test('request equality works correctly', () {
-      final filter = NostrFilter(kinds: [1]);
+      const filter = NostrFilter(kinds: [1]);
       final request1 = NostrRequest(
-        filters: [filter],
+        filters: const [filter],
         subscriptionId: 'sub-123',
       );
 
       final request2 = NostrRequest(
-        filters: [filter],
+        filters: const [filter],
         subscriptionId: 'sub-123',
       );
 
@@ -101,14 +101,14 @@ void main() {
     });
 
     test('request with different subscriptionId are not equal', () {
-      final filter = NostrFilter(kinds: [1]);
+      const filter = NostrFilter(kinds: [1]);
       final request1 = NostrRequest(
-        filters: [filter],
+        filters: const [filter],
         subscriptionId: 'sub-123',
       );
 
       final request2 = NostrRequest(
-        filters: [filter],
+        filters: const [filter],
         subscriptionId: 'sub-456',
       );
 
@@ -116,12 +116,12 @@ void main() {
     });
 
     test('request deserialization works correctly', () {
-      final deserialized = NostrRequest.deserialized([
+      final deserialized = NostrRequest.deserialized(const [
         'REQ',
         'sub-123',
         {
           'kinds': [1],
-          'authors': ['author1']
+          'authors': ['author1'],
         },
       ]);
 
@@ -130,14 +130,14 @@ void main() {
     });
 
     test('request deserialization with multiple filters', () {
-      final deserialized = NostrRequest.deserialized([
+      final deserialized = NostrRequest.deserialized(const [
         'REQ',
         'sub-123',
         {
-          'kinds': [0, 1]
+          'kinds': [0, 1],
         },
         {
-          'authors': ['author1']
+          'authors': ['author1'],
         },
       ]);
 
@@ -147,18 +147,18 @@ void main() {
 
     test('request deserialization fails with invalid format', () {
       expect(
-        () => NostrRequest.deserialized(['REQ', 'sub-123']),
+        () => NostrRequest.deserialized(const ['REQ', 'sub-123']),
         throwsA(isA<AssertionError>()),
       );
     });
 
     test('request deserialization fails with wrong command', () {
       expect(
-        () => NostrRequest.deserialized([
+        () => NostrRequest.deserialized(const [
           'NOTAREQ',
           'sub-123',
           {
-            'kinds': [1]
+            'kinds': [1],
           },
         ]),
         throwsA(isA<AssertionError>()),
@@ -166,9 +166,9 @@ void main() {
     });
 
     test('props includes all relevant fields', () {
-      final filter = NostrFilter(kinds: [1]);
+      const filter = NostrFilter(kinds: [1]);
       final request = NostrRequest(
-        filters: [filter],
+        filters: const [filter],
         subscriptionId: 'sub-123',
       );
 
@@ -179,8 +179,9 @@ void main() {
     });
 
     test('request subscriptionId can be updated after creation', () {
-      final filter = NostrFilter(kinds: [1]);
-      final request = NostrRequest(filters: [filter]);
+      const filter = NostrFilter(kinds: [1]);
+      final request = NostrRequest(filters: const [filter]);
+      // ignore: unused_local_variable
       final oldSubId = request.subscriptionId;
 
       final newSerialized = request.serialized(subscriptionId: 'new-sub-456');

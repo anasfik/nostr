@@ -26,7 +26,7 @@ void main() {
           sig: null,
           pubkey: alice.publicKey,
           createdAt: DateTime.now(),
-          tags: [],
+          tags: const [],
         ),
       );
 
@@ -65,7 +65,7 @@ void main() {
           sig: null,
           pubkey: alice.publicKey,
           createdAt: DateTime.now(),
-          tags: [],
+          tags: const [],
         ),
       );
 
@@ -101,7 +101,8 @@ void main() {
       expect(giftWrap.pubkey, isNot(alice.publicKey)); // ephemeral author
       expect(
         giftWrap.tags!.any(
-            (t) => t.isNotEmpty && t.first == 'p' && t[1] == bob.publicKey),
+          (t) => t.isNotEmpty && t.first == 'p' && t[1] == bob.publicKey,
+        ),
         isTrue,
       );
       expect(giftWrap.isVerified(), isTrue);
@@ -152,7 +153,8 @@ void main() {
       expect(rumor.kind, 14);
       expect(
         rumor.tags!.any(
-            (t) => t.isNotEmpty && t.first == 'p' && t[1] == bob.publicKey),
+          (t) => t.isNotEmpty && t.first == 'p' && t[1] == bob.publicKey,
+        ),
         isTrue,
       );
       expect(rumor.tags!.where((t) => t.first == 'subject'), isNotEmpty);

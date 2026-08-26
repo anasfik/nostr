@@ -1,7 +1,6 @@
 import 'package:dart_nostr/nostr/core/utils.dart';
 import 'package:dart_nostr/nostr/instance/subscription_manager.dart';
 import 'package:dart_nostr/nostr/model/debug_options.dart';
-import 'package:dart_nostr/nostr/model/request/filter.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -186,6 +185,7 @@ class _MockLogger implements NostrLogger {
 
   @override
   NostrDebugOptions get debugOptions =>
+      // ignore: dead_null_aware_expression
       passedDebugOptions ?? NostrDebugOptions.generate();
 
   @override

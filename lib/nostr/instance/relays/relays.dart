@@ -968,6 +968,66 @@ class NostrRelays implements NostrRelaysBase {
     return completer.future;
   }
 
+  /// Connects additional relays without dropping existing ones, merging
+  /// them into the tracked relay list so implicit reconnections keep working
+  /// for every relay in the pool.
+  Future<void> connectAdditionalRelays(
+    List<String> newRelaysUrl, {
+    required Duration connectionTimeout,
+    NostrEventSigner? signer,
+    bool ignoreConnectionException = true,
+  }) async {
+    final previous = List<String>.of(relaysList ?? const []);
+
+    await init(
+      relaysUrl: newRelaysUrl,
+      connectionTimeout: connectionTimeout,
+      retryOnClose: true,
+      retryOnError: true,
+      ignoreConnectionException: ignoreConnectionException,
+      ensureToClearRegistriesBeforeStarting: false,
+      signer: signer,
+    );
+
+    // init() replaced relaysList with only the new set; restore the full
+    // pool view so implicit reconnects cover every relay.
+    relaysList = {...previous, ...newRelaysUrl}.toList();
+  }
+
+  /// Disconnects a single relay at runtime, leaving all other connections
+  /// untouched. Returns true when the relay was connected and is now closed.
+  Future<bool> disconnectFromRelay(String relayUrl) async {
+    final webSocket = nostrRegistry.getRelayWebSocketOrNull(
+      relayUrl: relayUrl,
+    );
+
+    if (webSocket == null) {
+      return false;
+    }
+
+    try {
+      await webSocket.sink.close();
+    } catch (_) {
+      // Already closing/closed; still unregister.
+    }
+
+    nostrRegistry.unregisterRelay(relayUrl);
+    relaysList?.remove(relayUrl);
+
+    logger.log('relay $relayUrl disconnected and removed from the pool');
+    return true;
+  }
+
+  /// The list of relay URLs that are currently registered and believed to be
+  /// connected successfully.
+  List<String> get connectedRelayUrls =>
+      nostrRegistry.relaysWebSocketsRegistry.keys
+          .where(
+            (relay) =>
+                nostrRegistry.isRelayRegisteredAndConnectedSuccesfully(relay),
+          )
+          .toList(growable: false);
+
   Future<bool> disconnectFromRelays({
     int Function(String relayUrl)? closeCode,
     String Function(String relayUrl)? closeReason,
@@ -1459,13 +1519,13 @@ class NostrRelays implements NostrRelaysBase {
     }
   }
 
-  Future<void> _registerNewRelays(List<String> newRelaysList) async {
-    final hasUnconnected = newRelaysList.any(
+  Future<void> _registerNewRelays(List<String> newRelaysUrlList) async {
+    final hasUnconnected = newRelaysUrlList.any(
       (r) => !nostrRegistry.isRelayRegisteredAndConnectedSuccesfully(r),
     );
     if (!hasUnconnected) return;
     return init(
-      relaysUrl: newRelaysList,
+      relaysUrl: newRelaysUrlList,
       onRelayListening: _lastInitConfig?.onRelayListening,
       onRelayConnectionError: _lastInitConfig?.onRelayConnectionError,
       onRelayConnectionDone: _lastInitConfig?.onRelayConnectionDone,

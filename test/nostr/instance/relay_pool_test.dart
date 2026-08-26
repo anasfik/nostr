@@ -17,7 +17,9 @@ void main() {
 
       expect(manager.getAllRelayHealth().length, equals(2));
       expect(
-          manager.getActiveConnections('wss://relay1.example.com'), equals(0));
+        manager.getActiveConnections('wss://relay1.example.com'),
+        equals(0),
+      );
     });
 
     test('recordSuccess marks relay as healthy', () {
@@ -34,7 +36,7 @@ void main() {
     test('recordFailure tracks failure count', () {
       manager.initialize(['wss://relay1.example.com']);
 
-      for (int i = 0; i < 5; i++) {
+      for (var i = 0; i < 5; i++) {
         manager.recordFailure('wss://relay1.example.com');
       }
 
@@ -69,7 +71,7 @@ void main() {
       ]);
 
       manager.recordFailure('wss://relay3.example.com');
-      for (int i = 0; i < 5; i++) {
+      for (var i = 0; i < 5; i++) {
         manager.recordFailure('wss://relay3.example.com');
       }
 
@@ -88,7 +90,7 @@ void main() {
     test('resetRelayHealth clears failure count', () {
       manager.initialize(['wss://relay1.example.com']);
 
-      for (int i = 0; i < 5; i++) {
+      for (var i = 0; i < 5; i++) {
         manager.recordFailure('wss://relay1.example.com');
       }
 
@@ -131,15 +133,21 @@ void main() {
 
       manager.incrementConnections('wss://relay1.example.com');
       expect(
-          manager.getActiveConnections('wss://relay1.example.com'), equals(1));
+        manager.getActiveConnections('wss://relay1.example.com'),
+        equals(1),
+      );
 
       manager.incrementConnections('wss://relay1.example.com');
       expect(
-          manager.getActiveConnections('wss://relay1.example.com'), equals(2));
+        manager.getActiveConnections('wss://relay1.example.com'),
+        equals(2),
+      );
 
       manager.decrementConnections('wss://relay1.example.com');
       expect(
-          manager.getActiveConnections('wss://relay1.example.com'), equals(1));
+        manager.getActiveConnections('wss://relay1.example.com'),
+        equals(1),
+      );
     });
   });
 }
@@ -153,6 +161,7 @@ class _MockLogger implements NostrLogger {
 
   @override
   NostrDebugOptions get debugOptions =>
+      // ignore: dead_null_aware_expression
       passedDebugOptions ?? NostrDebugOptions.generate();
 
   @override

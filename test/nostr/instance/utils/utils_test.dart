@@ -89,8 +89,8 @@ void main() {
       notFoundMockHttpClient = http_testing.MockClient((request) {
         return Future.value(
           http.Response(
-            jsonEncode({
-              'names': {},
+            jsonEncode(<String, dynamic>{
+              'names': <String, String>{},
             }),
             200,
           ),

@@ -20,6 +20,11 @@
 
 ### Fixes
 
+- Runtime relay management added: `addRelays()`, `removeRelay()`, `liveRelayUrls` on instances — adding a relay no longer drops existing connections
+- `NostrFailure.unknown` messages now include the underlying error type and text instead of hiding the cause
+- `nostr.nip21` convenience accessor for URI parsing; `NostrBech32` logger is now optional
+- Real-network suite hardened: runtime-relay selection, cross-relay publish fallbacks, scoped retry config (`test/real/dart_test.yaml`)
+
 - NIP-06 derivation no longer drops leading zero bytes (produced invalid keys for ~1/256 mnemonics; silent in release builds)
 - Publishing to a set of relays where none is connected now fails fast instead of hanging forever
 - Subscription streams honor explicitly-set subscription IDs (previously overwritten by random IDs, breaking stream filtering)

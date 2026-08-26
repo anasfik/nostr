@@ -64,7 +64,6 @@ void main() {
     test('ErrorRecoveryStrategy.exponentialBackoff calculates delays correctly',
         () {
       final strategy = ErrorRecoveryStrategy.exponentialBackoff(
-        initialDelay: const Duration(milliseconds: 100),
         maxDelay: const Duration(seconds: 10),
       );
 
@@ -74,15 +73,17 @@ void main() {
 
       expect(delay1.inMilliseconds, greaterThan(0));
       expect(
-          delay2.inMilliseconds, greaterThanOrEqualTo(delay1.inMilliseconds));
+        delay2.inMilliseconds,
+        greaterThanOrEqualTo(delay1.inMilliseconds),
+      );
       expect(
-          delay3.inMilliseconds, greaterThanOrEqualTo(delay2.inMilliseconds));
+        delay3.inMilliseconds,
+        greaterThanOrEqualTo(delay2.inMilliseconds),
+      );
     });
 
     test('ErrorRecoveryStrategy.linearBackoff has constant delay', () {
-      final strategy = ErrorRecoveryStrategy.linearBackoff(
-        delay: const Duration(seconds: 1),
-      );
+      final strategy = ErrorRecoveryStrategy.linearBackoff();
 
       final delay1 = strategy.getDelayForAttempt(1);
       final delay2 = strategy.getDelayForAttempt(2);
@@ -173,7 +174,7 @@ void main() {
       manager.setRecoveryStrategy(ErrorRecoveryStrategy.immediate());
 
       // Try to exceed max history size
-      for (int i = 0; i < 1100; i++) {
+      for (var i = 0; i < 1100; i++) {
         try {
           await manager.handleConnectionError(
             relayUrl: 'wss://relay1.example.com',
@@ -201,6 +202,7 @@ class _MockLogger implements NostrLogger {
 
   @override
   NostrDebugOptions get debugOptions =>
+      // ignore: dead_null_aware_expression
       passedDebugOptions ?? NostrDebugOptions.generate();
 
   @override

@@ -33,6 +33,18 @@ abstract interface class NostrRelayTransport {
 
   void closeSubscription(String subscriptionId, [String? relay]);
 
+  /// Connects additional relays at runtime without disturbing existing
+  /// connections. Throws when none of the new relays could be reached.
+  Future<void> addRelays({
+    required List<String> relays,
+    required Duration connectionTimeout,
+    NostrEventSigner? signer,
+  });
+
+  /// Disconnects a single relay at runtime. Returns true when it was
+  /// connected.
+  Future<bool> removeRelay(String relayUrl);
+
   Future<bool> disconnect();
 }
 
@@ -116,5 +128,34 @@ class LegacyNostrRelayTransport implements NostrRelayTransport {
   @override
   Future<bool> disconnect() {
     return relaysService.disconnectFromRelays();
+  }
+
+  @override
+  Future<void> addRelays({
+    required List<String> relays,
+    required Duration connectionTimeout,
+    NostrEventSigner? signer,
+  }) async {
+    await relaysService.connectAdditionalRelays(
+      relays,
+      connectionTimeout: connectionTimeout,
+      signer: signer,
+    );
+
+    final anyNewConnected = relays.any(
+      (relay) => relaysService.nostrRegistry
+          .isRelayRegisteredAndConnectedSuccesfully(relay),
+    );
+
+    if (!anyNewConnected) {
+      throw NostrCoreException(
+        'None of the new relays could be reached: ${relays.join(', ')}',
+      );
+    }
+  }
+
+  @override
+  Future<bool> removeRelay(String relayUrl) {
+    return relaysService.disconnectFromRelay(relayUrl);
   }
 }

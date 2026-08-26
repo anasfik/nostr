@@ -99,9 +99,9 @@ void main() {
 
   group('Nip44 symmetric conversation key', () {
     test('conv(a,B) == conv(b,A)', () {
-      final a =
+      const a =
           '0000000000000000000000000000000000000000000000000000000000000003';
-      final b =
+      const b =
           '0000000000000000000000000000000000000000000000000000000000000005';
 
       final ab = Nip44.getConversationKey(
@@ -121,10 +121,11 @@ void main() {
     for (final entry in invalid['decrypt'] as List) {
       final bad = entry as Map;
       final payloadPreview = (bad['payload'] as String).substring(
-          0,
-          (bad['payload'] as String).length < 20
-              ? (bad['payload'] as String).length
-              : 20);
+        0,
+        (bad['payload'] as String).length < 20
+            ? (bad['payload'] as String).length
+            : 20,
+      );
       test('payload=$payloadPreview...', () {
         expect(
           () => Nip44.decrypt(
@@ -150,30 +151,34 @@ void main() {
 
   group('Nip44 random encrypt/decrypt roundtrip', () {
     for (final length in [1, 15, 32, 100, 1000, 65535]) {
-      test('length=$length', () {
-        final privA = NostrSecp256k1.bytesToHex(
-          Uint8List.fromList(List.generate(32, (_) => 7)),
-        ).padLeft(64, '0');
-        final privB = NostrSecp256k1.bytesToHex(
-          Uint8List.fromList(List.generate(32, (i) => i + 9)),
-        );
+      test(
+        'length=$length',
+        () {
+          final privA = NostrSecp256k1.bytesToHex(
+            Uint8List.fromList(List.generate(32, (_) => 7)),
+          ).padLeft(64, '0');
+          final privB = NostrSecp256k1.bytesToHex(
+            Uint8List.fromList(List.generate(32, (i) => i + 9)),
+          );
 
-        final plaintext = 'x' * length;
+          final plaintext = 'x' * length;
 
-        final encrypted = Nip44.encryptMessage(
-          plaintext: plaintext,
-          senderPrivateKeyHex: privA,
-          recipientPublicKeyHex: NostrSecp256k1.derivePublicKey(privB),
-        );
+          final encrypted = Nip44.encryptMessage(
+            plaintext: plaintext,
+            senderPrivateKeyHex: privA,
+            recipientPublicKeyHex: NostrSecp256k1.derivePublicKey(privB),
+          );
 
-        final decrypted = Nip44.decryptMessage(
-          payload: encrypted,
-          recipientPrivateKeyHex: privB,
-          senderPublicKeyHex: NostrSecp256k1.derivePublicKey(privA),
-        );
+          final decrypted = Nip44.decryptMessage(
+            payload: encrypted,
+            recipientPrivateKeyHex: privB,
+            senderPublicKeyHex: NostrSecp256k1.derivePublicKey(privA),
+          );
 
-        expect(decrypted, plaintext);
-      }, timeout: const Timeout(Duration(minutes: 2)));
+          expect(decrypted, plaintext);
+        },
+        timeout: const Timeout(Duration(minutes: 2)),
+      );
     }
 
     test('tampered payload fails MAC check', () {

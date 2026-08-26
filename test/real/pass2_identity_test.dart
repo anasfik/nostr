@@ -143,8 +143,7 @@ void main() {
 
         expect(events.length, greaterThan(20));
 
-        var powEventsFound = 0; // ignore: unused_local_variable
-        var checked = 0;
+        var powEventsFound = 0;
         for (final event in events) {
           final e = event as Map<String, dynamic>;
           final tags = [
@@ -158,7 +157,6 @@ void main() {
             continue;
           }
           powEventsFound++;
-          checked++;
 
           final declaredDifficulty = nonceTag.first.length > 2
               ? int.tryParse(nonceTag.first[2])
@@ -170,6 +168,11 @@ void main() {
                 reason: 'event ${e['id']} claims $declaredDifficulty bits '
                     'but has $actual');
           }
+        }
+
+        if (powEventsFound > 0) {
+          // ignore: avoid_print
+          print('verified $powEventsFound PoW-tagged events from the feed');
         }
 
         // Also sanity check our own miner against a real-world small target.

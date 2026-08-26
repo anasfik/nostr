@@ -1,8 +1,7 @@
 import 'dart:convert';
 
-import 'package:dart_nostr/nostr/core/key_pairs.dart';
 import 'package:dart_nostr/nostr/builders/social_builder.dart';
-import 'package:dart_nostr/nostr/model/event/event.dart';
+import 'package:dart_nostr/nostr/core/key_pairs.dart';
 import 'package:dart_nostr/nostr/signers/signer.dart';
 import 'package:test/test.dart';
 
@@ -109,11 +108,13 @@ void main() {
     });
 
     test('relay list encodes read/write markers per NIP-65', () async {
-      final relays = await builder.updateRelayList(relays: {
-        'wss://both.example': (read: true, write: true),
-        'wss://read.example': (read: true, write: false),
-        'wss://write.example': (read: false, write: true),
-      });
+      final relays = await builder.updateRelayList(
+        relays: {
+          'wss://both.example': (read: true, write: true),
+          'wss://read.example': (read: true, write: false),
+          'wss://write.example': (read: false, write: true),
+        },
+      );
 
       expect(relays.kind, 10002);
 

@@ -1,9 +1,8 @@
-import 'dart:convert';
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:dart_nostr/dart_nostr.dart';
 import 'package:dart_nostr/nostr/instance/keys/keys.dart';
-import 'package:dart_nostr/nostr/signers/signer.dart';
 import 'package:test/test.dart';
 
 import '../../fake_relay_server.dart';
@@ -28,9 +27,6 @@ void main() {
 
         Nostr.instance.relays.init(
           relaysUrl: [relay.url],
-          connectionTimeout: const Duration(seconds: 5),
-          retryOnClose: false,
-          retryOnError: false,
         );
 
         // Wait until the client socket is registered.
@@ -65,17 +61,14 @@ void main() {
       () async {
         Nostr.instance.relays.init(
           relaysUrl: [relay.url],
-          connectionTimeout: const Duration(seconds: 5),
-          retryOnClose: false,
-          retryOnError: false,
         );
         await relay.nextClient();
         await Future<void>.delayed(const Duration(milliseconds: 100));
 
         final request = NostrRequest(
           subscriptionId: 'int-sub-1',
-          filters: [
-            const NostrFilter(
+          filters: const [
+            NostrFilter(
               kinds: [1],
               limit: 10,
             ),
@@ -112,9 +105,6 @@ void main() {
         Nostr.instance.relays.init(
           relaysUrl: ['ws://localhost:1'], // unreachable
           connectionTimeout: const Duration(milliseconds: 300),
-          ignoreConnectionException: true,
-          retryOnClose: false,
-          retryOnError: false,
         );
 
         final keyPairs = NostrKeyPairs.generate();
@@ -142,9 +132,6 @@ void main() {
 
         Nostr.instance.relays.init(
           relaysUrl: [relay.url],
-          connectionTimeout: const Duration(seconds: 5),
-          retryOnClose: false,
-          retryOnError: false,
         );
         await relay.nextClient();
 
@@ -182,9 +169,6 @@ void main() {
 
         Nostr.instance.relays.init(
           relaysUrl: [authRelay.url],
-          connectionTimeout: const Duration(seconds: 5),
-          retryOnClose: false,
-          retryOnError: false,
           signer: signer,
         );
 

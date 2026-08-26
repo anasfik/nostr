@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:dart_nostr/dart_nostr.dart';
 import 'package:test/test.dart';
 
@@ -124,20 +122,22 @@ void main() {
       const kind = 1;
       const content = 'test content';
       const pubkey = 'testpubkey123';
-      const tags = [];
+      const tags = <List<String>>[];
 
       final id1 = NostrEvent.getEventId(
-          kind: kind,
-          content: content,
-          createdAt: now,
-          tags: tags,
-          pubkey: pubkey);
+        kind: kind,
+        content: content,
+        createdAt: now,
+        tags: tags,
+        pubkey: pubkey,
+      );
       final id2 = NostrEvent.getEventId(
-          kind: kind,
-          content: content,
-          createdAt: now,
-          tags: tags,
-          pubkey: pubkey);
+        kind: kind,
+        content: content,
+        createdAt: now,
+        tags: tags,
+        pubkey: pubkey,
+      );
 
       expect(id1, equals(id2));
       expect(id1.length, 64); // SHA256 hash in hex format
@@ -147,20 +147,22 @@ void main() {
       final now = DateTime.now();
       const kind = 1;
       const pubkey = 'testpubkey123';
-      const tags = [];
+      const tags = <List<String>>[];
 
       final id1 = NostrEvent.getEventId(
-          kind: kind,
-          content: 'content1',
-          createdAt: now,
-          tags: tags,
-          pubkey: pubkey);
+        kind: kind,
+        content: 'content1',
+        createdAt: now,
+        tags: tags,
+        pubkey: pubkey,
+      );
       final id2 = NostrEvent.getEventId(
-          kind: kind,
-          content: 'content2',
-          createdAt: now,
-          tags: tags,
-          pubkey: pubkey);
+        kind: kind,
+        content: 'content2',
+        createdAt: now,
+        tags: tags,
+        pubkey: pubkey,
+      );
 
       expect(id1, isNot(equals(id2)));
     });
@@ -175,7 +177,7 @@ void main() {
         pubkey: 'pub1',
         createdAt: now,
         tags: const [
-          ['p', 'value']
+          ['p', 'value'],
         ],
       );
 
@@ -187,7 +189,7 @@ void main() {
         pubkey: 'pub1',
         createdAt: now,
         tags: const [
-          ['p', 'value']
+          ['p', 'value'],
         ],
       );
 
@@ -236,8 +238,10 @@ void main() {
 
       final event = NostrEvent.deserialized(input);
 
-      expect(event.createdAt,
-          equals(DateTime.fromMillisecondsSinceEpoch(timestamp * 1000)));
+      expect(
+        event.createdAt,
+        equals(DateTime.fromMillisecondsSinceEpoch(timestamp * 1000)),
+      );
     });
 
     test('event tags with multiple elements are correctly parsed', () {
@@ -281,7 +285,7 @@ void main() {
         pubkey: 'pub1',
         createdAt: now,
         tags: const [
-          ['p', 'value']
+          ['p', 'value'],
         ],
         subscriptionId: 'subId',
       );

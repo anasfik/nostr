@@ -1,6 +1,6 @@
 # Real-network tests hit live public relays, which rate-limit and flap.
 # Run serially and retry each failing test once before reporting failure;
 # parallel publishes from one IP trip per-IP write limits on shared relays.
-retry: 2
+retry: 3
 concurrency: 1
 timeout: 4m

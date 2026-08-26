@@ -179,14 +179,15 @@ void main() {
         // Public relays rate-limit aggressively; if one refuses the write,
         // fall through to other live relays before giving up.
         final ok = await nostr.publish(reply);
-        var accepted = ok.isSuccess && (ok.valueOrNull?.isEventAccepted ?? false);
+        var accepted =
+            ok.isSuccess && (ok.valueOrNull?.isEventAccepted ?? false);
         if (!accepted) {
           for (final fallback in kPrimaryRelays) {
             if (liveRelays.contains(fallback)) continue;
             await nostr.connect([fallback]);
             final retry = await nostr.publish(reply);
-            accepted =
-                retry.isSuccess && (retry.valueOrNull?.isEventAccepted ?? false);
+            accepted = retry.isSuccess &&
+                (retry.valueOrNull?.isEventAccepted ?? false);
             if (accepted) break;
           }
         }
@@ -208,8 +209,8 @@ void main() {
 
         // Some public relays occasionally serve a different event for an
         // ids query during high load; re-fetch before failing.
-        var matchesTarget =
-            tags.any((t) => t.length >= 2 && t[0] == 'e' && t[1] == target['id']);
+        var matchesTarget = tags
+            .any((t) => t.length >= 2 && t[0] == 'e' && t[1] == target['id']);
         if (!matchesTarget && servedBack.first['id'] != reply.id) {
           return; // wrong event served; treated as transient relay behavior
         }

@@ -26,22 +26,6 @@ void main() {
         final errors = <String>[];
         final subs = <NostrEventsStream>[];
 
-        // Three overlapping subscriptions running concurrently for ~25s.
-        const filterSpecs = [
-          {
-            'kinds': [1],
-            'limit': 30
-          },
-          {
-            'kinds': [0],
-            'limit': 20
-          },
-          {
-            'kinds': [3],
-            'limit': 20
-          },
-        ];
-
         final kindSets = [
           [1],
           [0],

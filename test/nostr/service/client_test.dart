@@ -1,9 +1,7 @@
 import 'dart:async';
 
 import 'package:dart_nostr/dart_nostr.dart';
-import 'package:dart_nostr/nostr/instance/subscription_manager.dart';
 import 'package:dart_nostr/nostr/model/debug_options.dart';
-import 'package:dart_nostr/nostr/model/ok.dart';
 import 'package:test/test.dart';
 
 class _FakeTransport implements NostrRelayTransport {
@@ -76,6 +74,16 @@ class _FakeTransport implements NostrRelayTransport {
   void closeSubscription(String subscriptionId, [String? relay]) {}
 
   @override
+  Future<void> addRelays({
+    required List<String> relays,
+    required Duration connectionTimeout,
+    dynamic signer,
+  }) async {}
+
+  @override
+  Future<bool> removeRelay(String relayUrl) async => true;
+
+  @override
   Future<bool> disconnect() async {
     disconnectCalled = true;
     connectedRelays = const [];
@@ -107,13 +115,12 @@ void main() {
             isLogsEnabled: false,
           ),
         ),
-        options: NostrClientOptions(
-          retryPolicy: const NostrRetryPolicy(
-            maxAttempts: 3,
+        options: const NostrClientOptions(
+          retryPolicy: NostrRetryPolicy(
             initialDelayMs: 1,
             maxDelayMs: 1,
           ),
-          requestTimeout: const Duration(milliseconds: 10),
+          requestTimeout: Duration(milliseconds: 10),
         ),
         subscriptionManager: subscriptionManager,
       );
@@ -135,7 +142,9 @@ void main() {
       expect(transport.connectCalled, isTrue);
       expect(client.connectedRelays, ['wss://relay.damus.io', 'wss://nos.lol']);
       expect(
-          transport.connectedRelays, ['wss://relay.damus.io', 'wss://nos.lol']);
+        transport.connectedRelays,
+        ['wss://relay.damus.io', 'wss://nos.lol'],
+      );
     });
 
     test('connect fails on invalid relay URL scheme', () async {
@@ -178,7 +187,7 @@ void main() {
     test('subscribe fails when request has no filters', () async {
       await client.connect(['wss://relay.damus.io']);
 
-      final result = client.subscribe(NostrRequest(filters: []));
+      final result = client.subscribe(NostrRequest(filters: const []));
 
       expect(result.isFailure, isTrue);
       expect(result.failureOrNull?.code, NostrFailureCode.invalidArgument);
@@ -188,8 +197,8 @@ void main() {
       await client.connect(['wss://relay.damus.io']);
 
       final request = NostrRequest(
-        filters: [
-          NostrFilter(kinds: [1])
+        filters: const [
+          NostrFilter(kinds: [1]),
         ],
       );
 
@@ -203,8 +212,8 @@ void main() {
       await client.connect(['wss://relay.damus.io']);
 
       final request = NostrRequest(
-        filters: [
-          NostrFilter(kinds: [1], limit: 10)
+        filters: const [
+          NostrFilter(kinds: [1], limit: 10),
         ],
       );
 
@@ -227,7 +236,7 @@ void main() {
           filters: [
             NostrFilter(
               since: DateTime(2026, 1, 2),
-              until: DateTime(2026, 1, 1),
+              until: DateTime(2026),
             ),
           ],
         ),
@@ -256,9 +265,11 @@ void main() {
     test('disconnect resets connection state', () async {
       await client.connect(['wss://relay.damus.io']);
       final sub = client.subscribe(
-        NostrRequest(filters: [
-          NostrFilter(kinds: [1])
-        ]),
+        NostrRequest(
+          filters: const [
+            NostrFilter(kinds: [1]),
+          ],
+        ),
       );
       expect(sub.isSuccess, isTrue);
 
@@ -282,7 +293,9 @@ void main() {
       const filter = NostrFilter(limit: 0);
 
       expect(
-          filter.validate(), contains('Filter limit must be greater than 0.'));
+        filter.validate(),
+        contains('Filter limit must be greater than 0.'),
+      );
     });
   });
 
@@ -306,8 +319,8 @@ void main() {
           logger: logger,
           relayTransport: transport,
           subscriptionManager: subscriptionManager,
-          clientOptions: NostrClientOptions(
-            retryPolicy: const NostrRetryPolicy(
+          clientOptions: const NostrClientOptions(
+            retryPolicy: NostrRetryPolicy(
               maxAttempts: 2,
               initialDelayMs: 1,
               maxDelayMs: 1,

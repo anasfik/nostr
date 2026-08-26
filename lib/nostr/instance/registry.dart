@@ -61,6 +61,14 @@ class NostrRegistry {
     return relaysWebSocketsRegistry[relayUrl]!;
   }
 
+  /// Returns the [WebSocket] registered with the given [relayUrl], or null
+  /// when no relay is registered (does not throw).
+  WebSocketChannel? getRelayWebSocketOrNull({
+    required String relayUrl,
+  }) {
+    return relaysWebSocketsRegistry[relayUrl];
+  }
+
   /// Returns the [WebSocket] registered with the given [relayUrl].
   WebSocketChannel? getRelayWebSocket({
     required String relayUrl,

@@ -140,6 +140,27 @@ Future<List<dynamic>> rawPublish(String relay, NostrEvent event,
   return ok ?? ['TIMEOUT'];
 }
 
+/// Publishes [event], trying each live relay in turn until one accepts it.
+/// Mirrors what real clients do when relays rate-limit or refuse writes.
+Future<NostrEventOkCommand?> publishWithFallback(
+  Nostr nostr,
+  NostrEvent event,
+  List<String> relays,
+) async {
+  for (final relay in relays) {
+    final connected = await nostr.connect([relay]);
+    if (connected.isFailure) {
+      continue;
+    }
+
+    final result = await nostr.publish(event);
+    if (result.isSuccess && (result.valueOrNull?.isEventAccepted ?? false)) {
+      return result.valueOrNull;
+    }
+  }
+  return null;
+}
+
 /// Waits until [test] returns true when polling [probe]. Probe errors
 /// (relay 503s, timeouts) are treated as "not ready yet" and retried.
 Future<T> eventually<T>(

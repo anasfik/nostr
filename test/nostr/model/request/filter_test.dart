@@ -1,12 +1,10 @@
-import 'dart:convert';
-
 import 'package:dart_nostr/dart_nostr.dart';
 import 'package:test/test.dart';
 
 void main() {
   group('NostrFilter', () {
     test('filter can be created with no parameters', () {
-      final filter = NostrFilter();
+      const filter = NostrFilter();
 
       expect(filter.kinds, isNull);
       expect(filter.authors, isNull);
@@ -16,15 +14,15 @@ void main() {
 
     test('filter can be created with all parameters', () {
       final filter = NostrFilter(
-        ids: ['id1', 'id2'],
-        kinds: [0, 1, 2],
-        authors: ['author1'],
+        ids: const ['id1', 'id2'],
+        kinds: const [0, 1, 2],
+        authors: const ['author1'],
         limit: 100,
         since: DateTime.now(),
         until: DateTime.now(),
-        e: ['event1'],
-        p: ['pubkey1'],
-        t: ['tag1'],
+        e: const ['event1'],
+        p: const ['pubkey1'],
+        t: const ['tag1'],
         search: 'search term',
       );
 
@@ -36,7 +34,7 @@ void main() {
     });
 
     test('filter toMap includes all set fields', () {
-      final filter = NostrFilter(
+      const filter = NostrFilter(
         kinds: [1],
         authors: ['author1'],
         limit: 50,
@@ -50,7 +48,7 @@ void main() {
     });
 
     test('filter with since converts to unix timestamp', () {
-      final time = DateTime(2024, 1, 1, 12, 0, 0);
+      final time = DateTime(2024, 1, 1, 12);
       final filter = NostrFilter(since: time);
 
       final map = filter.toMap();
@@ -68,7 +66,7 @@ void main() {
     });
 
     test('filter with tags includes all tags', () {
-      final filter = NostrFilter(
+      const filter = NostrFilter(
         p: ['pubkey1', 'pubkey2'],
         e: ['event1'],
         t: ['hashtag1', 'hashtag2'],
@@ -108,7 +106,7 @@ void main() {
     });
 
     test('filter fromJson with since and until', () {
-      final since = DateTime(2024, 1, 1).millisecondsSinceEpoch ~/ 1000;
+      final since = DateTime(2024).millisecondsSinceEpoch ~/ 1000;
       final until = DateTime(2024, 12, 31).millisecondsSinceEpoch ~/ 1000;
       final json = {
         'since': since,
@@ -122,21 +120,21 @@ void main() {
     });
 
     test('filter equality works correctly', () {
-      final filter1 = NostrFilter(kinds: [1], authors: ['author1']);
-      final filter2 = NostrFilter(kinds: [1], authors: ['author1']);
+      const filter1 = NostrFilter(kinds: [1], authors: ['author1']);
+      const filter2 = NostrFilter(kinds: [1], authors: ['author1']);
 
       expect(filter1, equals(filter2));
     });
 
     test('filter inequality works correctly', () {
-      final filter1 = NostrFilter(kinds: [1]);
-      final filter2 = NostrFilter(kinds: [2]);
+      const filter1 = NostrFilter(kinds: [1]);
+      const filter2 = NostrFilter(kinds: [2]);
 
       expect(filter1, isNot(equals(filter2)));
     });
 
     test('filter with no parameters matches all events', () {
-      final filter = NostrFilter();
+      const filter = NostrFilter();
       final map = filter.toMap();
 
       // Should produce an empty or minimal map

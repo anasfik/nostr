@@ -10,6 +10,7 @@ import 'package:dart_nostr/nostr/signers/signer.dart';
 import 'package:dart_nostr/nostr/instance/relays/relays.dart';
 import 'package:dart_nostr/nostr/instance/subscription_manager.dart';
 import 'package:dart_nostr/nostr/instance/utils/utils.dart';
+import 'package:dart_nostr/nostr/nips/nip21/nip21.dart';
 import 'package:dart_nostr/nostr/model/count.dart';
 import 'package:dart_nostr/nostr/model/debug_options.dart';
 import 'package:dart_nostr/nostr/model/event/event.dart';
@@ -123,6 +124,22 @@ class Nostr {
     return client.disconnect();
   }
 
+  /// Adds relays to the live session without dropping existing connections.
+  /// Pass [signer] if the new relays require NIP-42 authentication.
+  Future<NostrResult<void>> addRelays(List<String> relays,
+      {NostrEventSigner? signer}) {
+    return client.addRelays(relays, signer: signer);
+  }
+
+  /// Removes a single relay from the live session. Returns true when it was
+  /// connected.
+  Future<bool> removeRelay(String relayUrl) {
+    return client.removeRelay(relayUrl);
+  }
+
+  /// Relay URLs currently believed to be connected.
+  List<String> get liveRelayUrls => client.liveRelayUrls;
+
   /// Publish an event through the enterprise client facade.
   Future<NostrResult<NostrEventOkCommand>> publish(
     NostrEvent event, {
@@ -192,6 +209,9 @@ class Nostr {
 
   /// Create a filter builder for fluent API.
   NostrFilterBuilder filterBuilder() => NostrFilterBuilder();
+
+  /// NIP-21 `nostr:` URI parsing and building.
+  NostrNip21 get nip21 => NostrNip21();
 
   /// This method will disable the logs of the library.
 

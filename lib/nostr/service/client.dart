@@ -296,6 +296,77 @@ class NostrClient {
     );
   }
 
+  /// Adds relays to the live session without disturbing existing
+  /// connections. Fails when none of the new relays could be reached.
+  Future<NostrResult<void>> addRelays(
+    List<String> relays, {
+    NostrEventSigner? signer,
+  }) async {
+    final normalized = relays
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toSet()
+        .toList(growable: false);
+
+    if (normalized.isEmpty) {
+      return NostrFailureResult<void>(
+        NostrFailure.invalidArgument('At least one relay URL is required.'),
+      );
+    }
+
+    for (final relay in normalized) {
+      if (!relay.startsWith('ws://') && !relay.startsWith('wss://')) {
+        return NostrFailureResult<void>(
+          NostrFailure.invalidArgument(
+            'Invalid relay URL scheme. Relay must start with ws:// or wss://.',
+            context: <String, Object?>{'relay': relay},
+          ),
+        );
+      }
+    }
+
+    try {
+      await transport.addRelays(
+        relays: normalized,
+        connectionTimeout: options.connectionTimeout,
+        signer: signer,
+      );
+
+      _connectedRelays = [
+        ..._connectedRelays,
+        ...normalized.where((r) => !_connectedRelays.contains(r)),
+      ];
+
+      return const NostrSuccess<void>(null);
+    } catch (error, stackTrace) {
+      return NostrFailureResult<void>(
+        _mapErrorToFailure(
+          operationName: 'addRelays',
+          error: error,
+          stackTrace: stackTrace,
+          relayContext: normalized.join(','),
+        ),
+      );
+    }
+  }
+
+  /// Removes a single relay from the live session. Returns true when the
+  /// relay was connected and has been disconnected.
+  Future<bool> removeRelay(String relayUrl) async {
+    final removed = await transport.removeRelay(relayUrl);
+    _connectedRelays = _connectedRelays.where((r) => r != relayUrl).toList();
+    return removed;
+  }
+
+  /// Relay URLs currently believed to be connected.
+  List<String> get liveRelayUrls {
+    final transport = this.transport;
+    if (transport is LegacyNostrRelayTransport) {
+      return transport.relaysService.connectedRelayUrls;
+    }
+    return List.unmodifiable(_connectedRelays);
+  }
+
   Future<NostrResult<void>> disconnect() async {
     try {
       closeAllSubscriptions();
@@ -429,7 +500,8 @@ class NostrClient {
     }
 
     return NostrFailure.unknown(
-      'Unexpected failure during $operationName.',
+      'Unexpected failure during $operationName: ${error.runtimeType} '
+      '(${error.toString()})',
       cause: error,
       stackTrace: stackTrace,
       context: context,

@@ -32,7 +32,7 @@ void main() {
     });
 
     test('builds filter with time range', () {
-      final since = DateTime(2026, 1, 1);
+      final since = DateTime(2026);
       final until = DateTime(2026, 12, 31);
 
       final filter = NostrFilterBuilder().since(since).until(until).build();
@@ -54,7 +54,7 @@ void main() {
           .withEventIds(['event1'])
           .withPubkeys(['pub1'])
           .withLimit(100)
-          .since(DateTime(2026, 1, 1))
+          .since(DateTime(2026))
           .until(DateTime(2026, 12, 31))
           .build();
 
@@ -166,17 +166,14 @@ void main() {
     });
 
     test('linear backoff creates constant delays', () {
-      final policy = NostrRetryPolicy.linear(delayMs: 1000);
+      final policy = NostrRetryPolicy.linear();
 
       expect(policy.getDelayForAttempt(1).inMilliseconds, 1000);
       expect(policy.getDelayForAttempt(2).inMilliseconds, 1000);
     });
 
     test('exponential backoff doubles delays', () {
-      final policy = NostrRetryPolicy.exponential(
-        initialDelayMs: 100,
-        maxDelayMs: 5000,
-      );
+      final policy = NostrRetryPolicy.exponential();
 
       final delay1 = policy.getDelayForAttempt(1).inMilliseconds;
       final delay2 = policy.getDelayForAttempt(2).inMilliseconds;
@@ -191,7 +188,7 @@ void main() {
     });
 
     test('shouldRetry respects max attempts', () {
-      const policy = NostrRetryPolicy(maxAttempts: 3);
+      const policy = NostrRetryPolicy();
 
       expect(policy.shouldRetry(1), true);
       expect(policy.shouldRetry(2), true);
@@ -200,7 +197,6 @@ void main() {
 
     test('delay respects max delay', () {
       final policy = NostrRetryPolicy.exponential(
-        initialDelayMs: 100,
         maxDelayMs: 1000,
       );
 
@@ -209,7 +205,7 @@ void main() {
     });
 
     test('retry policy with custom settings', () {
-      final policy = NostrRetryPolicy(
+      const policy = NostrRetryPolicy(
         maxAttempts: 5,
         initialDelayMs: 200,
         maxDelayMs: 10000,
@@ -251,7 +247,7 @@ void main() {
   group('NostrRequestExtensions', () {
     test('withLimit creates new request with limit', () {
       final request = NostrRequest(
-        filters: [
+        filters: const [
           NostrFilter(kinds: [1]),
         ],
       );
@@ -262,23 +258,23 @@ void main() {
 
     test('recentOnly creates request with since', () {
       final request = NostrRequest(
-        filters: [
+        filters: const [
           NostrFilter(kinds: [1]),
         ],
       );
 
-      final updated = request.recentOnly(Duration(days: 7));
+      final updated = request.recentOnly(const Duration(days: 7));
       expect(updated.filters[0].since, isNotNull);
     });
 
     test('withAdditionalFilter adds new filter', () {
       final request = NostrRequest(
-        filters: [
+        filters: const [
           NostrFilter(kinds: [1]),
         ],
       );
 
-      final filter2 = NostrFilter(kinds: [7]);
+      const filter2 = NostrFilter(kinds: [7]);
       final updated = request.withAdditionalFilter(filter2);
 
       expect(updated.filters.length, 2);
@@ -286,8 +282,8 @@ void main() {
 
     test('extension methods preserve original request', () {
       final original = NostrRequest(
-        filters: [
-          NostrFilter(kinds: [1])
+        filters: const [
+          NostrFilter(kinds: [1]),
         ],
       );
 
@@ -299,7 +295,7 @@ void main() {
 
     test('withLimit on multiple filters updates all', () {
       final request = NostrRequest(
-        filters: [
+        filters: const [
           NostrFilter(kinds: [1]),
           NostrFilter(kinds: [7]),
         ],
@@ -356,14 +352,14 @@ void main() {
 
     test('recentOnly with various durations', () {
       final request = NostrRequest(
-        filters: [
-          NostrFilter(kinds: [1])
+        filters: const [
+          NostrFilter(kinds: [1]),
         ],
       );
 
-      final recent1h = request.recentOnly(Duration(hours: 1));
-      final recent7d = request.recentOnly(Duration(days: 7));
-      final recent30d = request.recentOnly(Duration(days: 30));
+      final recent1h = request.recentOnly(const Duration(hours: 1));
+      final recent7d = request.recentOnly(const Duration(days: 7));
+      final recent30d = request.recentOnly(const Duration(days: 30));
 
       expect(recent1h.filters[0].since, isNotNull);
       expect(recent7d.filters[0].since, isNotNull);
@@ -378,15 +374,15 @@ void main() {
 
     test('chaining multiple filter methods', () {
       final request = NostrRequest(
-        filters: [
-          NostrFilter(kinds: [1])
+        filters: const [
+          NostrFilter(kinds: [1]),
         ],
       );
 
       final updated = request
           .withLimit(50)
-          .recentOnly(Duration(days: 7))
-          .withAdditionalFilter(NostrFilter(kinds: [7]));
+          .recentOnly(const Duration(days: 7))
+          .withAdditionalFilter(const NostrFilter(kinds: [7]));
 
       expect(updated.filters.length, 2);
       expect(updated.filters[0].limit, 50);

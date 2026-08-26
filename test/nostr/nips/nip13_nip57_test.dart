@@ -89,11 +89,11 @@ void main() {
         pubkey: 'dd' * 32,
         createdAt: DateTime.now(),
         tags: [
-          ['bolt11', 'lnbc210n1...'],
-          ['preimage', 'aa11'],
+          const ['bolt11', 'lnbc210n1...'],
+          const ['preimage', 'aa11'],
           [
             'description',
-            jsonEncode({'pubkey': 'ee' * 32, 'kind': 9734})
+            jsonEncode({'pubkey': 'ee' * 32, 'kind': 9734}),
           ],
           ['p', 'ff' * 32],
         ],
@@ -114,10 +114,96 @@ void main() {
         sig: null,
         pubkey: 'dd' * 32,
         createdAt: DateTime.now(),
-        tags: [],
+        tags: const [],
       );
 
       expect(() => NostrZaps.parseZapReceipt(notAZap), throwsArgumentError);
+    });
+
+    test('validateZapRequest enforces spec rules', () async {
+      final zaps = NostrZaps(signer: signer);
+
+      // Valid request.
+      final valid = await zaps.createZapRequest(
+        recipientPubkey: 'aa' * 32,
+        amountMillisats: 1000,
+        lnurl: 'lnurl1xyz',
+        relaysForReceipt: ['wss://relay.example'],
+      );
+      expect(NostrZaps.validateZapRequest(valid), isEmpty);
+
+      // Missing relays tag + two p tags.
+      final broken = await signer.sign(
+        NostrEvent(
+          id: null,
+          kind: 9734,
+          content: '',
+          sig: null,
+          pubkey: signer.publicKey,
+          createdAt: DateTime.now(),
+          tags: [
+            ['p', 'aa' * 32],
+            ['p', 'bb' * 32],
+            ['amount', '-5'],
+          ],
+        ),
+      );
+
+      final problems = NostrZaps.validateZapRequest(broken);
+      expect(problems.any((p) => p.contains('exactly one p tag')), isTrue);
+      expect(problems.any((p) => p.contains('relays tag')), isTrue);
+      expect(problems.any((p) => p.contains('amount')), isTrue);
+    });
+
+    test('tampered zap request fails validation', () async {
+      final zaps = NostrZaps(signer: signer);
+      final valid = await zaps.createZapRequest(
+        recipientPubkey: 'aa' * 32,
+        amountMillisats: 1000,
+        lnurl: 'lnurl1x',
+        relaysForReceipt: ['wss://r.example'],
+      );
+
+      // Tamper with the content after signing.
+      final tampered = NostrEvent(
+        id: valid.id,
+        kind: valid.kind,
+        content: 'injected',
+        sig: valid.sig,
+        pubkey: valid.pubkey,
+        createdAt: valid.createdAt,
+        tags: valid.tags,
+      );
+
+      final problems = NostrZaps.validateZapRequest(tampered);
+      expect(problems, isNotEmpty, reason: 'tampered request must be detected');
+    });
+
+    test('verifyReceiptMatchesRequest compares canonical serialization',
+        () async {
+      final zaps = NostrZaps(signer: signer);
+      final req = await zaps.createZapRequest(
+        recipientPubkey: 'aa' * 32,
+        amountMillisats: 5000,
+        lnurl: 'lnurl1x',
+        relaysForReceipt: ['wss://r.example'],
+      );
+
+      final canonical = jsonEncode(req.toMap());
+      expect(
+        NostrZaps.verifyReceiptMatchesRequest(
+          bolt11DescriptionField: canonical,
+          zapRequest: req,
+        ),
+        isTrue,
+      );
+      expect(
+        NostrZaps.verifyReceiptMatchesRequest(
+          bolt11DescriptionField: '{\"tampered\": true}',
+          zapRequest: req,
+        ),
+        isFalse,
+      );
     });
 
     test('lightningAddressToLnurlPayUrl', () {

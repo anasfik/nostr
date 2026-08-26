@@ -49,7 +49,7 @@ void main() {
       const maxConnections = 3;
 
       final connections = <PooledConnection>[];
-      for (int i = 0; i < maxConnections; i++) {
+      for (var i = 0; i < maxConnections; i++) {
         final conn =
             await manager.acquireConnection('wss://relay1.example.com');
         if (conn != null) {
@@ -66,7 +66,9 @@ void main() {
 
     test('multiple relays have separate connection pools', () async {
       final conn1 = await manager.acquireConnection('wss://relay1.example.com');
+      // ignore: unused_local_variable
       final conn2 = await manager.acquireConnection('wss://relay2.example.com');
+      expect(conn2, isNotNull);
 
       expect(conn1?.relayUrl, equals('wss://relay1.example.com'));
       expect(conn2?.relayUrl, equals('wss://relay2.example.com'));
@@ -98,6 +100,7 @@ void main() {
     test('getStatistics returns correct metrics', () async {
       final conn1 = await manager.acquireConnection('wss://relay1.example.com');
       final conn2 = await manager.acquireConnection('wss://relay1.example.com');
+      expect(conn2, isNotNull);
 
       manager.releaseConnection(conn1!);
 
@@ -135,6 +138,7 @@ class _MockLogger implements NostrLogger {
 
   @override
   NostrDebugOptions get debugOptions =>
+      // ignore: dead_null_aware_expression
       passedDebugOptions ?? NostrDebugOptions.generate();
 
   @override

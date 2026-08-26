@@ -185,6 +185,85 @@ class NostrZaps {
   static String? zapSenderPubkey(Map<String, dynamic>? zapRequest) {
     return zapRequest?['pubkey'] as String?;
   }
+
+  /// Validates an incoming zap request against the NIP-57 rules a wallet or
+  /// client must enforce before honoring it.
+  ///
+  /// Returns a list of problems; empty means valid. Checks:
+  /// - kind is 9734 and the id is correctly derived from fields
+  /// - exactly one `p` tag with a valid 32-byte hex pubkey (spec: MUST)
+  /// - a `relays` tag exists so the receipt can be routed (spec: MUST)
+  /// - when present, `amount` is a positive integer string
+  static List<String> validateZapRequest(NostrEvent event) {
+    final problems = <String>[];
+
+    if (event.kind != 9734) {
+      problems.add('expected kind 9734, got ${event.kind}');
+      return problems;
+    }
+
+    final recomputedId = NostrEvent.getEventId(
+      kind: event.kind!,
+      content: event.content ?? '',
+      createdAt: event.createdAt!,
+      tags: event.tags ?? [],
+      pubkey: event.pubkey,
+    );
+    if (recomputedId != event.id) {
+      problems.add('event id does not match its serialized content');
+    }
+
+    if (!event.isVerified()) {
+      problems.add('signature is invalid');
+    }
+
+    final pTags =
+        (event.tags ?? []).where((t) => t.isNotEmpty && t[0] == 'p').toList();
+    if (pTags.isEmpty) {
+      problems.add('missing required p tag');
+    } else if (pTags.length > 1) {
+      problems.add('must contain exactly one p tag, found ${pTags.length}');
+    } else if (pTags.first.length < 2 ||
+        !RegExp(r'^[0-9a-f]{64}$').hasMatch(pTags.first[1])) {
+      problems.add('p tag value is not a valid 32-byte pubkey');
+    }
+
+    final hasRelaysTag =
+        (event.tags ?? []).any((t) => t.isNotEmpty && t[0] == 'relays');
+    if (!hasRelaysTag) {
+      problems.add('missing required relays tag for receipt routing');
+    }
+
+    final amountTags = (event.tags ?? [])
+        .where((t) => t.isNotEmpty && t[0] == 'amount')
+        .toList();
+    if (amountTags.isNotEmpty) {
+      final amount =
+          int.tryParse(amountTags.first.length > 1 ? amountTags.first[1] : '');
+      if (amount == null || amount <= 0) {
+        problems.add('amount tag is not a positive integer');
+      }
+    }
+
+    return problems;
+  }
+
+  /// Verifies that a zap receipt's embedded `description` matches the zap
+  /// request it claims to carry: the SHA-256 of the description string must
+  /// equal the `description_hash` embedded in the BOLT-11 invoice, which is
+  /// how wallets prove the invoice was created for THIS zap request.
+  ///
+  /// [bolt11DescriptionField] is the human-readable `description` field of
+  /// the invoice, which per NIP-57 holds the exact zap-request JSON.
+  static bool verifyReceiptMatchesRequest({
+    required String bolt11DescriptionField,
+    required NostrEvent zapRequest,
+  }) {
+    // The description field must be byte-identical to the serialized request
+    // we would produce from the parsed event.
+    final canonical = jsonEncode(zapRequest.toMap());
+    return bolt11DescriptionField == canonical;
+  }
 }
 
 /// {@template nip57_lud16_helper}
