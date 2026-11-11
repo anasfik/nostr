@@ -13,7 +13,7 @@ verified over public HTTPS. Unknown paths return 404 and HTTP redirects to HTTPS
 Interactive live Flutter verification and the renewal dry-run/reload hook remain
 pending. Subsequent source review found playground disconnect/reconnect and
 concurrent-session safety defects. The user chose to leave the existing demo
-accessible. Corrected source now passes 423 offline SDK tests, 43 Flutter tests,
+accessible. Corrected source now passes 423 offline SDK tests, 45 Flutter tests,
 analysis and a rebuilt release. A real browser verified local signing, read-only
 relay interaction, cancelled publishing and disconnect cleanup. The verified
 replacement is assembled in `docs/build/`, but is not deployed yet.
