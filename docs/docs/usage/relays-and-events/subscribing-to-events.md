@@ -39,7 +39,7 @@ NostrFilter(
   ids: ['event_id_1'],          // specific event ids
   authors: ['pubkey_hex'],      // filter by author pubkey
   kinds: [1, 6, 7],            // event kinds
-  tags: {'t': ['nostr']},       // tag filters
+  t: ['nostr'],                // hashtag filters
   since: DateTime(...),         // events after this time
   until: DateTime(...),         // events before this time
   limit: 50,                    // max events to return
@@ -116,13 +116,18 @@ final result = nostr.subscribeFilters([
 ]);
 ```
 
-## Async subscription (await until EOSE)
+## Subscribe with one filter
 
 ```dart
-final events = await nostr.subscribe(
-  NostrRequest(
-    filters: [NostrFilter(kinds: [1], limit: 20)],
-  ),
+final result = nostr.subscribe(
+  const NostrFilter(kinds: [1], limit: 20),
 );
-// events is List<NostrEvent> received before EOSE
+result.fold(
+  (stream) {
+    stream.stream.listen((event) => print(event.content));
+    // A demo read window, not an EOSE signal. Close when the app is done.
+    Future.delayed(const Duration(seconds: 3), stream.close);
+  },
+  (failure) => print(failure.message),
+);
 ```

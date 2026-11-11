@@ -1,2 +1,24 @@
 docs/
 example/
+playground/
+ops/
+technical_docs/
+build/
+pubspec.lock
+handling
+todo.extensionThatDoNotExist
+
+# Mirror relevant .gitignore security/generated exclusions. The archive is
+# built from the filesystem, so .pubignore must exclude these itself.
+.env*
+.dart_tool/
+.packages
+doc/api/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.dart.js
+*.js
+*.js_
+*.js.deps
+*.js.map
+*.info.json

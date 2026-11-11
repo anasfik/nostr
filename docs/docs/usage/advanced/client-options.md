@@ -27,7 +27,8 @@ final nostr = Nostr(
 |---|---|---|---|
 | `connectionTimeout` | `Duration` | 10s | Per-relay WebSocket connect timeout |
 | `requestTimeout` | `Duration` | 15s | Timeout for publish and count responses |
-| `retryPolicy` | `NostrRetryPolicy` | `none` | Retry strategy for failed operations |
+| `retryPolicy` | `NostrRetryPolicy` | `const NostrRetryPolicy()` | Up to three attempts with exponential delays (100ms initial, 5000ms cap) |
+| `failFast` | `bool` | `false` | Return the first failure rather than retrying |
 
 ## Using `Nostr.instance` with options
 

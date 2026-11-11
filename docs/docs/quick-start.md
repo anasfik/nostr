@@ -104,9 +104,9 @@ result.fold(
 
 ## Next steps
 
-- [Key management](./usage/keys-management/) — generate, derive, sign, encode
-- [Relay connection](./usage/relays-and-events/connecting-to-relays) — connect lifecycle and options
-- [Publishing events](./usage/relays-and-events/publishing-events) — event kinds and result handling
-- [Subscriptions](./usage/relays-and-events/subscribing-to-events) — streams, filters, EOSE
-- [NIP-05 identity](./usage/identity/nip05) — internet identifier resolution
-- [NIP-19 encoding](./usage/identity/nip19) — npub, nsec, nprofile, nevent
+- [Key management](./usage/keys-management/index.md) — generate, derive, sign, encode
+- [Relay connection](./usage/relays-and-events/connecting-to-relays.md) — connect lifecycle and options
+- [Publishing events](./usage/relays-and-events/publishing-events.md) — event kinds and result handling
+- [Subscriptions](./usage/relays-and-events/subscribing-to-events.md) — streams, filters, EOSE
+- [NIP-05 identity](./usage/identity/nip05.md) — internet identifier resolution
+- [NIP-19 encoding](./usage/identity/nip19.md) — npub, nsec, nprofile, nevent

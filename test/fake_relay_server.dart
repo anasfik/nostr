@@ -8,7 +8,11 @@ import 'dart:io';
 /// to script relay behavior: echoing events, sending EOSE, OK, NOTICE,
 /// CLOSED and AUTH messages on demand.
 class FakeRelayServer {
-  FakeRelayServer({this.autoOk = true, this.requireAuth = false});
+  FakeRelayServer({
+    this.autoOk = true,
+    this.requireAuth = false,
+    this.upgradeDelay = Duration.zero,
+  });
 
   /// Whether the relay automatically answers every EVENT with an OK message.
   final bool autoOk;
@@ -17,8 +21,18 @@ class FakeRelayServer {
   /// publishes (sends an AUTH challenge on connect).
   final bool requireAuth;
 
+  /// Delays the WebSocket upgrade, useful for overlapping reconnect races.
+  final Duration upgradeDelay;
+
+  /// Number of client WebSocket upgrades accepted so far.
+  int connectionCount = 0;
+
+  /// Number of accepted sockets whose server-side stream has closed.
+  int closedConnectionCount = 0;
+
   HttpServer? _server;
   final List<WebSocket> _sockets = [];
+  final Map<WebSocket, Completer<void>> _socketClosed = {};
   final _receivedMessages = <dynamic>[];
   final _receivedController = StreamController<dynamic>.broadcast();
   final _clientsConnected = StreamController<WebSocket>.broadcast();
@@ -33,83 +47,116 @@ class FakeRelayServer {
 
   Future<void> start() async {
     _server = await HttpServer.bind('localhost', 0);
-    _server!.transform(WebSocketTransformer()).listen((socket) {
-      _sockets.add(socket);
-      _clientsConnected.add(socket);
-
-      if (requireAuth) {
-        // NIP-42 challenge: ["AUTH", <challenge-string>]
-        socket.add(jsonEncode([
-          'AUTH',
-          'test-challenge-${DateTime.now().millisecondsSinceEpoch}'
-        ]));
+    _server!.listen((request) async {
+      if (upgradeDelay > Duration.zero) {
+        await Future<void>.delayed(upgradeDelay);
       }
 
-      socket.listen(
-        (data) {
-          if (_stopped) {
+      WebSocket socket;
+      try {
+        socket = await WebSocketTransformer.upgrade(request);
+      } catch (_) {
+        return;
+      }
+
+      connectionCount++;
+      _attachSocket(socket);
+    });
+  }
+
+  void _attachSocket(WebSocket socket) {
+    final closed = Completer<void>();
+    _socketClosed[socket] = closed;
+    _sockets.add(socket);
+    _clientsConnected.add(socket);
+
+    if (requireAuth) {
+      // NIP-42 challenge: ["AUTH", <challenge-string>]
+      socket.add(
+        jsonEncode([
+          'AUTH',
+          'test-challenge-${DateTime.now().millisecondsSinceEpoch}',
+        ]),
+      );
+    }
+
+    socket.listen(
+      (data) {
+        if (_stopped) {
+          return;
+        }
+        _receivedMessages.add(data);
+        _receivedController.add(data);
+
+        // Sends can fail if the test already tore the server down while
+        // the client is still flushing messages; ignore those.
+        void safeSend(String message) {
+          if (socket.readyState != WebSocket.open) {
             return;
           }
-          _receivedMessages.add(data);
-          _receivedController.add(data);
-
-          // Sends can fail if the test already tore the server down while
-          // the client is still flushing messages; ignore those.
-          void safeSend(String message) {
-            if (socket.readyState != WebSocket.open) {
-              return;
-            }
-            try {
-              socket.add(message);
-            } catch (_) {}
-          }
-
           try {
-            final decoded = jsonDecode(data as String) as List;
-            if (decoded.isNotEmpty && decoded.first == 'EVENT') {
-              // Client->relay EVENT messages carry the event at index 1
-              // (no subscription id), per NIP-01.
-              final eventMap = decoded.length > 2 ? decoded[2] : decoded[1];
-              if (requireAuth) {
-                safeSend(jsonEncode([
+            socket.add(message);
+          } catch (_) {}
+        }
+
+        try {
+          final decoded = jsonDecode(data as String) as List;
+          if (decoded.isNotEmpty && decoded.first == 'EVENT') {
+            // Client->relay EVENT messages carry the event at index 1
+            // (no subscription id), per NIP-01.
+            final eventMap = decoded.length > 2 ? decoded[2] : decoded[1];
+            if (requireAuth) {
+              safeSend(
+                jsonEncode([
                   'OK',
                   eventMap['id'],
                   false,
                   'auth-required: please authenticate first',
-                ]));
-                return;
-              }
-              if (autoOk) {
-                safeSend(jsonEncode([
-                  'OK',
-                  eventMap['id'],
-                  true,
-                  '',
-                ]));
-              }
-            }
-            if (decoded.isNotEmpty && decoded.first == 'REQ') {
-              safeSend(
-                jsonEncode(['EOSE', decoded[1]]),
+                ]),
               );
+              return;
             }
-            if (decoded.isNotEmpty && decoded.first == 'AUTH') {
-              // Client->relay AUTH carries the event at index 1; reply with
-              // its id per NIP-42.
-              safeSend(
-                jsonEncode(['OK', (decoded[1] as Map)['id'], true, '']),
-              );
+            if (autoOk) {
+              safeSend(jsonEncode(['OK', eventMap['id'], true, '']));
             }
-          } catch (_) {
-            // Non-JSON or malformed; tests can assert on raw data.
           }
-        },
-        onError: (_) {},
-        onDone: () {
-          _sockets.remove(socket);
-        },
-      );
-    });
+          if (decoded.isNotEmpty && decoded.first == 'REQ') {
+            safeSend(jsonEncode(['EOSE', decoded[1]]));
+          }
+          if (decoded.isNotEmpty && decoded.first == 'AUTH') {
+            // Client->relay AUTH carries the event at index 1; reply with
+            // its id per NIP-42.
+            safeSend(jsonEncode(['OK', (decoded[1] as Map)['id'], true, '']));
+          }
+        } catch (_) {
+          // Non-JSON or malformed; tests can assert on raw data.
+        }
+      },
+      onError: (_) => _markSocketClosed(socket),
+      onDone: () => _markSocketClosed(socket),
+    );
+  }
+
+  void _markSocketClosed(WebSocket socket) {
+    _sockets.remove(socket);
+    final closed = _socketClosed.remove(socket);
+    if (closed != null && !closed.isCompleted) {
+      closed.complete();
+      closedConnectionCount++;
+    }
+  }
+
+  /// Completes when the server-side stream for [socket] closes. This is the
+  /// peer-close signal; `WebSocket.done` is the local sink's completion.
+  Future<void> waitForClosed(
+    WebSocket socket, {
+    Duration timeout = const Duration(seconds: 2),
+  }) {
+    final closed = _socketClosed[socket];
+    if (closed == null) {
+      return Future<void>.value();
+    }
+    return closed.future.timeout(timeout);
   }
 
   /// Sends a raw string to all connected clients.
@@ -142,9 +189,18 @@ class FakeRelayServer {
     return _clientsConnected.stream.first;
   }
 
+  /// Waits for the next new connection, ignoring currently open sockets.
+  Future<WebSocket> waitForNewConnection({
+    Duration timeout = const Duration(seconds: 5),
+  }) {
+    return _clientsConnected.stream.first.timeout(timeout);
+  }
+
   /// Waits until a message matching [test] arrives from a client.
-  Future<dynamic> waitForMessage(bool Function(dynamic message) test,
-      {Duration timeout = const Duration(seconds: 5)}) async {
+  Future<dynamic> waitForMessage(
+    bool Function(dynamic message) test, {
+    Duration timeout = const Duration(seconds: 5),
+  }) async {
     final existing = _receivedMessages.where(test);
     if (existing.isNotEmpty) {
       return existing.first;
@@ -161,10 +217,16 @@ class FakeRelayServer {
 
   Future<void> stop() async {
     _stopped = true;
-    for (final socket in _sockets) {
-      await socket.close();
+    for (final socket in List.of(_sockets)) {
+      try {
+        await socket.close();
+      } catch (_) {
+        // Already closing; the close signal below still completes.
+      }
+      _markSocketClosed(socket);
     }
     _sockets.clear();
+    _socketClosed.clear();
     await _receivedController.close();
     await _clientsConnected.close();
     await _server?.close(force: true);

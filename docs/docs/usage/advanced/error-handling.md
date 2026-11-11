@@ -5,7 +5,7 @@ description: Handle typed failures with NostrResult<T> and NostrFailure.
 
 # Error Handling
 
-All SDK operations that can fail return `NostrResult<T>` — a sealed type with two states: success (`T`) and failure (`NostrFailure`).
+High-level relay operations return `NostrResult<T>` with success (`T`) and failure (`NostrFailure`) states. Local parsing and cryptographic helpers can throw; validate input and handle exceptions at those boundaries.
 
 ## `NostrResult<T>` API
 
@@ -29,21 +29,22 @@ result.fold(
 
 ```dart
 failure.message     // String — human-readable description
-failure.code        // String — machine-readable error code
+failure.code        // NostrFailureCode — machine-readable enum
 failure.isRetryable // bool — whether retrying makes sense
-failure.details     // Map<String, dynamic>? — optional structured data
+failure.context     // Map<String, Object?> — structured diagnostic data
 ```
 
 ## Common error codes
 
 | Code | Meaning |
 |---|---|
-| `connection_failed` | Could not establish WebSocket connection |
+| `connection` | Could not establish WebSocket connection |
 | `timeout` | Operation exceeded the configured timeout |
-| `relay_rejected` | Relay returned an OK:false response |
-| `invalid_relay_url` | Relay URL is not a valid WebSocket URL |
-| `empty_filter` | A subscription request contained no filters |
-| `not_connected` | Operation requires an active connection |
+| `protocol` | A relay response violates the expected protocol |
+| `invalidArgument` | Input validation failed, such as an invalid relay URL or empty filters |
+| `invalidState` | The operation cannot run in the current client state |
+
+Use `NostrFailureCode.connection` (and the other enum members) in comparisons. A successful publish result still needs `receipt.isEventAccepted` checked: a relay's rejection is not necessarily a transport failure.
 
 ## Retry policy
 
@@ -63,5 +64,5 @@ final nostr = Nostr(
 
 Available policies:
 - `NostrRetryPolicy.none()` — no retries
-- `NostrRetryPolicy.fixed(attempts, delayMs)` — fixed interval retries
-- `NostrRetryPolicy.exponential(maxAttempts, initialDelayMs, maxDelayMs)` — exponential backoff
+- `NostrRetryPolicy.linear(maxAttempts: 3, delayMs: 1000)` — constant interval retries
+- `NostrRetryPolicy.exponential(maxAttempts: 3, initialDelayMs: 100, maxDelayMs: 5000)` — exponential backoff

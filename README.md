@@ -17,8 +17,8 @@ A production-grade Dart & Flutter SDK for building Nostr applications. One impor
 
 - **Complete protocol surface** — 25+ NIPs implemented and integration-tested against live relays
 - **Spec-vector verified crypto** — NIP-44 v2 passes every official test vector; NIP-49 decrypts the reference payload byte-for-byte
-- **Typed error handling** — `NostrResult<T>` instead of exceptions; nothing throws unexpectedly
-- **Real-world resilient** — exponential reconnect backoff with jitter, bounded caches, fail-fast on dead relays, automatic NIP-42 authentication
+- **Typed relay operations** — `NostrResult<T>` for connection, publication and subscription results; local parsing and cryptographic helpers can throw
+- **Configurable relay sessions** — reconnect backoff, bounded caches, configurable retries and timeouts, automatic NIP-42 authentication
 - **Pluggable signing** — local keys today; NIP-07 / NIP-46 / NIP-55 signers via one interface
 - **Tested like you'd use it** — publishes notes, sends DMs, verifies deletions and answers AUTH challenges against public relays as part of the development workflow
 
@@ -34,6 +34,11 @@ dart pub add dart_nostr
 dependencies:
   dart_nostr: ^11.0.0
 ```
+
+The examples below target 11.0.0. The commands resolve the latest published
+version; check [pub.dev versions](https://pub.dev/packages/dart_nostr/versions)
+before using these examples. Until 11.0.0 is published, use the pinned source
+preview in the [installation guide](https://nostr.gwhyyy.com/docs/installation/).
 
 ## Quick start
 
@@ -249,7 +254,7 @@ Nostr() ─┬─ connect / publish / subscribe / count   ← typed facade (Nost
 
 - `Nostr()` creates isolated instances (independent pools — ideal for tests).
 - `Nostr.instance` is a process-wide singleton.
-- All fallible operations return `NostrResult<T>`: call `.fold(success, failure)`, inspect `.isSuccess`, `.message`, `.code`, `.isRetryable`.
+- High-level relay operations return `NostrResult<T>`: call `.fold(success, failure)` or inspect `.isSuccess`. On failure, `.failureOrNull` exposes `message`, `code` and `isRetryable`.
 
 ## NIP support matrix
 
@@ -274,7 +279,8 @@ The real-network suite publishes actual events as fresh identities, exchanges gi
 
 ## Documentation & examples
 
-- Full docs: [anasfik.github.io/nostr](https://anasfik.github.io/nostr/)
+- Full docs: [nostr.gwhyyy.com/docs](https://nostr.gwhyyy.com/docs/)
+- Flutter Web playground: [try it in real time](https://nostr.gwhyyy.com/playground/) — core relay reads, local signing and explicitly confirmed publishing
 - API reference: [pub.dev/documentation/dart_nostr](https://pub.dev/documentation/dart_nostr/latest/)
 - Runnable samples: [`example/`](example/) — key generation, publishing, subscriptions, NIP-05 verification, NIP-11 relay info
 

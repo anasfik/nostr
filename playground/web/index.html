@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="$FLUTTER_BASE_HREF">
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A real Flutter web Nostr debug console built with dart_nostr: connect to relays, read events, generate ephemeral keys, sign and verify events, and publish only after explicit confirmation.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F6F6FA">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#101216">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nostr playground">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="icon" type="image/png" href="favicon.png"/>
+  <link rel="manifest" href="manifest.json">
+  <title>Nostr debug playground · dart_nostr</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f6fa;
+      --panel: #ffffff;
+      --text: #17151f;
+      --muted: #5f5b70;
+      --border: #ddd9ea;
+      --accent: #6750e8;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #101216;
+        --panel: #181b21;
+        --text: #f2f0f7;
+        --muted: #aaa5bb;
+        --border: #2c2f3a;
+        --accent: #b4a6ff;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 55%), var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      padding: 24px;
+    }
+    #boot {
+      width: min(560px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 20px 60px rgba(20, 18, 30, 0.08);
+    }
+    h1 { margin: 0 0 6px; font-size: 1.35rem; letter-spacing: -0.02em; }
+    p { margin: 0; line-height: 1.5; }
+    .row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+    .spinner {
+      width: 22px;
+      height: 22px;
+      border: 2px solid color-mix(in srgb, var(--accent) 25%, transparent);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+      flex: none;
+    }
+    #boot.boot-error .spinner { animation: none; border-color: #d84a4a; }
+    #boot-status { color: var(--muted); font-size: 0.92rem; }
+    .boot-links { margin-top: 16px; font-size: 0.9rem; }
+    .boot-links a { color: var(--accent); font-weight: 600; text-decoration: none; }
+    .boot-links a:hover, .boot-links a:focus-visible { text-decoration: underline; }
+    .boot-links span { color: var(--muted); margin: 0 8px; }
+    .boot-note { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); color: var(--muted); font-size: 0.82rem; }
+    noscript { color: var(--text); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) {
+      .spinner { animation-duration: 3s; }
+    }
+    @media (max-width: 480px) {
+      #boot { padding: 20px; }
+      h1 { font-size: 1.15rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="boot" role="status" aria-live="polite">
+    <div class="row">
+      <div class="spinner" aria-hidden="true"></div>
+      <h1>Nostr debug playground</h1>
+    </div>
+    <p id="boot-status">Loading the Flutter console…</p>
+    <p class="boot-links">
+      <a href="/">Home</a><span>·</span><a href="/docs/">Documentation</a>
+    </p>
+    <p class="boot-note">
+      Nothing connects automatically. Ephemeral keys are generated in this
+      browser tab only, and no analytics or key material is stored.
+    </p>
+    <noscript>
+      <p class="boot-note">
+        This playground is a Flutter web app and needs JavaScript enabled.
+      </p>
+    </noscript>
+  </div>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>

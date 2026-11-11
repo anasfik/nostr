@@ -18,7 +18,7 @@ final npub = nostr.bech32.encodePublicKeyToNpub(keyPair.public);
 final nsec = nostr.bech32.encodePrivateKeyToNsec(keyPair.private);
 
 print(npub);  // npub1...
-print(nsec);  // nsec1...
+// nsec is a secret. Never log, publish, or send it to analytics.
 
 // decode
 final pubKey = nostr.bech32.decodeNpubKeyToPublicKey(npub);
@@ -39,9 +39,9 @@ final nprofile = nostr.bech32.encodeNProfile(
 );
 print(nprofile);  // nprofile1...
 
-final decoded = nostr.bech32.decodeNProfile(nprofile);
-print(decoded.pubkey);
-print(decoded.relays);
+final decoded = nostr.bech32.decodeNprofileToMap(nprofile);
+print(decoded['pubkey']);
+print(decoded['relays']);
 ```
 
 ## nevent
@@ -49,13 +49,13 @@ print(decoded.relays);
 `nevent` encodes an event reference with optional relay and author hints.
 
 ```dart
-final nevent = nostr.bech32.encodeNEvent(
+final nevent = nostr.bech32.encodeNevent(
   eventId: event.id!,
-  relays: ['wss://relay.damus.io'],
+  userRelays: ['wss://relay.damus.io'],
   pubkey: keyPair.public,
 );
 print(nevent);  // nevent1...
 
-final decoded = nostr.bech32.decodeNEvent(nevent);
-print(decoded.eventId);
+final decoded = nostr.bech32.decodeNeventToMap(nevent);
+print(decoded['eventId']);
 ```

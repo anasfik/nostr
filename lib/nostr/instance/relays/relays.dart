@@ -82,6 +82,41 @@ class NostrRelays implements NostrRelaysBase {
   /// exponential backoff delay and prevent hot reconnect loops.
   final Map<String, int> _reconnectAttempts = {};
 
+  /// Incremented whenever a relay session is explicitly torn down or replaced.
+  /// In-flight connections and delayed retries compare this token before they
+  /// register a socket, so disconnect/free cannot be undone by a stale attempt.
+  int _sessionGeneration = 0;
+
+  /// Per-relay generation tokens, bumped when one relay is explicitly removed
+  /// without invalidating the rest of the pool.
+  final Map<String, int> _relayGenerations = {};
+
+  int _relayGeneration(String relay) => _relayGenerations[relay] ?? 0;
+
+  void _invalidateRelay(String relay) {
+    _relayGenerations[relay] = _relayGeneration(relay) + 1;
+    _reconnectAttempts.remove(relay);
+  }
+
+  bool _isGenerationCurrent(
+    int sessionGeneration,
+    int relayGeneration,
+    String relay,
+  ) {
+    return sessionGeneration == _sessionGeneration &&
+        relayGeneration == _relayGeneration(relay);
+  }
+
+  Future<void> _closeSocketQuietly(WebSocketChannel socket) async {
+    try {
+      await socket.sink
+          .close()
+          .timeout(const Duration(seconds: 2), onTimeout: () {});
+    } catch (_) {
+      // Best-effort close; the stale socket must never be registered.
+    }
+  }
+
   /// Base delay for the exponential reconnect backoff.
   static const Duration _reconnectBaseDelay = Duration(milliseconds: 500);
 
@@ -187,6 +222,12 @@ class NostrRelays implements NostrRelaysBase {
     );
 
     if (ensureToClearRegistriesBeforeStarting) {
+      // A new session invalidates delayed retries and in-flight handshakes
+      // from the previous one before their callbacks can register a socket.
+      _sessionGeneration++;
+      _relayGenerations.clear();
+      _reconnectAttempts.clear();
+
       // Drop stale websocket registrations from previous sessions so they
       // don't receive sends or dispatch messages.
       nostrRegistry.clearWebSocketsRegistry();
@@ -723,6 +764,8 @@ class NostrRelays implements NostrRelaysBase {
     )? onNoticeMessageFromRelay,
   }) {
     final relayWebSocket = nostrRegistry.getRelayWebSocket(relayUrl: relay);
+    final sessionGeneration = _sessionGeneration;
+    final relayGeneration = _relayGeneration(relay);
 
     relayWebSocket!.stream.listen(
       (d) {
@@ -823,19 +866,24 @@ class NostrRelays implements NostrRelaysBase {
         }
       },
       onError: (Object error) {
-        if (retryOnError) {
-          _reconnectToRelay(
-            relay: relay,
-            onRelayListening: onRelayListening,
-            onRelayConnectionError: onRelayConnectionError,
-            onRelayConnectionDone: onRelayConnectionDone,
-            onNoticeMessageFromRelay: onNoticeMessageFromRelay,
-            retryOnError: retryOnError,
-            retryOnClose: retryOnClose,
-            shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
-            connectionTimeout: connectionTimeout,
-            ignoreConnectionException: ignoreConnectionException,
-            lazyListeningToRelays: lazyListeningToRelays,
+        if (retryOnError &&
+            _isGenerationCurrent(sessionGeneration, relayGeneration, relay)) {
+          unawaited(
+            _reconnectToRelay(
+              relay: relay,
+              onRelayListening: onRelayListening,
+              onRelayConnectionError: onRelayConnectionError,
+              onRelayConnectionDone: onRelayConnectionDone,
+              onNoticeMessageFromRelay: onNoticeMessageFromRelay,
+              retryOnError: retryOnError,
+              retryOnClose: retryOnClose,
+              shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
+              connectionTimeout: connectionTimeout,
+              ignoreConnectionException: ignoreConnectionException,
+              lazyListeningToRelays: lazyListeningToRelays,
+              expectedSessionGeneration: sessionGeneration,
+              expectedRelayGeneration: relayGeneration,
+            ),
           );
         }
 
@@ -849,19 +897,24 @@ class NostrRelays implements NostrRelaysBase {
         );
       },
       onDone: () {
-        if (retryOnClose) {
-          _reconnectToRelay(
-            relay: relay,
-            onRelayListening: onRelayListening,
-            onRelayConnectionError: onRelayConnectionError,
-            onRelayConnectionDone: onRelayConnectionDone,
-            onNoticeMessageFromRelay: onNoticeMessageFromRelay,
-            retryOnError: retryOnError,
-            retryOnClose: retryOnClose,
-            shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
-            connectionTimeout: connectionTimeout,
-            ignoreConnectionException: ignoreConnectionException,
-            lazyListeningToRelays: lazyListeningToRelays,
+        if (retryOnClose &&
+            _isGenerationCurrent(sessionGeneration, relayGeneration, relay)) {
+          unawaited(
+            _reconnectToRelay(
+              relay: relay,
+              onRelayListening: onRelayListening,
+              onRelayConnectionError: onRelayConnectionError,
+              onRelayConnectionDone: onRelayConnectionDone,
+              onNoticeMessageFromRelay: onNoticeMessageFromRelay,
+              retryOnError: retryOnError,
+              retryOnClose: retryOnClose,
+              shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
+              connectionTimeout: connectionTimeout,
+              ignoreConnectionException: ignoreConnectionException,
+              lazyListeningToRelays: lazyListeningToRelays,
+              expectedSessionGeneration: sessionGeneration,
+              expectedRelayGeneration: relayGeneration,
+            ),
           );
         }
 
@@ -946,7 +999,14 @@ class NostrRelays implements NostrRelaysBase {
       );
     }
 
+    final sessionGeneration = _sessionGeneration;
+
     for (final relay in relaysList!) {
+      if (sessionGeneration != _sessionGeneration) {
+        completer.complete();
+        return completer.future;
+      }
+
       await _reconnectToRelay(
         relayUnregistered: relayUnregistered,
         relay: relay,
@@ -960,6 +1020,8 @@ class NostrRelays implements NostrRelaysBase {
         connectionTimeout: connectionTimeout,
         ignoreConnectionException: ignoreConnectionException,
         lazyListeningToRelays: lazyListeningToRelays,
+        expectedSessionGeneration: sessionGeneration,
+        expectedRelayGeneration: _relayGeneration(relay),
       );
     }
 
@@ -1001,6 +1063,12 @@ class NostrRelays implements NostrRelaysBase {
       relayUrl: relayUrl,
     );
 
+    // Invalidate first: a reconnect scheduled from onDone/onError must see the
+    // new token even if the close below completes asynchronously.
+    _invalidateRelay(relayUrl);
+    relaysList?.remove(relayUrl);
+    nostrRegistry.unregisterRelay(relayUrl);
+
     if (webSocket == null) {
       return false;
     }
@@ -1008,11 +1076,8 @@ class NostrRelays implements NostrRelaysBase {
     try {
       await webSocket.sink.close();
     } catch (_) {
-      // Already closing/closed; still unregister.
+      // Already closing/closed; still unregistered.
     }
-
-    nostrRegistry.unregisterRelay(relayUrl);
-    relaysList?.remove(relayUrl);
 
     logger.log('relay $relayUrl disconnected and removed from the pool');
     return true;
@@ -1037,22 +1102,40 @@ class NostrRelays implements NostrRelaysBase {
       dynamic webSocketDisconnectionMessage,
     )? onRelayDisconnect,
   }) async {
-    final webSockets = nostrRegistry.relaysWebSocketsRegistry;
-    for (var index = 0; index < webSockets.length; index++) {
-      final current = webSockets.entries.elementAt(index);
+    // Invalidate the whole session before closing anything so delayed
+    // reconnects and in-flight handshakes cannot register after disconnect.
+    _sessionGeneration++;
+    _relayGenerations.clear();
+    _reconnectAttempts.clear();
+
+    final webSockets = List.of(nostrRegistry.relaysWebSocketsRegistry.entries);
+    relaysList = [];
+    nostrRegistry.clearWebSocketsRegistry();
+    Object? firstError;
+    StackTrace? firstStackTrace;
+
+    for (final current in webSockets) {
       final relayUrl = current.key;
       final relayWebSocket = current.value;
 
-      final returnedMessage = await relayWebSocket.sink.close(
-        closeCode?.call(relayUrl),
-        closeReason?.call(relayUrl),
-      );
+      try {
+        final returnedMessage = await relayWebSocket.sink.close(
+          closeCode?.call(relayUrl),
+          closeReason?.call(relayUrl),
+        );
 
-      onRelayDisconnect?.call(relayUrl, relayWebSocket, returnedMessage);
+        onRelayDisconnect?.call(relayUrl, relayWebSocket, returnedMessage);
+      } catch (error, stackTrace) {
+        // Keep closing the rest, then rethrow the first failure so
+        // freeAllResources keeps its false/throw failure semantics.
+        firstError ??= error;
+        firstStackTrace ??= stackTrace;
+      }
     }
 
-    nostrRegistry.clearWebSocketsRegistry();
-    relaysList = [];
+    if (firstError != null) {
+      Error.throwWithStackTrace(firstError, firstStackTrace!);
+    }
 
     return true;
   }
@@ -1101,7 +1184,16 @@ class NostrRelays implements NostrRelaysBase {
     required bool ignoreConnectionException,
     required bool lazyListeningToRelays,
     bool relayUnregistered = true,
+    int? expectedSessionGeneration,
+    int? expectedRelayGeneration,
   }) async {
+    final sessionGeneration = expectedSessionGeneration ?? _sessionGeneration;
+    final relayGeneration = expectedRelayGeneration ?? _relayGeneration(relay);
+
+    if (!_isGenerationCurrent(sessionGeneration, relayGeneration, relay)) {
+      return;
+    }
+
     logger.log('retrying to listen to relay with url: $relay...');
 
     // Exponential backoff with jitter: reconnecting immediately in a loop
@@ -1118,6 +1210,11 @@ class NostrRelays implements NostrRelaysBase {
 
     await Future<void>.delayed(jitteredDelay);
 
+    // Disconnect/free may have happened while waiting; never revive the socket.
+    if (!_isGenerationCurrent(sessionGeneration, relayGeneration, relay)) {
+      return;
+    }
+
     if (relayUnregistered) {
       await _startConnectingAndRegisteringRelay(
         relayUrl: relay,
@@ -1131,6 +1228,8 @@ class NostrRelays implements NostrRelaysBase {
         connectionTimeout: connectionTimeout,
         ignoreConnectionException: ignoreConnectionException,
         lazyListeningToRelays: lazyListeningToRelays,
+        expectedSessionGeneration: sessionGeneration,
+        expectedRelayGeneration: relayGeneration,
       );
     }
   }
@@ -1160,6 +1259,8 @@ class NostrRelays implements NostrRelaysBase {
     required bool ignoreConnectionException,
     required bool shouldReconnectToRelayOnNotice,
     required Duration connectionTimeout,
+    int? expectedSessionGeneration,
+    int? expectedRelayGeneration,
   }) {
     return _startConnectingAndRegisteringRelays(
       relaysUrl: [relayUrl],
@@ -1173,6 +1274,8 @@ class NostrRelays implements NostrRelaysBase {
       ignoreConnectionException: ignoreConnectionException,
       shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
       connectionTimeout: connectionTimeout,
+      expectedSessionGeneration: expectedSessionGeneration,
+      expectedRelayGeneration: expectedRelayGeneration,
     );
   }
 
@@ -1201,9 +1304,20 @@ class NostrRelays implements NostrRelaysBase {
     required bool ignoreConnectionException,
     required bool shouldReconnectToRelayOnNotice,
     required Duration connectionTimeout,
+    int? expectedSessionGeneration,
+    int? expectedRelayGeneration,
   }) async {
+    final sessionGeneration = expectedSessionGeneration ?? _sessionGeneration;
+
     await Future.wait(
       relaysUrl.map((relay) async {
+        final relayGeneration =
+            expectedRelayGeneration ?? _relayGeneration(relay);
+
+        if (!_isGenerationCurrent(sessionGeneration, relayGeneration, relay)) {
+          return;
+        }
+
         if (nostrRegistry.isRelayRegisteredAndConnectedSuccesfully(relay)) {
           logger.log(
             'relay with url: $relay is already connected successfully, skipping...',
@@ -1217,6 +1331,15 @@ class NostrRelays implements NostrRelaysBase {
             connectionTimeout: connectionTimeout,
             shouldIgnoreConnectionException: ignoreConnectionException,
             onConnectionSuccess: (relayWebSocket) {
+              if (!_isGenerationCurrent(
+                sessionGeneration,
+                relayGeneration,
+                relay,
+              )) {
+                unawaited(_closeSocketQuietly(relayWebSocket));
+                return;
+              }
+
               nostrRegistry.registerRelayWebSocket(
                 relayUrl: relay,
                 webSocket: relayWebSocket,
@@ -1359,24 +1482,45 @@ class NostrRelays implements NostrRelaysBase {
     if (nostrRegistry.isRelayRegistered(relay)) {
       final registeredRelay = nostrRegistry.getRelayWebSocket(relayUrl: relay);
 
-      registeredRelay?.sink.close().then((value) {
-        final relayUnregistered = nostrRegistry.unregisterRelay(relay);
+      if (registeredRelay != null) {
+        // Invalidate this socket before closing it. Its onDone listener also
+        // has retryOnClose; without this bump it would schedule a second
+        // reconnect alongside the NOTICE-driven one.
+        _invalidateRelay(relay);
+        final sessionGeneration = _sessionGeneration;
+        final relayGeneration = _relayGeneration(relay);
 
-        _reconnectToRelay(
-          relayUnregistered: relayUnregistered,
-          relay: relay,
-          onRelayListening: onRelayListening,
-          onRelayConnectionError: onRelayConnectionError,
-          onRelayConnectionDone: onRelayConnectionDone,
-          onNoticeMessageFromRelay: onNoticeMessageFromRelay,
-          retryOnError: retryOnError,
-          retryOnClose: retryOnClose,
-          shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
-          connectionTimeout: connectionTimeout,
-          ignoreConnectionException: ignoreConnectionException,
-          lazyListeningToRelays: lazyListeningToRelays,
-        );
-      });
+        registeredRelay.sink.close().then((value) {
+          if (!_isGenerationCurrent(
+            sessionGeneration,
+            relayGeneration,
+            relay,
+          )) {
+            return;
+          }
+
+          final relayUnregistered = nostrRegistry.unregisterRelay(relay);
+
+          unawaited(
+            _reconnectToRelay(
+              relayUnregistered: relayUnregistered,
+              relay: relay,
+              onRelayListening: onRelayListening,
+              onRelayConnectionError: onRelayConnectionError,
+              onRelayConnectionDone: onRelayConnectionDone,
+              onNoticeMessageFromRelay: onNoticeMessageFromRelay,
+              retryOnError: retryOnError,
+              retryOnClose: retryOnClose,
+              shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
+              connectionTimeout: connectionTimeout,
+              ignoreConnectionException: ignoreConnectionException,
+              lazyListeningToRelays: lazyListeningToRelays,
+              expectedSessionGeneration: sessionGeneration,
+              expectedRelayGeneration: relayGeneration,
+            ),
+          );
+        });
+      }
     }
   }
 

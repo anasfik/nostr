@@ -28,8 +28,8 @@ nostr.relays.closeEventsSubscription(subscriptionId);
 // Send a raw request and get a stream
 final subscription = nostr.relays.startEventsSubscription(
   request: NostrRequest(filters: [NostrFilter(kinds: [1], limit: 10)]),
-  onEose: (eose) {
-    print('EOSE for ${eose.subscriptionId}');
+  onEose: (relay, eose) {
+    print('EOSE for ${eose.subscriptionId} on $relay');
     nostr.relays.closeEventsSubscription(eose.subscriptionId);
   },
 );
@@ -51,13 +51,21 @@ nostr.services.utils    // utility methods
 
 Implement `NostrRelayTransport` to replace the default WebSocket transport:
 
-```dart
-class FakeTransport implements NostrRelayTransport {
-  // implement connect, send, close, stream...
-}
+Pass a complete implementation through services, not a `transport` constructor argument:
 
-final nostr = Nostr(transport: FakeTransport());
+```dart
+// customTransport implements every member of NostrRelayTransport.
+final logger = NostrLogger(passedDebugOptions: NostrDebugOptions.general());
+logger.disableLogs();
+final nostr = Nostr(
+  services: NostrServices(
+    logger: logger,
+    relayTransport: customTransport,
+  ),
+);
 ```
+
+The interface has `connect`, `publish`, `count`, `subscribe`, `closeSubscription`, `addRelays`, `removeRelay`, and `disconnect` methods. See `lib/nostr/service/relay_transport.dart` and `test/nostr/service/client_test.dart` in the repository for signatures and a complete test transport.
 
 This is the recommended approach for unit testing relay-dependent code without hitting real relays.
 

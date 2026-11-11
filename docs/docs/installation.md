@@ -7,6 +7,12 @@ description: Install dart_nostr in a Dart or Flutter project.
 
 ## Flutter
 
+The commands below install the published **10.0.1** release (checked 2026-11-11).
+These guides and the playground target the **11.0.0 source preview**. Use the
+pinned Git dependency below to follow the preview APIs. Version 11.0.0 has not
+been published to pub.dev. Short snippets omit application setup; start with
+the [quick start](./quick-start.md) for the client lifecycle.
+
 ```bash
 flutter pub add dart_nostr
 ```
@@ -17,13 +23,16 @@ flutter pub add dart_nostr
 dart pub add dart_nostr
 ```
 
-## Manual
+## Source preview used by these guides
 
 Add to `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  dart_nostr: ^9.2.5
+  dart_nostr:
+    git:
+      url: https://github.com/anasfik/nostr.git
+      ref: d61258e
 ```
 
 Then run:

@@ -1,19 +1,50 @@
 // @ts-check
 // Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+const lightCodeTheme = {
+  plain: {color: '#17263e', backgroundColor: '#f6f8fc'},
+  styles: [
+    {types: ['keyword', 'function', 'tag', 'number', 'boolean'], style: {color: '#245ac4'}},
+    {types: ['string', 'attr-value'], style: {color: '#9b2452'}},
+    {types: ['comment', 'prolog', 'doctype', 'cdata'], style: {color: '#4a5b73'}},
+  ],
+};
+const darkCodeTheme = {
+  plain: {color: '#ecf1fa', backgroundColor: '#18263b'},
+  styles: [
+    {types: ['keyword', 'function', 'tag', 'number', 'boolean'], style: {color: '#95bbff'}},
+    {types: ['string', 'attr-value'], style: {color: '#f4b6d0'}},
+    {types: ['comment', 'prolog', 'doctype', 'cdata'], style: {color: '#b6c4da'}},
+  ],
+};
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Dart Nostr',
-  tagline: 'Dart implementation of the Nostr protocol',
+  tagline: 'A Nostr SDK for Dart and Flutter',
   favicon: 'img/favicon.ico',
 
-  url: 'https://anasfik.github.io',
+  url: process.env.SITE_URL || 'https://nostr.gwhyyy.com',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/nostr',
+  baseUrl: process.env.BASE_URL || '/',
+  trailingSlash: true,
+  plugins: [function discoveryFiles() {
+    return {
+      name: 'discovery-files',
+      async postBuild({outDir, siteConfig}) {
+        const fs = require('node:fs');
+        const path = require('node:path');
+        const root = `${siteConfig.url}${siteConfig.baseUrl}`;
+        const summary = `# dart_nostr\n\n> An MIT-licensed Nostr SDK for Dart and Flutter. These guides describe the 11.0.0 source preview; pub.dev currently serves 10.0.1.\n\n## Documentation\n- [Overview](${root}docs/): SDK capabilities and API conventions.\n- [Installation](${root}docs/installation/): Published package and pinned preview installation.\n- [Quick start](${root}docs/quick-start/): Connect, publish and subscribe.\n- [Errors](${root}docs/usage/advanced/error-handling/): Typed results and failures.\n- [Source](https://github.com/anasfik/nostr): Implementation and issue tracker.\n`;
+        const files = fs.readdirSync(path.join(__dirname, 'docs'), {recursive: true}).filter(name => name.endsWith('.md')).sort();
+        const full = files.map(name => `\n\n## Source: docs/${name}\n\n${fs.readFileSync(path.join(__dirname, 'docs', name), 'utf8')}`).join('');
+        fs.writeFileSync(path.join(outDir, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${root}sitemap.xml\n`);
+        fs.writeFileSync(path.join(outDir, 'llms.txt'), summary);
+        fs.writeFileSync(path.join(outDir, 'llms-full.txt'), summary + full);
+      },
+    };
+  }],
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
@@ -37,7 +68,7 @@ const config = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
-          routeBasePath: '/',
+          routeBasePath: 'docs',
           sidebarPath: require.resolve('./sidebars.js'),
           editUrl:
             'https://github.com/anasfik/nostr/tree/main/docs/',
@@ -54,7 +85,13 @@ const config = {
     
     ({
       // Replace with your project's social card
-      image: 'img/logo.png',
+      image: 'img/social-card.png',
+      colorMode: {respectPrefersColorScheme: true},
+      announcementBar: {
+        id: 'preview-11',
+        content: `Source preview: these guides describe 11.0.0. The published package is 10.0.1. <a href="${process.env.BASE_URL || '/'}docs/installation/">Install the matching preview</a>.`,
+        isCloseable: false,
+      },
       navbar: {
         title: 'Dart Nostr',
         logo: {
@@ -62,6 +99,7 @@ const config = {
           src: 'img/logo.png',
         },
         items: [
+          {href: 'https://pub.dev/packages/dart_nostr', label: 'pub.dev', position: 'right'},
           {
             type: 'docSidebar',
             sidebarId: 'tutorialSidebar',
@@ -76,14 +114,14 @@ const config = {
         ],
       },
       footer: {
-        style: 'dark',
+        style: 'light',
         links: [
           {
             title: 'Docs',
             items: [
               {
                 label: 'Documentation',
-                to: '/',
+                to: '/docs/',
               },
             ],
           },
