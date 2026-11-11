@@ -26,16 +26,4 @@ This command generates static content into the `build` directory and can be serv
 
 ### Deployment
 
-Using SSH:
-
-```
-$ USE_SSH=true yarn deploy
-```
-
-Not using SSH:
-
-```
-$ GIT_USER=<Your GitHub username> yarn deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+Pushing to `main` triggers `.github/workflows/docs-pages.yml`, which runs `npm ci && npm run build` in this folder and publishes `build/` to GitHub Pages at <https://anasfik.github.io/nostr/>. No manual deploy step; the old `deploy.ps1`/`gh-pages` flow is obsolete.

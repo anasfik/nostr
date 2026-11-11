@@ -7,7 +7,7 @@ description: Handle typed failures with NostrResult<T> and NostrFailure.
 
 All SDK operations that can fail return `NostrResult<T>` — a sealed type with two states: success (`T`) and failure (`NostrFailure`).
 
-## NostrResult<T> API
+## `NostrResult<T>` API
 
 ```dart
 // Check state
