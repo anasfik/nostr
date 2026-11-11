@@ -7,7 +7,7 @@ const darkCodeTheme = require('prism-react-renderer/themes/dracula');
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Dart Nostr',
-  tagline: 'Dart implmentation for the Nostr protocol',
+  tagline: 'Dart implementation of the Nostr protocol',
   favicon: 'img/favicon.ico',
 
   url: 'https://anasfik.github.io',
@@ -111,7 +111,7 @@ const config = {
             ],
           },
         ],
-        copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+        copyright: `Copyright © ${new Date().getFullYear()} Anas Fikhi. Built with Docusaurus.`,
       },
       prism: {
         theme: lightCodeTheme,
