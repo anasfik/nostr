@@ -1,5 +1,5 @@
 ---
-sidebar_position: 3
+sidebar_position: 4
 description: Understand Nostr events, instance ownership, public data and cleanup before using dart_nostr.
 ---
 

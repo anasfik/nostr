@@ -1,0 +1,49 @@
+.bar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Above page content, below nothing interactive: navbar is 200. */
+  z-index: 300;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  padding: var(--space-s) var(--space-m);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-s) var(--space-m);
+}
+
+.text {
+  margin: 0;
+  max-width: 68ch;
+}
+
+.details {
+  font-size: 0.875rem;
+}
+
+.details summary {
+  cursor: pointer;
+  text-decoration: underline;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-s);
+  margin-left: auto;
+}
+
+.actions button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 var(--space-m);
+  border-radius: 4px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+}

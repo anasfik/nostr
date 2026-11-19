@@ -36,6 +36,8 @@ export default function Home() {
         <script type="application/ld+json">{JSON.stringify({
           '@context': 'https://schema.org', '@type': 'SoftwareSourceCode',
           name: 'dart_nostr', description: 'An open-source Nostr SDK for Dart and Flutter.',
+          url: `${siteConfig.url}${siteConfig.baseUrl}`,
+          sameAs: ['https://pub.dev/packages/dart_nostr'],
           codeRepository: 'https://github.com/anasfik/nostr',
           programmingLanguage: 'Dart', runtimePlatform: 'Dart and Flutter',
           license: 'https://github.com/anasfik/nostr/blob/main/LICENSE',
@@ -65,9 +67,9 @@ export default function Home() {
         </section>
 
         <section className={styles.install} aria-label="Install dart_nostr">
-          <div><strong>Start in your project.</strong><span>pub.dev: 10.0.1. These guides preview 11.0.0.</span></div>
+          <div><strong>Install the published package.</strong><span>pub.dev: 10.0.1. Preview examples use 11.0.0.</span></div>
           <CodeBlock language="bash">flutter pub add dart_nostr</CodeBlock>
-          <Link to="/docs/installation/">Install the preview <span aria-hidden="true">↗</span></Link>
+          <Link to="/docs/installation/">Choose your version <span aria-hidden="true">↗</span></Link>
         </section>
 
         <section className={styles.codeSection} aria-labelledby="publish">
@@ -87,6 +89,7 @@ export default function Home() {
 
         <section className={styles.guides} aria-labelledby="guides">
           <h2 id="guides">Follow the part you need.</h2>
+          <p className={styles.guideLead}>Start with a working example, then explore one capability at a time. <Link to="/search/">Search all guides</Link>.</p>
           <div className={styles.guideRows}>
             <Link to="/docs/usage/relays-and-events/connecting-to-relays/"><span>Relay connections</span><p>Connect, reconnect, and manage the transport lifecycle.</p><span aria-hidden="true">↗</span></Link>
             <Link to="/docs/usage/keys-management/"><span>Keys & identity</span><p>Generate key pairs and work with Nostr identities.</p><span aria-hidden="true">↗</span></Link>

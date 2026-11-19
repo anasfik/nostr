@@ -21,6 +21,20 @@ const int maxRelayEventTags = 100;
 const int maxRelayEventTagChars = 32768;
 const int maxRelayEventTagValueChars = 2048;
 
+class RelayPreset {
+  const RelayPreset(this.name, this.url);
+
+  final String name;
+  final String url;
+}
+
+/// Presets only fill the relay field. Choosing one never opens a socket.
+const List<RelayPreset> relayPresets = [
+  RelayPreset('Primal', 'wss://relay.primal.net'),
+  RelayPreset('Snort', 'wss://relay.snort.social'),
+  RelayPreset('nostr.wine', 'wss://nostr.wine'),
+];
+
 class RelayInput {
   const RelayInput({required this.urls, this.error});
 
@@ -40,7 +54,7 @@ RelayInput parseRelayInput(String raw) {
   if (parts.isEmpty) {
     return const RelayInput(
       urls: [],
-      error: 'Add at least one wss:// relay URL.',
+      error: 'Add at least one wss:// relay URL. Choose a preset or paste one.',
     );
   }
 

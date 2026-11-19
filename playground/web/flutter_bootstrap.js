@@ -26,6 +26,7 @@ const bootTimeout = window.setTimeout(function () {
 
 _flutter.loader
   .load({
+    config: {hostElement: document.getElementById('flutter-host')},
     onEntrypointLoaded: async function (engineInitializer) {
       if (bootStatus) {
         bootStatus.textContent = 'Starting the Flutter engine…';

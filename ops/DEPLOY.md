@@ -1,6 +1,139 @@
 # nostr.gwhyyy.com deployment
 
-## Observed state, 2026-11-11
+## Observed state, 2026-11-18 (current, evening)
+
+Release `/var/www/nostr/releases/20261118-193000` is selected by
+`/var/www/nostr/current`. It adds GA4 (`G-2GYP7GFL4D`, property `565042173`)
+with denied-by-default consent plus an Accept/Reject banner mounted on every
+route, on top of the refined UI. Live verification: 18/18 checks pass
+(`nostr-live-refined-check4.log`, headless shell 1234), home/docs/search/
+playground/sitemap 200, banner markup and tag loader present in served HTML,
+`/nope` 404. Local consent proof 10/10 (`nostr-consent-proof.log`): banner
+visible on landing and docs, Accept/Reject persist the choice, tag fires,
+no page errors.
+
+Rollback releases retained: `20261118-180832`, `20261118-180057`,
+`20261114-084001`, `20261111-155830`.
+`/var/www/nostr/current`. It carries the interface refinement: IBM Plex Sans
+self-hosted for the site and the Flutter console, one 16 px/1.6 type scale,
+68ch prose measure, local `/search/` (noindex, URL-addressable, no service or
+dependency), truthful version copy, and a console with real relay presets,
+publish blocked without a live relay, 3 px focus rings, stable event-row keys,
+mobile list→inspector with Back, and persistent Home/Documentation links.
+
+Live verification (`/tmp/opencode/nostr-live-refined-check.log`, 18/18): IBM
+Plex face loads and resolves; one `<h1>`; no overflow at 1440; the theme toggle
+sets `data-theme=dark` with html background `rgb(17, 27, 43)`; `/search/?q=keys`
+returns key management, stays `noindex, follow` and keeps `q` in the URL; mobile
+390 docs do not overflow and code blocks scroll internally; the playground boot
+card is removed, `nav[aria-label="Project"]` is present and a hit test at the
+canvas top edge returns the nav, not the app (the `flutter-view` rect starts at
+y=48); zero page errors.
+
+Rollback releases retained: `20261118-180057` (font/nav defects, live briefly),
+`20261114-084001`, `20261111-155830`.
+
+### Resolved defect: webpack font cache baked in the Pages base path
+
+The first 2026-11-18 release served the font from
+`/nostr/assets/fonts/…woff2` (404, `document.fonts` status `error`) because
+`docs/node_modules/.cache/webpack` still held the asset URL emitted by the
+GitHub-Pages-mode build (`BASE_URL=/nostr/`). Clear that cache
+(`rm -rf docs/node_modules/.cache/webpack`) after any build that changes
+`BASE_URL`, then rebuild. The domain build now emits a root-absolute
+`/assets/fonts/…woff2`.
+
+### Resolved defect: the Flutter loader ignored `hostElement`
+
+`flutter_bootstrap.js` passes `config.hostElement`, but Flutter 3.47's loader
+does not support it (`grep hostElement` finds nothing in the SDK `flutter.js`),
+so it appended `<flutter-view>` to `<body>` and the canvas covered the persistent
+Project nav. `playground/web/index.html` now pins `#flutter-host` with
+`position:absolute; inset:48px 0 0 0` and forces `flutter-view` to
+`position: fixed` starting at `top: 48px`. `docs/scripts/playground-boot.test.cjs`
+asserts the rule, so a loader change that drops it fails the test rather than
+shipping a covered nav.
+
+### Cosmetic: `.woff2` static duplicate has no MIME mapping
+
+`/fonts/ibm-plex-sans-latin.woff2` is served as `application/octet-stream`
+because Ubuntu nginx 1.18 maps only `application/font-woff woff;`. The page does
+not request it (CSS loads the hashed `/assets/…` file), so there is no
+user-facing effect; fixing it needs an admin edit to `/etc/nginx/mime.types`.
+
+## Previous state, 2026-11-14
+
+Release `/var/www/nostr/releases/20261114-084001` was selected by
+`/var/www/nostr/current`, replaced atomically by renaming a fresh symlink over the
+old one. It was unpacked from `/tmp/opencode/nostr-site-seo-20261114.tar.gz`,
+SHA256 `36c903bf348057f2efad278f67524a5808670f469d8e9e6529394573824ccdf2`.
+
+This release contains the corrected Flutter playground (guarded relay teardown,
+bounded untrusted feed, real cleanup on disconnect, working theme toggle) and the
+SEO wave (intent-specific guide titles, unique descriptions, short sidebar labels,
+80×80 logo derivative with intrinsic dimensions, schema `url`/`sameAs`, indexed
+Flutter bootstrap with `noindex, follow`). The `onEose` guide correction is
+included.
+
+Verified over public HTTPS with user agent `nostr-release-verification/1.0`:
+21 sitemap routes return 200 with unique titles, unique descriptions, exact
+self-canonical URLs and one `<h1>`; home serves the landing page, not the tattoo
+app; `SoftwareSourceCode` JSON parses with `url` and `sameAs`; playground
+`main.dart.js` matches the locally verified build and the page carries
+`noindex, follow` plus a self-canonical; discovery files and images return 200;
+unknown paths return 404. A live Chromium pass checks the playground boot card is
+removed and the theme toggle changes and restores the rendered theme.
+Logs: `/tmp/opencode/nostr-live-verify.log`, proofs in
+`/tmp/opencode/nostr-seo-proof/`.
+
+### Resolved defect: `.wasm` MIME type blocked the Flutter playground
+
+Ubuntu nginx 1.18 does not map `.wasm` in `/etc/nginx/mime.types`, so
+`/playground/canvaskit/*.wasm` and `skwasm*.wasm` are served as
+`application/octet-stream`. Chromium then refuses to instantiate them
+(`Failed to execute 'compile' on 'WebAssembly': Incorrect response MIME type`)
+and the app stays on its loading card. This affects the previous release too;
+only the HTML shell was verified live before, while local browser proof ran on
+Python's static server, which sends `application/wasm`.
+
+Fix requires one administrator write to nginx configuration, then reload:
+
+```bash
+sudo sed -i '0,/^}$/s|^}$|    application/wasm                wasm;\n}|' /etc/nginx/mime.types
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+Verify with
+`curl -sI https://nostr.gwhyyy.com/playground/canvaskit/canvaskit.wasm | grep -i content-type`
+which must return `application/wasm`, then reload the playground and confirm the
+boot card disappears.
+
+Applied 2026-11-14 and verified: both `canvaskit/canvaskit.wasm` and
+`canvaskit/chromium/canvaskit.wasm` return `application/wasm` through Cloudflare
+and directly at the origin. The live playground now boots (`#boot` removed),
+renders its three panes, and the theme toggle switches to dark and back
+(`/tmp/opencode/nostr-live-verify.log`). Any future server that gains this host
+needs the same `mime.types` entry before the demo will start.
+
+Access was granted with `setfacl -m u:gw:rwx` on `/var/www/nostr` and
+`/var/www/nostr/releases` only. nginx reload is not required for a symlink swap;
+none was performed. TLS and the remaining administrator cleanup items are below.
+
+### Relay check note
+
+`wss://relay.damus.io` and `wss://nos.lol` accepted the demo's connection but
+returned no events from this host, and `wss://nos.lol` did not complete its
+handshake. Direct probes from the same browser reached `wss://relay.primal.net`
+(29 events), `wss://relay.snort.social` (17) and `wss://nostr.wine` (3), so this
+is a relay/geography issue rather than a client defect. Against
+`wss://relay.primal.net` the live demo delivered events normally: the counter
+climbed 21 to 79 in ten seconds, the list rendered kind 1 notes with valid
+signatures and the JSON inspector showed the raw event
+(`/tmp/opencode/nostr-read-live.log`, screenshot
+`/tmp/opencode/nostr-browse/read-primal.png`). When a visitor reports an empty
+feed, check the relay before the app.
+
+## Prior state, 2026-11-11
 
 The Cloudflare-proxied domain now serves the Nostr site through a dedicated nginx
 vhost. The unrelated tattoo app and its existing vhost were left intact.
@@ -16,20 +149,21 @@ concurrent-session safety defects. The user chose to leave the existing demo
 accessible. Corrected source now passes 423 offline SDK tests, 45 Flutter tests,
 analysis and a rebuilt release. A real browser verified local signing, read-only
 relay interaction, cancelled publishing and disconnect cleanup. The verified
-replacement is assembled in `docs/build/`, but is not deployed yet.
-Do not treat the older live playground as release-ready. Close existing demo tabs
-after testing; a future deployment cannot terminate their open connections.
-A later source-only correction to the low-level guide's `onEose` callback
-is not yet in this deployed release. One default Python sitemap request received
+replacement was assembled in `docs/build/` and later deployed as the 2026-11-14
+release above; this section records the state before that switch.
+Do not treat the 2026-11-11 playground as release-ready. Close any demo tabs
+opened against it; it is no longer served.
+That earlier release lacked the `onEose` guide correction; the 2026-11-14 release
+includes it. One default Python sitemap request received
 403; subsequent identified requests and curl returned 200. A later robots.txt
 sample returned 200 for verification, Googlebot, OAI-SearchBot and Python user
 agents. This is sampled HTTP access, not proof of search indexing or universal
 bot access.
 
-The production parent directories are root-owned. For the next atomic release,
-an administrator must either perform the directory creation/symlink switch or
-grant `gw` write access to only `/var/www/nostr` and `/var/www/nostr/releases`.
-Writable files inside the old release are not a reason to update it piecemeal.
+The production parent directories were root-owned. Write access is now granted to
+`gw` on `/var/www/nostr` and `/var/www/nostr/releases` only, so the next release
+can repeat the atomic directory-plus-symlink switch. Writable files inside a
+release are still not a reason to update it piecemeal.
 
 Administrator follow-up: remove the two temporary probe files
 `/var/www/certbot/probe` and `/var/www/certbot/.well-known/acme-challenge/probe`.

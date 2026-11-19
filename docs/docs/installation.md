@@ -1,13 +1,15 @@
 ---
 sidebar_position: 2
-description: Install dart_nostr in a Dart or Flutter project.
+sidebar_label: Installation
+title: Install dart_nostr for Dart and Flutter
+description: Add dart_nostr to a Dart or Flutter project. Compare the published package with the 11.0.0 source preview and pin the dependency used by these guides.
 ---
 
 # Installation
 
 ## Flutter
 
-The commands below install the published **10.0.1** release (checked 2026-11-11).
+The commands below install the published **10.0.1** release (checked 2026-11-14).
 These guides and the playground target the **11.0.0 source preview**. Use the
 pinned Git dependency below to follow the preview APIs. Version 11.0.0 has not
 been published to pub.dev. Short snippets omit application setup; start with

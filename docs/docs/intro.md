@@ -1,7 +1,9 @@
 ---
 sidebar_position: 1
+sidebar_label: Overview
 slug: /
-description: dart_nostr — a production-ready Dart and Flutter SDK for building Nostr applications. Typed results, relay management, key tooling, NIP-05/19 support, and clean subscription lifecycle.
+title: Dart and Flutter Nostr SDK documentation
+description: Learn dart_nostr with installation steps, a Dart quick start, and guides to relay connections, signed events, subscriptions, keys and typed failures.
 ---
 
 # dart_nostr
@@ -24,7 +26,7 @@ description: dart_nostr — a production-ready Dart and Flutter SDK for building
 
 ## Core design principles
 
-- **Typed results everywhere.** `NostrResult<T>` is a sealed type. Every operation returns either a success value or a structured `NostrFailure`. No unchecked exceptions in the public API.
+- **Typed relay results.** High-level relay operations return `NostrResult<T>` with a success value or a structured `NostrFailure`. Local parsing and cryptographic helpers can throw; validate external input and handle those errors in your app.
 - **Single entry point.** `Nostr.instance` is the singleton accessor. All services are reachable from it.
 - **Two API tiers.** The top-level facade (`nostr.connect`, `nostr.publish`, `nostr.subscribeRequest`) is optimized for app development. The `nostr.relays` and `nostr.services` surfaces give raw protocol access when needed.
 - **Testable.** Instances are isolated and support injected transports, making unit testing straightforward.
@@ -38,7 +40,7 @@ final nostr = Nostr.instance;     // singleton
 final nostr2 = Nostr();           // isolated instance, separate connection pool
 ```
 
-Every operation on the facade returns `NostrResult<T>`:
+For example, publishing returns a typed result. A successful operation still requires checking whether the relay accepted the event:
 
 ```dart
 final result = await nostr.publish(event);

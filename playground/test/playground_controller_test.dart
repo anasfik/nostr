@@ -170,6 +170,32 @@ void main() {
     },
   );
 
+  test('refuses to publish when no relay stayed live', () async {
+    final sessions = <_FakeSession>[];
+    final controller = _controllerWithFake(sessions);
+    addTearDown(controller.dispose);
+
+    final connecting = controller.connect('wss://relay.example');
+    await _awaitMicrotasks();
+    sessions.single.connectedRelays = const [];
+    sessions.single.connectCompleter.complete(const NostrSuccess<void>(null));
+    await connecting;
+
+    controller.generateKeyPair();
+    controller.signEvent(kind: '1', content: 'no live relay', tags: '[]');
+
+    expect(controller.status, PlaygroundSessionStatus.connected);
+    expect(controller.liveRelays, isEmpty);
+    expect(controller.canPublish, isFalse);
+
+    await controller.publishSignedEvent(confirmed: true);
+
+    expect(controller.publishReceipt, isNull);
+    expect(controller.error, contains('live relay'));
+    expect(controller.error, contains('preset'));
+    expect(sessions.single.publishCompleters, isEmpty);
+  });
+
   test('subscribing without a connection is refused', () {
     final controller = PlaygroundController();
     addTearDown(controller.dispose);
@@ -338,6 +364,7 @@ void main() {
 
     expect(controller.status, PlaygroundSessionStatus.disconnected);
     expect(controller.error, contains('timed out'));
+    expect(controller.error, contains('preset'));
     expect(sessions.single.tornDown, isTrue);
   });
 

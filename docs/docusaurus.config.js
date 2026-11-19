@@ -2,7 +2,7 @@
 // Note: type annotations allow type checking and IDEs autocompletion
 
 const lightCodeTheme = {
-  plain: {color: '#17263e', backgroundColor: '#f6f8fc'},
+  plain: {color: '#17263e', backgroundColor: '#ffffff'},
   styles: [
     {types: ['keyword', 'function', 'tag', 'number', 'boolean'], style: {color: '#245ac4'}},
     {types: ['string', 'attr-value'], style: {color: '#9b2452'}},
@@ -29,7 +29,7 @@ const config = {
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: process.env.BASE_URL || '/',
   trailingSlash: true,
-  plugins: [function discoveryFiles() {
+  plugins: [require.resolve('./plugins/docs-search.cjs'), require.resolve('./plugins/analytics.cjs'), function discoveryFiles() {
     return {
       name: 'discovery-files',
       async postBuild({outDir, siteConfig}) {
@@ -89,16 +89,21 @@ const config = {
       colorMode: {respectPrefersColorScheme: true},
       announcementBar: {
         id: 'preview-11',
-        content: `Source preview: these guides describe 11.0.0. The published package is 10.0.1. <a href="${process.env.BASE_URL || '/'}docs/installation/">Install the matching preview</a>.`,
+        backgroundColor: 'var(--surface)',
+        textColor: 'var(--ink-2)',
+        content: `Guides: 11.0.0 preview · pub.dev: 10.0.1. <a href="${process.env.BASE_URL || '/'}docs/installation/">Choose your version</a>.`,
         isCloseable: false,
       },
       navbar: {
         title: 'Dart Nostr',
         logo: {
           alt: 'Dart Nostr logo',
-          src: 'img/logo.png',
+          src: 'img/logo-nav.png',
+          width: 40,
+          height: 40,
         },
         items: [
+          {to: '/search/', label: 'Search docs', position: 'right'},
           {href: 'https://pub.dev/packages/dart_nostr', label: 'pub.dev', position: 'right'},
           {
             type: 'docSidebar',

@@ -7,6 +7,8 @@ description: Encode and decode npub, nsec, nprofile, nevent, and naddr using NIP
 
 `nostr.bech32` handles all NIP-19 entity encoding and decoding.
 
+For help choosing a format rather than calling the API, read [Nostr identifiers and relay hints](../identity/nip19.md).
+
 ## npub / nsec
 
 ```dart

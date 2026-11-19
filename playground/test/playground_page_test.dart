@@ -72,6 +72,8 @@ void main() {
   ) async {
     await pumpApp(tester);
 
+    await tester.ensureVisible(find.byKey(const Key('generate-key-button')));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('generate-key-button')));
     await tester.pump();
     expect(find.textContaining('npub1'), findsOneWidget);
@@ -79,7 +81,8 @@ void main() {
     await tester.enterText(
       find.byKey(const Key('content-input')),
       'widget signed note',
-    );    await tester.ensureVisible(find.byKey(const Key('sign-button')));
+    );
+    await tester.ensureVisible(find.byKey(const Key('sign-button')));
     await tester.tap(find.byKey(const Key('sign-button')));
     await tester.pump();
 
@@ -120,6 +123,8 @@ void main() {
       MaterialApp(home: PlaygroundPage(controller: controller)),
     );
 
+    await tester.ensureVisible(find.byKey(const Key('generate-key-button')));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('generate-key-button')));
     await tester.pump();
     expect(controller.hasKey, isTrue);
@@ -128,6 +133,8 @@ void main() {
       find.byKey(const Key('relay-input')),
       'wss://relay.example',
     );
+    await tester.ensureVisible(find.byKey(const Key('connect-button')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('connect-button')));
     await tester.pump();
     expect(find.text('Cancel'), findsOneWidget);

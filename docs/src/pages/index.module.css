@@ -5,7 +5,7 @@
 
 .landing {max-width: 1240px; margin: 0 auto; padding: 0 var(--space-l); width: 100%;}
 .hero {display: grid; grid-template-columns: 1.4fr 1fr; align-items: center; gap: var(--space-2xl); padding: var(--space-2xl) 0;}
-.eyebrow {font-family: monospace; color: var(--accent); margin-bottom: var(--space-m);}
+.eyebrow {font-size: .875rem; font-weight: 500; color: var(--ink-2); margin-bottom: var(--space-m);}
 .hero h1 {font-size: clamp(2.441rem, 4.3vw, 3.815rem); line-height: 1.12; letter-spacing: -.04em; margin-bottom: var(--space-m);}
 .hero h1 span {color: var(--accent);}
 .lead {font-size: var(--step-1); color: var(--ink-2); max-width: 42ch; margin-bottom: var(--space-l);}
@@ -16,7 +16,7 @@
 .primary:hover {color: var(--base); background: var(--ifm-color-primary-dark); text-decoration: none;}
 .secondary:hover {color: var(--accent); border-color: var(--accent); text-decoration: none;}
 .primary:active, .secondary:active {transform: translateY(1px);}
-.protocol {border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius); padding: var(--space-l); text-align: center; font-family: monospace;}
+.protocol {border: 1px solid var(--line); background: var(--surface); border-radius: var(--radius); padding: var(--space-l); text-align: center;}
 .protocolTitle {color: var(--ink-2); text-align: left; margin-bottom: var(--space-l);}
 .appNode, .sdkNode {padding: var(--space-s); border: 1px solid var(--line); border-radius: var(--radius);}
 .sdkNode {border-color: var(--accent); color: var(--accent);}
@@ -43,6 +43,8 @@
 .code {min-width: 0;}
 .code pre {font-size: .875rem;}
 .guides {padding-bottom: var(--space-3xl);}
+.guideLead {max-width: 60ch; color: var(--ink-2);}
+.guideLead a {text-decoration: underline;}
 .guideRows {margin-top: var(--space-xl);}
 .guideRows a {display: grid; grid-template-columns: 1fr 1.5fr auto; gap: var(--space-l); padding: var(--space-m) 0; border-top: 1px solid var(--line); color: var(--ink); align-items: center;}
 .guideRows a:last-child {border-bottom: 1px solid var(--line);}

@@ -162,7 +162,8 @@ class PlaygroundController extends ChangeNotifier {
       signedEvent != null &&
       !publishing &&
       status == PlaygroundSessionStatus.connected &&
-      _session != null;
+      _session != null &&
+      liveRelays.isNotEmpty;
 
   bool isAuthentic(NostrEvent event) {
     final key = identityHashCode(event);
@@ -280,7 +281,10 @@ class PlaygroundController extends ChangeNotifier {
         return;
       }
       status = PlaygroundSessionStatus.disconnected;
-      _setError('Connection timed out after ${_connectGuard.inSeconds}s.');
+      _setError(
+        'Connection timed out after ${_connectGuard.inSeconds}s. '
+        'Relay availability varies; choose another preset and retry.',
+      );
       return;
     } catch (e) {
       _pendingSession = null;
@@ -417,7 +421,8 @@ class PlaygroundController extends ChangeNotifier {
       _appendLog(
         LogLevel.warn,
         'No events after ${_emptyNotice.inSeconds}s. The relay may not '
-        'return results for this filter.',
+        'return results for this filter. Relay availability varies; try '
+        'another preset and reconnect.',
       );
       _notify();
     });
@@ -477,6 +482,13 @@ class PlaygroundController extends ChangeNotifier {
     final session = _session;
     if (session == null || status != PlaygroundSessionStatus.connected) {
       _setError('Connect to at least one relay before publishing.');
+      return;
+    }
+    if (liveRelays.isEmpty) {
+      _setError(
+        'No live relay is connected. Choose another preset, reconnect, '
+        'then publish.',
+      );
       return;
     }
     if (publishing) {

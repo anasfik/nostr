@@ -13,7 +13,18 @@ flutter pub get
 flutter run -d chrome
 ```
 
-No relay is contacted until you press **Connect**.
+No relay is contacted until you press **Connect**. The Primal, Snort and
+nostr.wine presets only fill the relay field; choosing one never opens a
+socket. Relay availability varies, so if one times out or returns nothing, try
+another preset and reconnect.
+
+The controls use IBM Plex Sans with the shared light/dark brand tokens and 4px
+corners. The bundled font is the original Google variable TTF under the SIL Open
+Font License; `assets/fonts/OFL.txt` ships as an application asset. Desktop
+shows controls, events and logs side by side from 1180px wide; narrower screens
+use Setup, Events and Logs tabs. In the Events tab, tap a row to open its full
+inspector and use **Back to events** to return; a locally signed event that has
+not arrived from a relay gets its own **Inspect signed event** action.
 
 ## Build for `/playground/`
 
@@ -43,8 +54,11 @@ flutter test
 
 Tests cover WSS-only relay validation, key generation, signing, ID and
 signature verification, tampered events, bounded logs, filter validation,
-publish confirmation gating, error states and responsive layout. SDK lifecycle
-tests use a local WebSocket server; no test publishes to a public relay.
+publish confirmation gating, zero-live-relay refusal, relay presets, live
+announcements, dialog focus and Escape handling, event-row semantics, the
+mobile list/inspector flow, 390/1024/1280px layouts and enlarged text. SDK
+lifecycle tests use a local WebSocket server; no test publishes to a public
+relay.
 
 ## Security and data handling
 
@@ -59,8 +73,10 @@ tests use a local WebSocket server; no test publishes to a public relay.
   events are dropped before retention.
 - Logs contain operation metadata and event IDs, not key material.
 - Publishing uses kind/content/tags chosen by you and requires a live
-  connection, the confirmation dialog and `confirmed: true` in the controller.
-  The SDK surfaces the first relay response; other relay outcomes may differ.
+  connection to at least one relay, the confirmation dialog and
+  `confirmed: true` in the controller. Both the UI eligibility check and the
+  publish method refuse to send while the live relay set is empty. The SDK
+  surfaces the first relay response; other relay outcomes may differ.
 
 ## Limits
 

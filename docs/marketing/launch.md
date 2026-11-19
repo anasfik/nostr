@@ -1,6 +1,6 @@
 # dart_nostr site launch kit
 
-Status: drafts, not published. Owner: maintainer. Updated: 2026-11-11.
+Status: drafts, not published. Owner: maintainer. Updated: 2026-11-14.
 Read `.agents/product-marketing.md` before changing claims.
 
 ## Positioning and audience
@@ -18,7 +18,7 @@ Exa's 2026-11-11 query for Dart/Flutter Nostr SDK documentation returned
 [the API reference](https://pub.dev/documentation/dart_nostr/latest/), and
 [relay API documentation](https://pub.dev/documentation/dart_nostr/latest/nostr_instance_relays_relays/NostrRelays-class.html).
 The [pub.dev API](https://pub.dev/api/packages/dart_nostr) reports latest 10.0.1;
-repository version 11.0.0 is a source preview. Search excerpts can be stale: use
+repository version 11.0.0 is a source preview (rechecked 2026-11-14). Search excerpts can be stale: use
 the package API for release truth. These are observed results, not search-volume
 or rank measurements. GSC query/click/impression data is MISSING (auth failed).
 
@@ -29,17 +29,27 @@ or rank measurements. GSC query/click/impression data is MISSING (auth failed).
 | Connect and publish with Dart Nostr | `/docs/quick-start/` | Run a local example |
 | Nostr relay subscription Dart | `/docs/usage/relays-and-events/subscribing-to-events/` | Manage a subscription lifecycle |
 | Nostr typed error handling | `/docs/usage/advanced/error-handling/` | Handle a failure explicitly |
+| Nostr key management in Dart | `/docs/usage/keys-management/` | Choose a safe key workflow |
+| npub vs nsec vs nprofile vs nevent | `/docs/usage/identity/nip19/` | Choose what to share |
+| Encode and decode Nostr bech32 in Dart | `/docs/usage/keys-management/bech32-encoding/` | Use the SDK encoding methods |
+
+See `seo-audit.md` for current technical evidence and `distribution.md` for
+channel-specific drafts. These intent labels are hypotheses, not measured demand.
 
 ## Launch gate
 
-- Deploy correct host-specific nginx vhost and valid origin certificate.
-- Verify root, all docs, Flutter app, metadata, discovery files and genuine 404.
-- Keep preview version clear. Do not publish the package as part of the site launch.
-- Reauthenticate GSC/GA through their secure auth flows; never paste tokens.
+- Host-specific nginx and origin TLS are live; do not claim that every local fix is deployed.
+- Atomically deploy the corrected Flutter bundle and current SEO build after administrator access is available.
+- Verify root, all docs, Flutter app, metadata, discovery files and genuine 404 on that release.
+- Keep preview version clear. The separately requested package publication attempt stopped at Google OAuth; 11.0.0 is not published.
+- Reauthenticate GSC/GA through their secure auth flows before activating measurement; never paste tokens.
 - Obtain approval before submitting sitemap/indexing or posting announcements.
 - Capture browser screenshots and disclose unsupported playground features.
 
 ## Announcement draft
+
+Do not post until the corrected playground is live. Recheck the registry version
+immediately before posting and update the version sentence if publication succeeds.
 
 dart_nostr has a new home: https://nostr.gwhyyy.com/
 
@@ -69,8 +79,9 @@ browser-based Flutter playground for exploring the core workflow.
    discovery. The website/docs/playground are the reusable owned assets.
 2. **Strategic frame:** developer tooling, free open-source distribution. Frequent
    integration friction is a hypothesis, not customer-interview evidence.
-3. **Current state:** existing pub.dev and GitHub presence; new domain points at
-   wrong content. Budget, team capacity, traffic and adoption baseline MISSING.
+3. **Current state:** existing pub.dev, GitHub and awesome-nostr library listing;
+   the domain serves the SDK site. Corrected playground and SEO changes await an
+   atomic deployment. Budget, team capacity, traffic and adoption baseline MISSING.
 4. **Acquisition:** improve owned docs first. Prepare a GitHub release/site update
    and one Flutter/Nostr community post; publish only after approval. Skip ads.
 5. **Activation:** visitor → playground or quick start → local integration.
@@ -93,4 +104,14 @@ browser-based Flutter playground for exploring the core workflow.
 13. **Measurement and decisions:** see `tracking.md`. Review weekly after access
     works. Kill a content experiment if it addresses no real query or issue;
     use matching closed time windows before comparing rates. Budget and hiring
-    decisions stay with the maintainer; no funding assumptions.
+     decisions stay with the maintainer; no funding assumptions.
+
+## Weekly operating loop
+
+Maintainer: check broken links and version claims each week. After Google access
+works, export the last complete 28 days of query/page data and compare with the
+preceding 28 days. Improve one page with relevant impressions and a weak snippet
+or missing answer, then annotate its deployment date. Judge changes only after a
+comparable observation window; low samples remain inconclusive. Use reported
+integration issues to pick the next example. Do not generate pages without a
+distinct reader task or send promotional messages automatically.

@@ -1,6 +1,8 @@
 ---
 sidebar_position: 3
-description: Working end-to-end example covering keys, connection, publishing, and subscribing.
+sidebar_label: Quick start
+title: Dart Nostr quick start
+description: Connect to a Nostr relay, create and publish a signed event, subscribe with filters, handle typed failures and close resources in a Dart example.
 ---
 
 # Quick Start
@@ -99,7 +101,7 @@ result.fold(
 
 `NostrFailure` always includes:
 - `message` — human-readable description
-- `code` — machine-readable error code string
+- `code` — machine-readable `NostrFailureCode` enum
 - `isRetryable` — whether retrying the operation makes sense
 
 ## Next steps
