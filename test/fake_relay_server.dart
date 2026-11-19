@@ -41,9 +41,27 @@ class FakeRelayServer {
   int get port => _server!.port;
   String get url => 'ws://localhost:$port';
 
+  /// Number of currently connected client sockets.
+  int get clientCount => _sockets.length;
+
   /// Every message received from any client, in order.
   List<dynamic> get receivedMessages => _receivedMessages;
   Stream<dynamic> get receivedStream => _receivedController.stream;
+
+  /// Forgets previously received messages so [waitForMessage] only sees new
+  /// traffic.
+  void clearReceivedMessages() => _receivedMessages.clear();
+
+  /// Closes every client socket without stopping the server, simulating a
+  /// relay-side disconnect so reconnect behavior can be exercised.
+  Future<void> disconnectClients() async {
+    for (final socket in List.of(_sockets)) {
+      await socket.close();
+    }
+    for (var i = 0; i < 100 && _sockets.isNotEmpty; i++) {
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+    }
+  }
 
   Future<void> start() async {
     _server = await HttpServer.bind('localhost', 0);
@@ -206,13 +224,7 @@ class FakeRelayServer {
       return existing.first;
     }
 
-    await for (final message in receivedStream) {
-      if (test(message)) {
-        return message;
-      }
-    }
-
-    throw TimeoutException('message not received in time', timeout);
+    return receivedStream.firstWhere(test).timeout(timeout);
   }
 
   Future<void> stop() async {

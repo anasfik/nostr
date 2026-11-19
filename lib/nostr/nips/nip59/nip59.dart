@@ -162,6 +162,8 @@ class Nip59 {
     NostrEvent wrappedEvent,
     NostrEventSigner recipientSigner,
   ) async {
+    _requireVerified(wrappedEvent, 'wrapped event');
+
     final innerPubkey = _innerSender(wrappedEvent);
 
     final decrypted = await recipientSigner.nip44Decrypt(
@@ -193,6 +195,12 @@ class Nip59 {
     NostrEvent giftWrapEvent,
     NostrEventSigner recipientSigner,
   ) async {
+    if (giftWrapEvent.kind != 1059) {
+      throw ArgumentError(
+        'expected a kind-1059 gift wrap, got kind ${giftWrapEvent.kind}',
+      );
+    }
+
     final seal = await unwrap(giftWrapEvent, recipientSigner);
 
     if (seal.kind != 13) {
@@ -201,7 +209,33 @@ class Nip59 {
       );
     }
 
-    return unwrap(seal, recipientSigner);
+    final rumor = await unwrap(seal, recipientSigner);
+
+    // The seal is the only signed proof of authorship. Without this check a
+    // sender can seal a rumor that claims someone else's pubkey.
+    if (seal.pubkey != rumor.pubkey) {
+      throw ArgumentError(
+        'seal author does not match rumor author '
+        '(${seal.pubkey} != ${rumor.pubkey})',
+      );
+    }
+
+    return rumor;
+  }
+
+  /// Verifies [event]'s signature, converting missing/invalid signatures into
+  /// an [ArgumentError] with a useful label.
+  static void _requireVerified(NostrEvent event, String label) {
+    bool verified;
+    try {
+      verified = event.isVerified();
+    } catch (_) {
+      verified = false;
+    }
+
+    if (!verified) {
+      throw ArgumentError('$label has an invalid signature');
+    }
   }
 
   /// The NIP-44 conversation peer of a wrapped event is always its own

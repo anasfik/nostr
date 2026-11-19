@@ -30,6 +30,9 @@ class NostrFilterBuilder {
   /// Additional tags to filter.
   final Map<String, Set<String>> _tags = {};
 
+  /// NIP-50 search string.
+  String? _search;
+
   /// {@macro nostr_filter_builder}
   NostrFilterBuilder();
 
@@ -100,6 +103,12 @@ class NostrFilterBuilder {
   }
 
   /// Add a custom tag filter.
+  ///
+  /// Pass the bare tag name (`t`, `p`, `custom`), not `#t`: the `#` prefix is
+  /// added when the filter serializes. Core keys (`ids`, `authors`, `kinds`,
+  /// `#e`, `#p`, `#t`, `#a`, timestamps, limit, search) set on the filter win
+  /// over the same key in `additionalFilters` when `toMap()` is called, so use
+  /// the dedicated builder methods for those and keep this for extra tags.
   NostrFilterBuilder withTag(String tagName, List<String> values) {
     _tags.putIfAbsent(tagName, () => {}).addAll(values);
     return this;
@@ -108,6 +117,12 @@ class NostrFilterBuilder {
   /// Add a single custom tag filter.
   NostrFilterBuilder addTag(String tagName, String value) {
     _tags.putIfAbsent(tagName, () => {}).add(value);
+    return this;
+  }
+
+  /// Set the NIP-50 search string.
+  NostrFilterBuilder withSearch(String search) {
+    _search = search;
     return this;
   }
 
@@ -121,6 +136,13 @@ class NostrFilterBuilder {
       since: _since,
       until: _until,
       limit: _limit,
+      search: _search,
+      additionalFilters: _tags.isEmpty
+          ? null
+          : {
+              for (final entry in _tags.entries)
+                '#${entry.key}': entry.value.toList(),
+            },
     );
   }
 
@@ -134,6 +156,7 @@ class NostrFilterBuilder {
     _until = null;
     _limit = null;
     _tags.clear();
+    _search = null;
     return this;
   }
 }

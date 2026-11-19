@@ -92,6 +92,12 @@ class NostrNip17 {
       throw ArgumentError('at least one recipient is required');
     }
 
+    if (recipientPubkeys.contains(signer.publicKey)) {
+      throw ArgumentError(
+        'the sender must not be included in recipientPubkeys',
+      );
+    }
+
     final tags = <List<String>>[
       ['url', fileUrl],
       ['m', fileType],

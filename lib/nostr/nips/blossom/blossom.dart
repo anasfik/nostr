@@ -5,6 +5,9 @@ import 'package:dart_nostr/nostr/model/event/event.dart';
 import 'package:dart_nostr/nostr/signers/signer.dart';
 import 'package:http/http.dart' as http;
 
+export '../nip94/nip94.dart';
+export '../nip96/nip96.dart';
+
 /// {@template blossom_client}
 /// Blossom media server client (BUD-01/BUD-02): fetch blobs, check
 /// availability, and upload with authorization events.
@@ -33,7 +36,7 @@ class NostrBlossomClient {
     String serverUrl,
     String sha256,
   ) async {
-    final response = await http.head(_blobUri(serverUrl, sha256));
+    final response = await _httpClient.head(_blobUri(serverUrl, sha256));
 
     if (response.statusCode == 404) {
       return null;
@@ -50,7 +53,7 @@ class NostrBlossomClient {
 
   /// GET /<sha256> — downloads a blob from [serverUrl].
   Future<Uint8List> getBlob(String serverUrl, String sha256) async {
-    final response = await http.get(_blobUri(serverUrl, sha256));
+    final response = await _httpClient.get(_blobUri(serverUrl, sha256));
 
     if (response.statusCode != 200) {
       throw http.ClientException(
@@ -120,8 +123,8 @@ class NostrBlossomClient {
     String serverUrl,
     String pubkey,
   ) async {
-    final response =
-        await http.get(Uri.parse('${_normalize(serverUrl)}/list/$pubkey'));
+    final response = await _httpClient
+        .get(Uri.parse('${_normalize(serverUrl)}/list/$pubkey'));
 
     if (response.statusCode != 200) {
       throw http.ClientException(
@@ -138,140 +141,4 @@ class NostrBlossomClient {
   String _normalize(String serverUrl) => serverUrl.endsWith('/')
       ? serverUrl.substring(0, serverUrl.length - 1)
       : serverUrl;
-}
-
-/// {@template nip94_file_metadata}
-/// NIP-94 file metadata event builder (kind 1063). Complements uploads by
-/// publishing discoverable metadata about a hosted file.
-/// {@endtemplate}
-class NostrNip94FileMetadata {
-  /// {@macro nip94_file_metadata}
-  NostrNip94FileMetadata({required this.signer});
-
-  final NostrEventSigner signer;
-
-  /// Creates a kind-1063 file metadata event.
-  Future<NostrEvent> createFileMetadata({
-    required String url,
-    required String mimeType,
-    required int sizeBytes,
-    required String sha256Hex,
-    String? originalHash,
-    List<String> dimensions = const [],
-    String? magnetUri,
-    List<String> torrentInfoHashes = const [],
-    String? blurhash,
-    String? title,
-    String? description,
-    DateTime? createdAt,
-  }) async {
-    return signer.sign(
-      NostrEvent(
-        id: null,
-        kind: 1063,
-        content: description ?? '',
-        sig: null,
-        pubkey: signer.publicKey,
-        createdAt: createdAt ?? DateTime.now(),
-        tags: [
-          ['url', url],
-          ['m', mimeType],
-          ['size', '$sizeBytes'],
-          ['x', sha256Hex],
-          if (originalHash != null) ['ox', originalHash],
-          if (dimensions.isNotEmpty) ['dim', dimensions.join('x')],
-          if (magnetUri != null) ['magnet', magnetUri],
-          for (final hash in torrentInfoHashes) ['i', hash],
-          if (blurhash != null) ['blurhash', blurhash],
-          if (title != null) ['title', title],
-        ],
-      ),
-    );
-  }
-}
-
-/// {@template nip96_uploader}
-/// NIP-96 HTTP file storage uploader. Note: NIP-96 is deprecated in favor of
-/// Blossom but remains deployed; this client covers the basic upload flow.
-/// {@endtemplate}
-class NostrNip96Uploader {
-  /// {@macro nip96_uploader}
-  NostrNip96Uploader({required this.signer, http.Client? httpClient})
-      : _httpClient = httpClient ?? http.Client();
-
-  final NostrEventSigner signer;
-
-  final http.Client _httpClient;
-
-  /// Resolves the API URL advertised in a relay/media server's NIP-96
-  /// information document (`api_url` field).
-  Future<String?> resolveApiUrl(String serverRootUrl) async {
-    final doc = await http.get(
-      Uri.parse(serverRootUrl),
-      headers: {'accept': 'application/nostr+json'},
-    );
-
-    if (doc.statusCode != 200) {
-      return null;
-    }
-
-    try {
-      return (jsonDecode(doc.body) as Map<String, dynamic>)['api_url']
-          as String?;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /// Uploads a file via multipart form-data POST with a NIP-98-style
-  /// authorization header.
-  Future<String> upload({
-    required String apiUrl,
-    required Uint8List bytes,
-    required String fileName,
-    required String contentType,
-    Duration validFor = const Duration(hours: 1),
-  }) async {
-    final auth = await signer.sign(
-      NostrEvent(
-        id: null,
-        kind: 24242,
-        content: '',
-        sig: null,
-        pubkey: signer.publicKey,
-        createdAt: DateTime.now(),
-        tags: [
-          ['t', 'upload'],
-          [
-            'expiration',
-            '${(DateTime.now().add(validFor).millisecondsSinceEpoch ~/ 1000)}'
-          ],
-        ],
-      ),
-    );
-
-    final request = http.MultipartRequest('POST', Uri.parse(apiUrl))
-      ..files.add(
-        http.MultipartFile.fromBytes('file', bytes, filename: fileName),
-      )
-      ..headers['authorization'] =
-          'Nostr ${base64Encode(utf8.encode(auth.serialized()))}';
-
-    final streamed = await _httpClient.send(request);
-    final body = await streamed.stream.bytesToString();
-
-    if (streamed.statusCode != 200 && streamed.statusCode != 201) {
-      throw http.ClientException(
-        'nip96 upload failed (${streamed.statusCode}): $body',
-      );
-    }
-
-    try {
-      return ((jsonDecode(body) as Map<String, dynamic>)['nip94_event']
-          as Map<String, dynamic>)['tags'][0][1] as String;
-    } catch (_) {
-      // Fall back to returning the raw body when the shape differs.
-      return body;
-    }
-  }
 }

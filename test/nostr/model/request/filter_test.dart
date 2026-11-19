@@ -119,6 +119,61 @@ void main() {
       expect(filter.until, isNotNull);
     });
 
+    test('fromJson preserves unknown keys as additionalFilters', () {
+      final filter = NostrFilter.fromJson({
+        'kinds': [1],
+        '#z': ['custom'],
+      });
+
+      expect(filter.additionalFilters, {
+        '#z': ['custom']
+      });
+      expect(filter.toMap()['#z'], ['custom']);
+    });
+
+    test('core keys win over conflicting additionalFilters', () {
+      const filter = NostrFilter(
+        kinds: [1],
+        additionalFilters: {
+          'kinds': [99],
+          'limit': 5
+        },
+      );
+
+      final map = filter.toMap();
+
+      expect(map['kinds'], [1]);
+      expect(map['limit'], 5);
+    });
+
+    test('validate rejects negative kinds, bad hex, and huge limits', () {
+      final filter = NostrFilter(
+        kinds: const [-1],
+        ids: const ['not-hex'],
+        authors: const ['ABCDEF'],
+        limit: 10001,
+      );
+
+      final errors = filter.validate();
+
+      expect(errors, hasLength(4));
+      expect(errors.any((e) => e.contains('negative')), isTrue);
+      expect(errors.any((e) => e.contains('ids')), isTrue);
+      expect(errors.any((e) => e.contains('authors')), isTrue);
+      expect(errors.any((e) => e.contains('10000')), isTrue);
+    });
+
+    test('validate accepts lowercase hex ids and authors', () {
+      final filter = NostrFilter(
+        ids: ['a' * 64],
+        authors: ['0123456789abcdef'],
+        kinds: const [1],
+        limit: 100,
+      );
+
+      expect(filter.validate(), isEmpty);
+    });
+
     test('filter equality works correctly', () {
       const filter1 = NostrFilter(kinds: [1], authors: ['author1']);
       const filter2 = NostrFilter(kinds: [1], authors: ['author1']);

@@ -52,6 +52,24 @@ class NostrFilter extends Equatable {
 
     final search = json['search'] as String?;
 
+    const knownKeys = {
+      'ids',
+      'authors',
+      'kinds',
+      '#e',
+      '#p',
+      '#t',
+      '#a',
+      'since',
+      'until',
+      'limit',
+      'search',
+    };
+    final additionalFilters = <String, dynamic>{
+      for (final entry in json.entries)
+        if (!knownKeys.contains(entry.key)) entry.key: entry.value,
+    };
+
     return NostrFilter(
       ids: ids,
       authors: authors,
@@ -64,6 +82,7 @@ class NostrFilter extends Equatable {
       until: until,
       limit: limit,
       search: search,
+      additionalFilters: additionalFilters.isEmpty ? null : additionalFilters,
     );
   }
 
@@ -121,9 +140,16 @@ class NostrFilter extends Equatable {
   /// Validate filter content for client-side safety checks.
   List<String> validate() {
     final errors = <String>[];
+    final hexPattern = RegExp(r'^[0-9a-f]{1,64}$');
 
     if (limit != null && limit! <= 0) {
       errors.add('Filter limit must be greater than 0.');
+    } else if (limit != null && limit! > 10000) {
+      errors.add('Filter limit must not exceed 10000.');
+    }
+
+    if (kinds != null && kinds!.any((kind) => kind < 0)) {
+      errors.add('Filter kinds cannot contain negative values.');
     }
 
     if (since != null && until != null && since!.isAfter(until!)) {
@@ -132,10 +158,18 @@ class NostrFilter extends Equatable {
 
     if (ids != null && ids!.any((value) => value.trim().isEmpty)) {
       errors.add('Filter ids cannot contain empty values.');
+    } else if (ids != null &&
+        ids!.any((value) => !hexPattern.hasMatch(value))) {
+      errors.add('Filter ids must be lowercase hex (up to 64 characters).');
     }
 
     if (authors != null && authors!.any((value) => value.trim().isEmpty)) {
       errors.add('Filter authors cannot contain empty values.');
+    } else if (authors != null &&
+        authors!.any((value) => !hexPattern.hasMatch(value))) {
+      errors.add(
+        'Filter authors must be lowercase hex (up to 64 characters).',
+      );
     }
 
     return errors;
@@ -175,6 +209,9 @@ class NostrFilter extends Equatable {
   /// Serialize a [NostrFilter] to a [Map<String, dynamic>]
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
+      // Core filter keys win over extras so custom keys cannot silently
+      // override ids/authors/kinds/timestamps/limit/search.
+      if (additionalFilters != null) ...additionalFilters!,
       if (ids != null) 'ids': ids,
       if (authors != null) 'authors': authors,
       if (kinds != null) 'kinds': kinds,
@@ -186,7 +223,6 @@ class NostrFilter extends Equatable {
       if (until != null) 'until': until!.millisecondsSinceEpoch ~/ 1000,
       if (limit != null) 'limit': limit,
       if (search != null) 'search': search,
-      if (additionalFilters != null) ...additionalFilters!,
     };
   }
 

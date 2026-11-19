@@ -4,8 +4,8 @@ import 'package:dart_nostr/nostr/model/event/event.dart';
 import 'package:dart_nostr/nostr/model/notice.dart';
 import 'package:dart_nostr/nostr/model/nostr_events_stream.dart';
 import 'package:dart_nostr/nostr/model/ok.dart';
-import 'package:dart_nostr/nostr/model/relay_informations.dart';
 import 'package:dart_nostr/nostr/model/request/request.dart';
+import 'package:dart_nostr/nostr/nips/nip11/nip11.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 abstract class NostrRelaysBase {

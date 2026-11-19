@@ -10,9 +10,15 @@ class SubscriptionManager {
   /// {@macro subscription_manager}
   SubscriptionManager({
     required this.logger,
+    this.onAutoClose,
   });
 
   final NostrLogger logger;
+
+  /// Optional hook invoked before an automatically closed subscription is
+  /// removed from the manager. Wire this to the relay transport so the relay
+  /// also receives a CLOSE message.
+  void Function(String subscriptionId)? onAutoClose;
 
   /// Tracks active subscriptions.
   final Map<String, SubscriptionMetadata> _activeSubscriptions = {};
@@ -112,6 +118,11 @@ class SubscriptionManager {
       logger.log(
         'Auto-closing subscription: $subscriptionId (timeout after ${duration.inSeconds}s)',
       );
+      try {
+        onAutoClose?.call(subscriptionId);
+      } catch (error) {
+        logger.log('Auto-close handler failed for $subscriptionId: $error');
+      }
       closeSubscription(subscriptionId);
     });
   }

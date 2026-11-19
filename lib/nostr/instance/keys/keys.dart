@@ -1,10 +1,9 @@
 import 'dart:collection';
 
-import 'package:bip32_bip44/dart_bip32_bip44.dart' as bip32_bip44;
-import 'package:bip39/bip39.dart' as bip39;
 import 'package:dart_nostr/nostr/core/crypto_utils.dart';
 import 'package:dart_nostr/nostr/core/key_pairs.dart';
 import 'package:dart_nostr/nostr/core/utils.dart';
+import 'package:dart_nostr/nostr/nips/nip06/nip06.dart';
 
 /// {@template nostr_keys}
 /// This class is responsible for generating key pairs and deriving public keys from private keys..
@@ -164,7 +163,7 @@ class NostrKeys {
   ///  print(isValid); // ...
   /// ```
   static bool isMnemonicValid(String text) {
-    return bip39.validateMnemonic(text);
+    return const NostrNip06().isMnemonicValid(text);
   }
 
   /// Derives a private key from a [mnemonic] directly, use this if you want a quick way to get a private key from a mnemonic.
@@ -174,24 +173,7 @@ class NostrKeys {
   /// print(privateKey); // ...
   /// ```
   static String getPrivateKeyFromMnemonic(String mnemonic) {
-    final seed = bip39.mnemonicToSeedHex(mnemonic);
-    final chain = bip32_bip44.Chain.seed(seed);
-
-    final key =
-        chain.forPath("m/44'/1237'/0'/0") as bip32_bip44.ExtendedPrivateKey;
-
-    final childKey = bip32_bip44.deriveExtendedPrivateChildKey(key, 0);
-
-    var hexChildKey = '';
-
-    if (childKey.key != null) {
-      // The BIP-32 key bytes are a big-endian 32-byte integer; converting to a
-      // hex string via toRadixString drops leading zero bytes, producing keys
-      // shorter than 64 chars (invalid). Left-pad to exactly 64 chars.
-      hexChildKey = childKey.key!.toRadixString(16).padLeft(64, '0');
-    }
-
-    return hexChildKey;
+    return const NostrNip06().privateKeyFromMnemonic(mnemonic);
   }
 
   /// Clears all the cached key pairs.

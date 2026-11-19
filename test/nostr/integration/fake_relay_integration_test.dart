@@ -100,6 +100,80 @@ void main() {
     );
 
     test(
+      'reconnect replays active subscriptions and keeps delivering events',
+      () async {
+        Nostr.instance.relays.init(
+          relaysUrl: [relay.url],
+          retryOnClose: true,
+        );
+        await relay.nextClient();
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+
+        final request = NostrRequest(
+          subscriptionId: 'reconnect-sub-1',
+          filters: const [
+            NostrFilter(
+              kinds: [1],
+              limit: 10,
+            ),
+          ],
+        );
+
+        final subscription = Nostr.instance.relays.startEventsSubscription(
+          request: request,
+        );
+
+        await relay.waitForMessage(
+          (m) => '$m'.contains('"REQ"') && '$m'.contains('reconnect-sub-1'),
+        );
+
+        relay.clearReceivedMessages();
+        await relay.disconnectClients();
+
+        final replay = await relay.waitForMessage(
+          (m) => '$m'.contains('"REQ"') && '$m'.contains('reconnect-sub-1'),
+          timeout: const Duration(seconds: 10),
+        );
+        expect(jsonDecode(replay as String)[1], 'reconnect-sub-1');
+
+        final keyPair = NostrKeyPairs.generate();
+        final event = NostrEvent.fromPartialData(
+          content: 'after reconnect',
+          kind: 1,
+          keyPairs: keyPair,
+        );
+        relay.sendEventToClients('reconnect-sub-1', event.toMap());
+
+        final received = await subscription.stream
+            .firstWhere((e) => e.content == 'after reconnect')
+            .timeout(const Duration(seconds: 5));
+        expect(received.content, 'after reconnect');
+
+        subscription.close();
+      },
+      timeout: const Timeout(Duration(seconds: 30)),
+    );
+
+    test(
+      'disconnect cancels a pending reconnect',
+      () async {
+        Nostr.instance.relays.init(
+          relaysUrl: [relay.url],
+          retryOnClose: true,
+        );
+        await relay.nextClient();
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+
+        await relay.disconnectClients();
+        await Nostr.instance.relays.disconnectFromRelays();
+        await Future<void>.delayed(const Duration(milliseconds: 1200));
+
+        expect(relay.clientCount, 0);
+      },
+      timeout: const Timeout(Duration(seconds: 20)),
+    );
+
+    test(
       'sending to zero matching relays fails fast instead of hanging forever',
       () async {
         Nostr.instance.relays.init(
@@ -194,6 +268,13 @@ void main() {
         expect(
           tags.any((t) => t.length >= 2 && t[0] == 'challenge'),
           isTrue,
+        );
+        expect(
+          tags.any(
+            (t) => t.length >= 2 && t[0] == 'relay' && t[1] == authRelay.url,
+          ),
+          isTrue,
+          reason: 'NIP-42 relay tag must carry the websocket URL',
         );
 
         await authRelay.stop();

@@ -1,5 +1,56 @@
 # Changelog
 
+## 11.1.0
+
+**NIP layout consolidation + new NIP coverage**
+
+### Added
+
+- **New NIP modules**: NIP-04 encrypted DMs, NIP-07 browser-extension bridge, NIP-27 mentions, NIP-28 public chat, NIP-29 relay groups, NIP-30 custom emoji, NIP-39 identity claims, NIP-46 Nostr Connect (bunker RPC), NIP-47 Nostr Wallet Connect, NIP-54 wiki/articles, NIP-55 Android signer, NIP-58 badges, NIP-75 zap goals, NIP-77 negentropy, NIP-98 HTTP auth, NIP-99 classified listings, NIP-AD web address pointers, NIP-B7 Blossom authorization.
+- **`NostrNips` accessor** for every implementation: `Nostr.instance.nips` now exposes one cached entry point per NIP (stateless helpers, signer-bound helpers rebuilt by `bindSigner`, plus `social`, `blossom`, `nip42` and `nip45`).
+- **NIP-42 auth builder**: `NostrNip42.createAuthEvent` builds kind-22242 events; `NostrRelays` answers relay challenges through it.
+- **NIP-45 helpers**: `NostrNip45` builds COUNT requests and parses COUNT responses.
+
+### Changed
+
+- All NIP implementations live under `lib/nostr/nips/<nip>/` and are exported from the `nips.dart` barrel. NIP-01 primitives and NIP-45 COUNT models re-export from their canonical home; NIPs implemented by the social builder (02/09/10/18/22/23/25/51/65) and NIP-84 highlights (in `nip54`) are indexed there.
+- Old import paths (`builders/social_builder.dart`, `instance/bech32/bech32.dart`, `instance/tlv/tlv_utils.dart`, `model/relay_informations.dart`, `model/count.dart`, `nips/nip13/pow.dart`, `nips/nip57/zaps.dart`) remain as compatibility shims.
+
+### Fixed
+
+- **NIP-99** price tags accept decimal amounts (`10.50`) instead of integer-only values.
+- **NIP-AD** encodes the `path` query parameter (reserved characters no longer break the lookup), supports a request timeout, and exposes `close()`.
+- **NIP-58** API docs show the real `definitionAddress` parameter for badge awards.
+- **NIP-54** docs spell out fork-tag support and the merge/defer boundary.
+
+## 11.0.1
+
+**Security and reliability patch**
+
+### Security
+
+- **NIP-17/NIP-59 sender spoofing fixed**: gift wraps and seals are now signature-verified, the seal must be kind 13, and the seal author must match the rumor author. A malicious sender can no longer seal a rumor that claims someone else's pubkey.
+- **NIP-17 file messages** now reject the sender being listed as a recipient, matching the existing chat-message guard.
+
+### Reliability
+
+- **Reconnects replay active subscriptions**: after a relay reconnects, every active REQ that targets it is sent again, so streams no longer go silent.
+- **Disconnects cancel pending reconnects**: a shutdown/generation check prevents a scheduled backoff reconnect from reopening a socket after `disconnectFromRelays()`.
+- **NIP-42 AUTH relay tag** now carries the relay's websocket URL (`ws://`/`wss://`) instead of an HTTP URL, as the spec requires.
+- **Subscription auto-close now reaches the relay**: `SubscriptionManager` invokes an `onAutoClose` hook, wired to `closeEventsSubscription`, before removing expired subscriptions.
+
+### Filters
+
+- `NostrFilter.fromJson` now preserves unknown keys in `additionalFilters`.
+- `NostrFilter.toMap` lets core filter keys win over `additionalFilters`.
+- `NostrFilter.validate()` rejects negative kinds, invalid id/author hex, and limits above 10,000.
+
+### Tooling
+
+- Added a CI workflow that runs `dart analyze` and the default test suite.
+- Removed stray root files `handling` and `todo.extensionThatDoNotExist`.
+- No public API removals in this patch.
+
 ## 11.0.0
 
 **Major Release — Full Client-Feature NIP Coverage**
