@@ -65,6 +65,39 @@ void main() {
     });
   });
 
+  group('NIP-19 nevent and key entities', () {
+    const author =
+        '3bf0c63fcb93463407af97a5e5ee64fa883d107ef9e558472c4eb9aaaefa459d';
+
+    test('nevent roundtrip preserves event id, author and relays', () {
+      final nevent = bech32.encodeNevent(
+        eventId: 'ab' * 32,
+        pubkey: author,
+        userRelays: ['wss://relay.damus.io', 'wss://nos.lol'],
+      );
+
+      expect(nevent, startsWith('nevent1'));
+
+      final decoded = bech32.decodeNeventToMap(nevent);
+
+      expect(decoded['eventId'], 'ab' * 32);
+      expect(decoded['pubkey'], author);
+      expect(decoded['relays'], ['wss://relay.damus.io', 'wss://nos.lol']);
+    });
+
+    test('npub/nsec roundtrip', () {
+      const privateKey =
+          '7f7ff03d123792d6ac594bfa67bf6d0c0ab55b6b1fdb6249303fe861f1ccba9a';
+      final nsec = bech32.encodePrivateKeyToNsec(privateKey);
+      expect(nsec, startsWith('nsec1'));
+      expect(bech32.decodeNsecKeyToPrivateKey(nsec), privateKey);
+
+      final npub = bech32.encodePublicKeyToNpub(author);
+      expect(npub, startsWith('npub1'));
+      expect(bech32.decodeNpubKeyToPublicKey(npub), author);
+    });
+  });
+
   group('NIP-21', () {
     test('parses nostr:npub URIs', () {
       final npub = bech32.encodePublicKeyToNpub('a' * 64);

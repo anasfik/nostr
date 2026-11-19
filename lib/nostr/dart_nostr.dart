@@ -4,13 +4,10 @@ import 'package:dart_nostr/nostr/builder/defaults.dart';
 import 'package:dart_nostr/nostr/builder/filter_builder.dart';
 import 'package:dart_nostr/nostr/core/result.dart';
 import 'package:dart_nostr/nostr/core/utils.dart';
-import 'package:dart_nostr/nostr/instance/bech32/bech32.dart';
 import 'package:dart_nostr/nostr/instance/keys/keys.dart';
-import 'package:dart_nostr/nostr/signers/signer.dart';
 import 'package:dart_nostr/nostr/instance/relays/relays.dart';
 import 'package:dart_nostr/nostr/instance/subscription_manager.dart';
 import 'package:dart_nostr/nostr/instance/utils/utils.dart';
-import 'package:dart_nostr/nostr/nips/nip21/nip21.dart';
 import 'package:dart_nostr/nostr/model/count.dart';
 import 'package:dart_nostr/nostr/model/debug_options.dart';
 import 'package:dart_nostr/nostr/model/event/event.dart';
@@ -18,9 +15,13 @@ import 'package:dart_nostr/nostr/model/nostr_events_stream.dart';
 import 'package:dart_nostr/nostr/model/ok.dart';
 import 'package:dart_nostr/nostr/model/request/filter.dart';
 import 'package:dart_nostr/nostr/model/request/request.dart';
+import 'package:dart_nostr/nostr/nips/nip19/nip19.dart';
+import 'package:dart_nostr/nostr/nips/nip21/nip21.dart';
+import 'package:dart_nostr/nostr/nips/nostr_nips.dart';
 import 'package:dart_nostr/nostr/service/client.dart';
 import 'package:dart_nostr/nostr/service/client_options.dart';
 import 'package:dart_nostr/nostr/service/services.dart';
+import 'package:dart_nostr/nostr/signers/signer.dart';
 
 /// {@template nostr_service}
 /// This class is responsible for handling the connection to all relays.
@@ -111,6 +112,9 @@ class Nostr {
   /// relay sends an AUTH challenge.
   Future<NostrResult<void>> connect(List<String> relays,
       {NostrEventSigner? signer}) {
+    if (signer != null) {
+      nips.bindSigner(signer);
+    }
     return client.connect(relays, signer: signer);
   }
 
@@ -120,6 +124,10 @@ class Nostr {
   }
 
   /// Disconnect and cleanup tracked subscriptions.
+  ///
+  /// This clears connection state only. A signer bound through [connect] or
+  /// [addRelays] stays on [nips] so it can be reused after reconnecting; call
+  /// `nips.bindSigner(null)` to revoke it explicitly.
   Future<NostrResult<void>> disconnect() {
     return client.disconnect();
   }
@@ -128,6 +136,9 @@ class Nostr {
   /// Pass [signer] if the new relays require NIP-42 authentication.
   Future<NostrResult<void>> addRelays(List<String> relays,
       {NostrEventSigner? signer}) {
+    if (signer != null) {
+      nips.bindSigner(signer);
+    }
     return client.addRelays(relays, signer: signer);
   }
 
@@ -211,7 +222,10 @@ class Nostr {
   NostrFilterBuilder filterBuilder() => NostrFilterBuilder();
 
   /// NIP-21 `nostr:` URI parsing and building.
-  NostrNip21 get nip21 => NostrNip21();
+  NostrNip21 get nip21 => nips.nip21;
+
+  /// Per-NIP accessor surface.
+  NostrNips get nips => services.nips;
 
   /// This method will disable the logs of the library.
 

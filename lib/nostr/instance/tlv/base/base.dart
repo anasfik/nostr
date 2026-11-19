@@ -1,7 +1,2 @@
-import 'dart:typed_data';
-import 'package:dart_nostr/nostr/model/tlv.dart';
-
-abstract class TLVBase {
-  List<TLV> decode(Uint8List data);
-  Uint8List encode(List<TLV> tlvList);
-}
+// Compatibility shim. Canonical location: `nips/nip19/tlv.dart`.
+export '../../../nips/nip19/tlv.dart';

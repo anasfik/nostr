@@ -2,10 +2,9 @@ import 'dart:convert';
 
 import 'package:convert/convert.dart';
 import 'package:dart_nostr/nostr/core/crypto_utils.dart';
-import 'package:dart_nostr/nostr/core/exceptions.dart';
 import 'package:dart_nostr/nostr/core/utils.dart';
-
-import 'package:http/http.dart' as http;
+import 'package:dart_nostr/nostr/nips/nip05/nip05.dart';
+import 'package:dart_nostr/nostr/nips/nip13/nip13.dart';
 
 /// {@template nostr_utils}
 /// This class is responsible for handling some of the helper utils of the library.
@@ -19,6 +18,9 @@ class NostrUtils {
   /// {@macro nostr_client_utils}
   final NostrLogger logger;
 
+  /// NIP-05 implementation used by the compatibility methods below.
+  late final NostrNip05 _nip05 = NostrNip05(logger: logger);
+
   /// Wether the given [identifier] has a valid format.
   ///
   ///
@@ -30,11 +32,7 @@ class NostrUtils {
   /// ```
 
   bool isValidNip05Identifier(String identifier) {
-    final emailRegEx = RegExp(
-      r'^[a-zA-Z0-9_\-\.]+@[a-zA-Z0-9_\-\.]+\.[a-zA-Z]+$',
-    );
-
-    return emailRegEx.hasMatch(identifier);
+    return _nip05.isValidNip05Identifier(identifier);
   }
 
   /// Encodes the given [input] to hex format
@@ -96,30 +94,11 @@ class NostrUtils {
   Future<bool> verifyNip05({
     required String internetIdentifier,
     required String pubKey,
-  }) async {
-    assert(
-      pubKey.length == 64 || !pubKey.startsWith('npub'),
-      'pub key is invalid, it must be in hex format and not a npub(nip19) key!',
+  }) {
+    return _nip05.verifyNip05(
+      internetIdentifier: internetIdentifier,
+      pubKey: pubKey,
     );
-    assert(
-      internetIdentifier.contains('@') &&
-          internetIdentifier.split('@').length == 2,
-      'invalid internet identifier',
-    );
-
-    try {
-      final pubKeyFromResponse = await pubKeyFromIdentifierNip05(
-        internetIdentifier: internetIdentifier,
-      );
-
-      return pubKey == pubKeyFromResponse;
-    } catch (e) {
-      logger.log(
-        'error while verifying nip05 for internet identifier: $internetIdentifier',
-        e,
-      );
-      rethrow;
-    }
   }
 
   /// Return the public key found by the NIP05 implementation via the given for the given [internetIdentifier]
@@ -136,42 +115,10 @@ class NostrUtils {
 
   Future<String?> pubKeyFromIdentifierNip05({
     required String internetIdentifier,
-  }) async {
-    try {
-      final localPart = internetIdentifier.split('@')[0];
-      final domainPart = internetIdentifier.split('@')[1];
-
-      logger.log(
-        'Attempt to fetch pubkey for $internetIdentifier from $domainPart',
-      );
-
-      final res = await http.get(
-        Uri.parse('https://$domainPart/.well-known/nostr.json?name=$localPart'),
-      );
-
-      final decoded = jsonDecode(res.body) as Map<String, dynamic>;
-      if (decoded
-          case {
-            'names': final names as Map<String, dynamic>,
-          }) {
-        logger.log(
-          'Pubkey for $localPart is ${names[localPart] ?? 'not found'} '
-          'at $domainPart',
-        );
-
-        return names[localPart] as String?;
-      }
-
-      return null;
-    } on Exception catch (e) {
-      logger.log(
-        'error while verifying nip05 for internet identifier: '
-        '$internetIdentifier',
-        e,
-      );
-
-      throw Nip05VerificationException(parent: e);
-    }
+  }) {
+    return _nip05.pubKeyFromIdentifierNip05(
+      internetIdentifier: internetIdentifier,
+    );
   }
 
   /// Counts the difficulty of the given [hexString], this wis intebded t be used in the NIP 13 with this package.
@@ -184,26 +131,7 @@ class NostrUtils {
   ///
 
   int countDifficultyOfHex(String hexString) {
-    final idChars = hexString.split('');
-
-    // encode to bits.
-    var idCharsBinary = idChars.map((char) {
-      final charCode = int.parse(char, radix: 16);
-      final charBinary = charCode.toRadixString(2);
-      return charBinary;
-    }).toList();
-
-    idCharsBinary = idCharsBinary.map((charBinary) {
-      final charBinaryLength = charBinary.length;
-      final charBinaryLengthDiff = 4 - charBinaryLength;
-      final charBinaryPadded = charBinary.padLeft(
-        charBinaryLength + charBinaryLengthDiff,
-        '0',
-      );
-      return charBinaryPadded;
-    }).toList();
-
-    return idCharsBinary.join().split('1').first.length;
+    return NostrProofOfWork.getDifficulty(hexString);
   }
 
   // String _convertBech32toHr(String bech32, {int cutLength = 15}) {

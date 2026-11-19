@@ -67,14 +67,20 @@ void main() {
     });
 
     test('reset clears all filters', () {
-      final builder =
-          NostrFilterBuilder().withKind(1).withAuthor('author1').withLimit(50);
+      final builder = NostrFilterBuilder()
+          .withKind(1)
+          .withAuthor('author1')
+          .withTag('t', ['nostr'])
+          .withSearch('query')
+          .withLimit(50);
 
       builder.reset();
 
       final filter = builder.build();
       expect(filter.kinds, null);
       expect(filter.authors, null);
+      expect(filter.additionalFilters, null);
+      expect(filter.search, null);
       expect(filter.limit, null);
     });
 
@@ -341,13 +347,23 @@ void main() {
       expect(filter.authors?.length, 2);
     });
 
-    test('builder withTag stores custom tags', () {
-      final builder =
-          NostrFilterBuilder().withTag('custom', ['value1', 'value2']);
+    test('builder emits custom tags and search', () {
+      final filter = NostrFilterBuilder()
+          .withTag('custom', ['value1', 'value2'])
+          .addTag('p', 'pubkey1')
+          .withSearch('nostr protocol')
+          .build();
 
-      // Note: tags are internal to builder for now
-      final filter = builder.build();
-      expect(filter, isNotNull);
+      expect(filter.additionalFilters, {
+        '#custom': ['value1', 'value2'],
+        '#p': ['pubkey1'],
+      });
+      expect(filter.search, 'nostr protocol');
+
+      final map = filter.toMap();
+      expect(map['#custom'], ['value1', 'value2']);
+      expect(map['#p'], ['pubkey1']);
+      expect(map['search'], 'nostr protocol');
     });
 
     test('recentOnly with various durations', () {

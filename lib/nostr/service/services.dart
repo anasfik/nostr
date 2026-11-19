@@ -1,5 +1,4 @@
 import 'package:dart_nostr/nostr/core/utils.dart';
-import 'package:dart_nostr/nostr/instance/bech32/bech32.dart';
 import 'package:dart_nostr/nostr/instance/connection_pool.dart';
 import 'package:dart_nostr/nostr/instance/error_recovery.dart';
 import 'package:dart_nostr/nostr/instance/keys/keys.dart';
@@ -7,6 +6,8 @@ import 'package:dart_nostr/nostr/instance/relay_pool.dart';
 import 'package:dart_nostr/nostr/instance/relays/relays.dart';
 import 'package:dart_nostr/nostr/instance/subscription_manager.dart';
 import 'package:dart_nostr/nostr/instance/utils/utils.dart';
+import 'package:dart_nostr/nostr/nips/nip19/nip19.dart';
+import 'package:dart_nostr/nostr/nips/nostr_nips.dart';
 import 'package:dart_nostr/nostr/service/client.dart';
 import 'package:dart_nostr/nostr/service/client_options.dart';
 import 'package:dart_nostr/nostr/service/relay_transport.dart';
@@ -18,6 +19,7 @@ class NostrServices {
     NostrRelays? relays,
     NostrUtils? utils,
     NostrBech32? bech32,
+    NostrNips? nips,
     RelayPoolManager? relayPool,
     SubscriptionManager? subscriptionManager,
     ConnectionPoolManager? connectionPool,
@@ -36,6 +38,7 @@ class NostrServices {
         errorRecovery = errorRecovery ?? ErrorRecoveryManager(logger: logger),
         relayTransport = relayTransport,
         clientOptions = clientOptions {
+    this.nips = nips ?? NostrNips(logger: logger, bech32: this.bech32);
     // Let auto-closing subscriptions also send CLOSE to the relays.
     this.subscriptionManager.onAutoClose ??=
         this.relays.closeEventsSubscription;
@@ -55,6 +58,9 @@ class NostrServices {
   final NostrUtils utils;
 
   final NostrBech32 bech32;
+
+  /// Per-NIP accessor surface.
+  late final NostrNips nips;
 
   /// {@macro relay_pool_manager}
   final RelayPoolManager relayPool;

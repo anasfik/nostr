@@ -15,9 +15,9 @@ import 'package:dart_nostr/nostr/instance/web_sockets.dart';
 import 'package:dart_nostr/nostr/model/ease.dart';
 import 'package:dart_nostr/nostr/model/ok.dart';
 import 'package:dart_nostr/nostr/model/relay.dart';
-import 'package:dart_nostr/nostr/model/relay_informations.dart';
+import 'package:dart_nostr/nostr/nips/nip11/nip11.dart';
+import 'package:dart_nostr/nostr/nips/nip42/nip42.dart';
 import 'package:dart_nostr/nostr/signers/signer.dart';
-import 'package:http/http.dart' as http;
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 /// {@template nostr_relays}
@@ -931,31 +931,11 @@ class NostrRelays implements NostrRelaysBase {
   Future<RelayInformations?> relayInformationsDocumentNip11({
     required String relayUrl,
     bool throwExceptionIfExists = true,
-  }) async {
-    try {
-      final relayHttpUri =
-          webSocketsService.getHttpUrlFromWebSocketUrl(relayUrl);
-
-      final res = await http.get(
-        relayHttpUri,
-        headers: {
-          'Accept': 'application/nostr+json',
-        },
-      );
-      final decoded = jsonDecode(res.body) as Map<String, dynamic>;
-
-      return RelayInformations.fromNip11Response(decoded);
-    } catch (e) {
-      logger.log(
-        'error while getting relay informations from nip11 for relay url: $relayUrl',
-        e,
-      );
-
-      if (throwExceptionIfExists) {
-        rethrow;
-      }
-    }
-    return null;
+  }) {
+    return NostrNip11(logger: logger).fetch(
+      relayUrl: relayUrl,
+      throwExceptionIfExists: throwExceptionIfExists,
+    );
   }
 
   @override
@@ -1533,19 +1513,10 @@ class NostrRelays implements NostrRelaysBase {
 
     try {
       // NIP-42 expects the websocket URL, not its HTTP equivalent.
-      final authEvent = await signer.sign(
-        NostrEvent(
-          id: null,
-          kind: 22242,
-          content: '',
-          sig: null,
-          pubkey: signer.publicKey,
-          createdAt: DateTime.now(),
-          tags: [
-            ['relay', relay],
-            ['challenge', challenge],
-          ],
-        ),
+      final authEvent = await const NostrNip42().createAuthEvent(
+        signer: signer,
+        relay: relay,
+        challenge: challenge,
       );
 
       final socket = nostrRegistry.getRelayWebSocket(relayUrl: relay);

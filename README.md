@@ -32,7 +32,7 @@ dart pub add dart_nostr
 
 ```yaml
 dependencies:
-  dart_nostr: ^11.0.1
+  dart_nostr: ^11.1.0
 ```
 
 ## Quick start

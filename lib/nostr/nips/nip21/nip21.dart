@@ -1,7 +1,7 @@
 import 'package:dart_nostr/nostr/core/constants.dart';
 import 'package:dart_nostr/nostr/core/utils.dart';
-import 'package:dart_nostr/nostr/instance/bech32/bech32.dart';
 import 'package:dart_nostr/nostr/model/debug_options.dart';
+import 'package:dart_nostr/nostr/nips/nip19/nip19.dart';
 
 /// {@template nip21}
 /// NIP-21 `nostr:` URI scheme handling.
