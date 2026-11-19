@@ -35,7 +35,11 @@ class NostrServices {
             connectionPool ?? ConnectionPoolManager(logger: logger),
         errorRecovery = errorRecovery ?? ErrorRecoveryManager(logger: logger),
         relayTransport = relayTransport,
-        clientOptions = clientOptions;
+        clientOptions = clientOptions {
+    // Let auto-closing subscriptions also send CLOSE to the relays.
+    this.subscriptionManager.onAutoClose ??=
+        this.relays.closeEventsSubscription;
+  }
 
   final NostrLogger logger;
   final NostrClientOptions clientOptions;

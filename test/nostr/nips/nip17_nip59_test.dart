@@ -116,6 +116,68 @@ void main() {
       expect(extracted.id, rumor.id);
     });
 
+    test('rejects a seal whose author differs from the rumor author', () async {
+      final attacker = NostrLocalKeySigner(NostrKeyPairs.generate());
+
+      // Rumor claims to be from alice, but the attacker seals it.
+      final spoofedRumor = Nip59.createRumor(
+        kind: 14,
+        content: 'trust me, it is alice',
+        pubkey: alice.publicKey,
+        tags: [
+          ['p', bob.publicKey],
+        ],
+        now: DateTime.now(),
+      );
+
+      final seal = await Nip59.createSeal(
+        rumor: spoofedRumor,
+        signer: attacker,
+        recipientPublicKey: bob.publicKey,
+      );
+      final giftWrap = await Nip59.createGiftWrap(
+        seal: seal,
+        recipientPublicKey: bob.publicKey,
+      );
+
+      expect(
+        () => Nip59.extractRumor(giftWrap, bob),
+        throwsArgumentError,
+      );
+    });
+
+    test('rejects a seal with an invalid signature', () async {
+      final rumor = Nip59.createRumor(
+        kind: 14,
+        content: 'hi',
+        pubkey: alice.publicKey,
+        now: DateTime.now(),
+      );
+      final seal = await Nip59.createSeal(
+        rumor: rumor,
+        signer: alice,
+        recipientPublicKey: bob.publicKey,
+      );
+      final tamperedSeal = NostrEvent(
+        id: seal.id,
+        kind: seal.kind,
+        content: seal.content,
+        sig: '0' * 128,
+        pubkey: seal.pubkey,
+        createdAt: seal.createdAt,
+        tags: seal.tags,
+      );
+      final giftWrap = await Nip59.createGiftWrap(
+        seal: tamperedSeal,
+        recipientPublicKey: bob.publicKey,
+      );
+
+      expect(
+        () => Nip59.extractRumor(giftWrap, bob),
+        throwsArgumentError,
+      );
+    });
+
     test('unwrap fails for a third party without the key', () async {
       final carol = NostrLocalKeySigner(NostrKeyPairs.generate());
 
@@ -236,6 +298,20 @@ void main() {
       expect(hasTag('m', 'image/png'), isTrue);
       expect(hasTag('size', '12345'), isTrue);
       expect(hasTag('alt', 'a cat'), isTrue);
+    });
+
+    test('file message rumor rejects the sender as recipient', () {
+      final nip17 = NostrNip17(signer: alice);
+
+      expect(
+        () => nip17.createFileMessageRumor(
+          fileUrl: 'https://example.com/cat.png',
+          recipientPubkeys: [alice.publicKey],
+          fileType: 'image/png',
+          fileSizeBytes: 1,
+        ),
+        throwsArgumentError,
+      );
     });
   });
 }

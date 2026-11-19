@@ -82,6 +82,20 @@ class NostrRelays implements NostrRelaysBase {
   /// exponential backoff delay and prevent hot reconnect loops.
   final Map<String, int> _reconnectAttempts = {};
 
+  /// Relays with a reconnect attempt currently in flight, so error+done
+  /// callbacks from the same socket cannot schedule duplicate reconnects.
+  final Set<String> _reconnectingRelays = {};
+
+  /// Active REQ payloads keyed by subscription id, replayed after reconnect.
+  final Map<String, _ActiveSubscription> _activeSubscriptions = {};
+
+  /// Incremented on session teardown so delayed reconnects from the previous
+  /// session cannot resurrect a socket after disconnect().
+  int _connectionGeneration = 0;
+
+  /// Per-relay generation, bumped by [disconnectFromRelay].
+  final Map<String, int> _relayGenerations = {};
+
   /// Base delay for the exponential reconnect backoff.
   static const Duration _reconnectBaseDelay = Duration(milliseconds: 500);
 
@@ -190,6 +204,11 @@ class NostrRelays implements NostrRelaysBase {
       // Drop stale websocket registrations from previous sessions so they
       // don't receive sends or dispatch messages.
       nostrRegistry.clearWebSocketsRegistry();
+      _connectionGeneration++;
+      _relayGenerations.clear();
+      _reconnectAttempts.clear();
+      _reconnectingRelays.clear();
+      _activeSubscriptions.clear();
     }
 
     return _startConnectingAndRegisteringRelays(
@@ -442,6 +461,11 @@ class NostrRelays implements NostrRelaysBase {
           : (request.subscriptionId ?? NostrCryptoUtils.randomHex()),
     );
 
+    _activeSubscriptions[request.subscriptionId!] = _ActiveSubscription(
+      serialized: serialized,
+      relays: relays?.toSet(),
+    );
+
     _registerNewRelays(relays ?? relaysList!).then((_) {
       _runFunctionOverRelationIteration((relay) {
         final relayUrl = relay.url;
@@ -484,6 +508,11 @@ class NostrRelays implements NostrRelaysBase {
   }) {
     final serialized = request.serialized(
       subscriptionId: request.subscriptionId ?? NostrCryptoUtils.randomHex(),
+    );
+
+    _activeSubscriptions[request.subscriptionId!] = _ActiveSubscription(
+      serialized: serialized,
+      relays: relays?.toSet(),
     );
 
     _registerNewRelays(relays ?? relaysList!).then(
@@ -652,6 +681,24 @@ class NostrRelays implements NostrRelaysBase {
 
     // Free the per-subscription callbacks so closed subscriptions don't leak.
     nostrRegistry.removeCallBacksForSubscription(subscriptionId);
+
+    final active = _activeSubscriptions[subscriptionId];
+    if (relay == null) {
+      _activeSubscriptions.remove(subscriptionId);
+    } else if (active != null) {
+      // Closing on one relay keeps the subscription active elsewhere.
+      if (active.relays == null) {
+        active.relays = (relaysList ?? const <String>[])
+            .where((url) => url != relay)
+            .toSet();
+      } else {
+        active.relays!.remove(relay);
+      }
+
+      if (active.relays!.isEmpty) {
+        _activeSubscriptions.remove(subscriptionId);
+      }
+    }
 
     if (relay != null) {
       final registeredRelay = nostrRegistry.getRelayWebSocket(relayUrl: relay);
@@ -997,6 +1044,10 @@ class NostrRelays implements NostrRelaysBase {
   /// Disconnects a single relay at runtime, leaving all other connections
   /// untouched. Returns true when the relay was connected and is now closed.
   Future<bool> disconnectFromRelay(String relayUrl) async {
+    // Invalidate any pending reconnect for this relay before closing it.
+    _relayGenerations[relayUrl] = (_relayGenerations[relayUrl] ?? 0) + 1;
+    _reconnectAttempts.remove(relayUrl);
+
     final webSocket = nostrRegistry.getRelayWebSocketOrNull(
       relayUrl: relayUrl,
     );
@@ -1037,6 +1088,13 @@ class NostrRelays implements NostrRelaysBase {
       dynamic webSocketDisconnectionMessage,
     )? onRelayDisconnect,
   }) async {
+    // Invalidate every reconnect scheduled by the session being torn down.
+    _connectionGeneration++;
+    _relayGenerations.clear();
+    _reconnectAttempts.clear();
+    _reconnectingRelays.clear();
+    _activeSubscriptions.clear();
+
     final webSockets = nostrRegistry.relaysWebSocketsRegistry;
     for (var index = 0; index < webSockets.length; index++) {
       final current = webSockets.entries.elementAt(index);
@@ -1102,35 +1160,88 @@ class NostrRelays implements NostrRelaysBase {
     required bool lazyListeningToRelays,
     bool relayUnregistered = true,
   }) async {
-    logger.log('retrying to listen to relay with url: $relay...');
+    // Error and done callbacks can both fire for the same dead socket.
+    if (!_reconnectingRelays.add(relay)) {
+      return;
+    }
 
-    // Exponential backoff with jitter: reconnecting immediately in a loop
-    // against a down relay burns CPU and battery and hammers the relay.
-    final attempts = (_reconnectAttempts[relay] ?? 0);
-    _reconnectAttempts[relay] = attempts + 1;
+    try {
+      logger.log('retrying to listen to relay with url: $relay...');
 
-    final backoffMs = math.min(
-      _reconnectBaseDelay.inMilliseconds * math.pow(2, attempts).toInt(),
-      _reconnectMaxDelay.inMilliseconds,
-    );
-    final jitteredDelay =
-        Duration(milliseconds: backoffMs + random.nextInt(backoffMs + 1));
+      final generation = _connectionGeneration;
+      final relayGeneration = _relayGenerations[relay] ?? 0;
 
-    await Future<void>.delayed(jitteredDelay);
+      // Exponential backoff with jitter: reconnecting immediately in a loop
+      // against a down relay burns CPU and battery and hammers the relay.
+      final attempts = (_reconnectAttempts[relay] ?? 0);
+      _reconnectAttempts[relay] = attempts + 1;
 
-    if (relayUnregistered) {
-      await _startConnectingAndRegisteringRelay(
-        relayUrl: relay,
-        onRelayListening: onRelayListening,
-        onRelayConnectionError: onRelayConnectionError,
-        onRelayConnectionDone: onRelayConnectionDone,
-        onNoticeMessageFromRelay: onNoticeMessageFromRelay,
-        retryOnError: retryOnError,
-        retryOnClose: retryOnClose,
-        shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
-        connectionTimeout: connectionTimeout,
-        ignoreConnectionException: ignoreConnectionException,
-        lazyListeningToRelays: lazyListeningToRelays,
+      final backoffMs = math.min(
+        _reconnectBaseDelay.inMilliseconds * math.pow(2, attempts).toInt(),
+        _reconnectMaxDelay.inMilliseconds,
+      );
+      final jitteredDelay =
+          Duration(milliseconds: backoffMs + random.nextInt(backoffMs + 1));
+
+      await Future<void>.delayed(jitteredDelay);
+
+      if (generation != _connectionGeneration ||
+          relayGeneration != (_relayGenerations[relay] ?? 0) ||
+          !(relaysList?.contains(relay) ?? false)) {
+        logger.log(
+          'reconnect for relay $relay cancelled: session or relay changed',
+        );
+        return;
+      }
+
+      if (nostrRegistry.isRelayRegisteredAndConnectedSuccesfully(relay)) {
+        logger.log('relay $relay is already reconnected; skipping');
+        return;
+      }
+
+      if (relayUnregistered) {
+        await _startConnectingAndRegisteringRelay(
+          relayUrl: relay,
+          onRelayListening: onRelayListening,
+          onRelayConnectionError: onRelayConnectionError,
+          onRelayConnectionDone: onRelayConnectionDone,
+          onNoticeMessageFromRelay: onNoticeMessageFromRelay,
+          retryOnError: retryOnError,
+          retryOnClose: retryOnClose,
+          shouldReconnectToRelayOnNotice: shouldReconnectToRelayOnNotice,
+          connectionTimeout: connectionTimeout,
+          ignoreConnectionException: ignoreConnectionException,
+          lazyListeningToRelays: lazyListeningToRelays,
+        );
+
+        if (nostrRegistry.isRelayRegisteredAndConnectedSuccesfully(relay)) {
+          _replayActiveSubscriptions(relay);
+        }
+      }
+    } finally {
+      _reconnectingRelays.remove(relay);
+    }
+  }
+
+  /// Re-sends active REQ payloads to [relay] after a reconnect. Initial
+  /// connections are skipped to avoid sending every REQ twice.
+  void _replayActiveSubscriptions(String relay) {
+    for (final entry in _activeSubscriptions.entries) {
+      final subscription = entry.value;
+
+      if (subscription.relays != null &&
+          !subscription.relays!.contains(relay)) {
+        continue;
+      }
+
+      final socket = nostrRegistry.getRelayWebSocketOrNull(relayUrl: relay);
+      if (socket == null) {
+        return;
+      }
+
+      socket.sink.add(subscription.serialized);
+      logger.log(
+        'replayed subscription ${entry.key} to relay $relay after reconnect',
       );
     }
   }
@@ -1211,12 +1322,24 @@ class NostrRelays implements NostrRelaysBase {
           return;
         }
 
+        final generation = _connectionGeneration;
+        final relayGeneration = _relayGenerations[relay] ?? 0;
+
         try {
           await webSocketsService.connectRelay(
             relay: relay,
             connectionTimeout: connectionTimeout,
             shouldIgnoreConnectionException: ignoreConnectionException,
             onConnectionSuccess: (relayWebSocket) {
+              if (generation != _connectionGeneration ||
+                  relayGeneration != (_relayGenerations[relay] ?? 0) ||
+                  !(relaysList?.contains(relay) ?? false)) {
+                // The session was torn down or this relay was removed while
+                // the socket was still connecting.
+                unawaited(relayWebSocket.sink.close());
+                return;
+              }
+
               nostrRegistry.registerRelayWebSocket(
                 relayUrl: relay,
                 webSocket: relayWebSocket,
@@ -1409,9 +1532,7 @@ class NostrRelays implements NostrRelaysBase {
     }
 
     try {
-      final normalizedRelay =
-          webSocketsService.getHttpUrlFromWebSocketUrl(relay).toString();
-
+      // NIP-42 expects the websocket URL, not its HTTP equivalent.
       final authEvent = await signer.sign(
         NostrEvent(
           id: null,
@@ -1421,7 +1542,7 @@ class NostrRelays implements NostrRelaysBase {
           pubkey: signer.publicKey,
           createdAt: DateTime.now(),
           tags: [
-            ['relay', normalizedRelay],
+            ['relay', relay],
             ['challenge', challenge],
           ],
         ),
@@ -1547,6 +1668,19 @@ extension on Stream<String> {
   Stream<String> mergeWith(List<Stream<String>> list) {
     return StreamGroup.merge<String>([this, ...list]);
   }
+}
+
+/// A REQ payload that must be replayed when its relay reconnects.
+class _ActiveSubscription {
+  _ActiveSubscription({
+    required this.serialized,
+    required this.relays,
+  });
+
+  final String serialized;
+
+  /// `null` means every relay in the current pool.
+  Set<String>? relays;
 }
 
 /// Captures the configuration passed to [NostrRelays.init] so implicit

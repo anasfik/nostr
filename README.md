@@ -32,7 +32,7 @@ dart pub add dart_nostr
 
 ```yaml
 dependencies:
-  dart_nostr: ^11.0.0
+  dart_nostr: ^11.0.1
 ```
 
 ## Quick start
@@ -261,7 +261,7 @@ Nostr() ─┬─ connect / publish / subscribe / count   ← typed facade (Nost
 
 ## Testing
 
-Three tiers, all part of CI:
+The unit and in-process fake-relay integration suites run in CI. The live-network suite is opt-in:
 
 ```bash
 dart test                          # 400+ unit & fake-relay integration tests (default)

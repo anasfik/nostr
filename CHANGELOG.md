@@ -1,5 +1,33 @@
 # Changelog
 
+## 11.0.1
+
+**Security and reliability patch**
+
+### Security
+
+- **NIP-17/NIP-59 sender spoofing fixed**: gift wraps and seals are now signature-verified, the seal must be kind 13, and the seal author must match the rumor author. A malicious sender can no longer seal a rumor that claims someone else's pubkey.
+- **NIP-17 file messages** now reject the sender being listed as a recipient, matching the existing chat-message guard.
+
+### Reliability
+
+- **Reconnects replay active subscriptions**: after a relay reconnects, every active REQ that targets it is sent again, so streams no longer go silent.
+- **Disconnects cancel pending reconnects**: a shutdown/generation check prevents a scheduled backoff reconnect from reopening a socket after `disconnectFromRelays()`.
+- **NIP-42 AUTH relay tag** now carries the relay's websocket URL (`ws://`/`wss://`) instead of an HTTP URL, as the spec requires.
+- **Subscription auto-close now reaches the relay**: `SubscriptionManager` invokes an `onAutoClose` hook, wired to `closeEventsSubscription`, before removing expired subscriptions.
+
+### Filters
+
+- `NostrFilter.fromJson` now preserves unknown keys in `additionalFilters`.
+- `NostrFilter.toMap` lets core filter keys win over `additionalFilters`.
+- `NostrFilter.validate()` rejects negative kinds, invalid id/author hex, and limits above 10,000.
+
+### Tooling
+
+- Added a CI workflow that runs `dart analyze` and the default test suite.
+- Removed stray root files `handling` and `todo.extensionThatDoNotExist`.
+- No public API removals in this patch.
+
 ## 11.0.0
 
 **Major Release — Full Client-Feature NIP Coverage**

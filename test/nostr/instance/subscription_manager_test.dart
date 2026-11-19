@@ -124,6 +124,27 @@ void main() {
       expect(manager.isSubscriptionActive('sub1'), isFalse);
     });
 
+    test('autoCloseAfter invokes the close handler before removal', () async {
+      final closed = <String>[];
+      final closingManager = SubscriptionManager(
+        logger: _createMockLogger(),
+        onAutoClose: closed.add,
+      );
+      addTearDown(closingManager.dispose);
+
+      closingManager.registerSubscription(
+        subscriptionId: 'sub1',
+        filters: [],
+        relays: ['wss://relay1.example.com'],
+        autoCloseAfter: const Duration(milliseconds: 50),
+      );
+
+      await Future<void>.delayed(const Duration(milliseconds: 120));
+
+      expect(closed, equals(['sub1']));
+      expect(closingManager.isSubscriptionActive('sub1'), isFalse);
+    });
+
     test('extendAutoCloseTimer extends subscription lifetime', () async {
       manager.registerSubscription(
         subscriptionId: 'sub1',
