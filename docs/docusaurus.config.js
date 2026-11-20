@@ -1,31 +1,31 @@
 // @ts-check
-// Note: type annotations allow type checking and IDEs autocompletion
 
-const lightCodeTheme = require('prism-react-renderer/themes/github');
-const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+const {themes} = require('prism-react-renderer');
+const lightCodeTheme = themes.github;
+const darkCodeTheme = themes.dracula;
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Dart Nostr',
-  tagline: 'Dart implementation of the Nostr protocol',
+  tagline: 'A Dart and Flutter SDK for the Nostr protocol',
   favicon: 'img/favicon.ico',
 
   url: 'https://anasfik.github.io',
-  // Set the /<baseUrl>/ pathname under which your site is served
-  // For GitHub pages deployment, it is often '/<projectName>/'
-  baseUrl: '/nostr',
+  baseUrl: '/nostr/',
 
-  // GitHub pages deployment config.
-  // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'anasfik', // Usually your GitHub org/user name.
-  projectName: 'nostr', // Usually your repo name.
+  organizationName: 'anasfik',
+  projectName: 'nostr',
 
   onBrokenLinks: 'throw',
-  onBrokenMarkdownLinks: 'warn',
+  onBrokenAnchors: 'throw',
 
-  // Even if you don't use internalization, you can use this field to set useful
-  // metadata like html lang. For example, if your site is Chinese, you may want
-  // to replace "en" with "zh-Hans".
+  markdown: {
+    hooks: {
+      onBrokenMarkdownLinks: 'throw',
+      onBrokenMarkdownImages: 'throw',
+    },
+  },
+
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
@@ -39,75 +39,110 @@ const config = {
         docs: {
           routeBasePath: '/',
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl:
-            'https://github.com/anasfik/nostr/tree/main/docs/',
+          editUrl: 'https://github.com/anasfik/nostr/edit/main/docs/',
+          showLastUpdateAuthor: false,
+          showLastUpdateTime: false,
         },
         blog: false,
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
+        },
+        sitemap: {
+          filename: 'sitemap.xml',
+          lastmod: 'date',
+          changefreq: 'weekly',
+          priority: 0.5,
         },
       }),
     ],
   ],
 
   themeConfig:
-    
+    /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
     ({
-      // Replace with your project's social card
       image: 'img/logo.png',
+      metadata: [
+        {
+          name: 'description',
+          content:
+            'Documentation for dart_nostr, a Dart and Flutter SDK for the Nostr protocol: keys, events, relays, subscriptions, and NIP utilities.',
+        },
+        {
+          name: 'keywords',
+          content: 'nostr, dart, flutter, sdk, relays, events, nips',
+        },
+      ],
+      colorMode: {
+        defaultMode: 'light',
+        disableSwitch: false,
+        respectPrefersColorScheme: true,
+      },
       navbar: {
         title: 'Dart Nostr',
         logo: {
           alt: 'Dart Nostr logo',
           src: 'img/logo.png',
+          width: 32,
+          height: 32,
         },
         items: [
           {
-            type: 'docSidebar',
-            sidebarId: 'tutorialSidebar',
+            to: '/',
+            label: 'Getting started',
             position: 'left',
-            label: 'Documentation',
+          },
+          {
+            to: '/reference/nip-coverage',
+            label: 'Protocols',
+            position: 'left',
+          },
+          {
+            to: '/reference/accessors',
+            label: 'API',
+            position: 'left',
           },
           {
             href: 'https://github.com/anasfik/nostr',
             label: 'GitHub',
             position: 'right',
           },
+          {
+            href: 'https://pub.dev/packages/dart_nostr',
+            label: 'Pub',
+            position: 'right',
+          },
         ],
       },
       footer: {
-        style: 'dark',
+        style: 'light',
         links: [
           {
             title: 'Docs',
             items: [
-              {
-                label: 'Documentation',
-                to: '/',
-              },
+              {label: 'Getting started', to: '/'},
+              {label: 'Installation', to: '/installation'},
+              {label: 'Quick start', to: '/quick-start'},
+            ],
+          },
+          {
+            title: 'Reference',
+            items: [
+              {label: 'Protocol coverage', to: '/reference/nip-coverage'},
+              {label: 'API accessors', to: '/reference/accessors'},
             ],
           },
           {
             title: 'Community',
             items: [
               {
-                label: 'Issues',
+                label: 'GitHub issues',
                 href: 'https://github.com/anasfik/nostr/issues',
               },
               {
-                label: 'Pub',
+                label: 'Pub package',
                 href: 'https://pub.dev/packages/dart_nostr',
               },
-            ],
-          },
-          {
-            title: 'More',
-            items: [
-
-              {
-                label: 'Author',
-                href: 'https://github.com/anasfik',
-              },
+              {label: 'Author', href: 'https://github.com/anasfik'},
             ],
           },
         ],
@@ -116,7 +151,11 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
-        additionalLanguages: ['dart']
+        additionalLanguages: ['dart'],
+      },
+      tableOfContents: {
+        minHeadingLevel: 2,
+        maxHeadingLevel: 3,
       },
     }),
 };

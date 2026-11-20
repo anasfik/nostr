@@ -1,0 +1,38 @@
+# Dart Nostr documentation (full index)
+
+Source: https://github.com/anasfik/nostr
+Published under: https://anasfik.github.io/nostr/
+Package: https://pub.dev/packages/dart_nostr
+
+dart_nostr is a Dart and Flutter SDK for the Nostr protocol. It covers key
+management, NIP-19 encoding, relay connections, event signing and publishing,
+subscriptions with EOSE handling, event counting, and NIP utilities.
+
+## Routes
+
+- /nostr/ — overview, feature table, package structure, quick orientation.
+- /nostr/installation — Flutter and Dart installation, manual setup.
+- /nostr/quick-start — minimal end-to-end example: connect, keys, publish, subscribe.
+- /nostr/must-know — protocol expectations, package structure, singleton model.
+- /nostr/usage/keys-management/ — key generation, derivation, signing, verification, bech32.
+- /nostr/usage/identity/nip05 — NIP-05 identifier verification.
+- /nostr/usage/identity/nip19 — npub, nsec, nprofile, nevent, naddr encoding.
+- /nostr/usage/relays-and-events/connecting-to-relays — relay connection lifecycle.
+- /nostr/usage/relays-and-events/creating-events — event construction and signing.
+- /nostr/usage/relays-and-events/publishing-events — publish results and acknowledgements.
+- /nostr/usage/relays-and-events/subscribing-to-events — subscriptions, streams, and cleanup.
+- /nostr/usage/relays-and-events/count-events — NIP-45 count requests.
+- /nostr/usage/advanced/client-options — client configuration.
+- /nostr/usage/advanced/error-handling — NostrResult and failure codes.
+- /nostr/usage/advanced/low-level-api — relays and services surfaces.
+- /nostr/contributing — contribution workflow.
+
+## Planned reference
+
+- /nostr/reference/nip-coverage — supported NIPs and known boundaries (next content wave).
+- /nostr/reference/accessors — public API accessors (next content wave).
+
+All content is maintained in the docs/docs directory of the repository. Links use
+the /nostr/ base path because the site is served from GitHub Pages. The
+generated sitemap at https://anasfik.github.io/nostr/sitemap.xml is the
+canonical route list.

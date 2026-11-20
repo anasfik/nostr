@@ -23,7 +23,7 @@ Add to `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  dart_nostr: ^9.2.5
+  dart_nostr: ^11.2.0
 ```
 
 Then run:

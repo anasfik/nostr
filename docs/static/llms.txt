@@ -1,0 +1,14 @@
+# Dart Nostr documentation
+
+> Dart and Flutter SDK for the Nostr protocol. This file lists the published documentation routes under https://anasfik.github.io/nostr/.
+
+Known routes:
+
+- [Getting started](https://anasfik.github.io/nostr/): package overview and orientation.
+- [Installation](https://anasfik.github.io/nostr/installation): add dart_nostr to a Dart or Flutter project.
+- [Quick start](https://anasfik.github.io/nostr/quick-start): connect, publish, and subscribe end to end.
+- [Must know](https://anasfik.github.io/nostr/must-know): package structure and singleton model.
+- [Usage guides](https://anasfik.github.io/nostr/usage/keys-management/): keys, identity, relays and events, advanced topics.
+- [Contributing](https://anasfik.github.io/nostr/contributing): repository workflow.
+
+Protocol coverage and API accessor reference pages live at /nostr/reference/nip-coverage and /nostr/reference/accessors. The generated sitemap at https://anasfik.github.io/nostr/sitemap.xml is the canonical route list.
