@@ -1,7 +1,15 @@
 name: dart_nostr
-description: Develop Scalable Dart/Flutter Nostr clients quickly and easily
-version: 11.1.0
-repository: https://github.com/anasfik/nostr/
+description: Dart and Flutter Nostr SDK with relay transport, signing, NIP-44 encryption, DMs, zaps and documented coverage of 87/100 canonical NIPs.
+version: 11.2.0
+homepage: https://anasfik.github.io/nostr/
+repository: https://github.com/anasfik/nostr
+documentation: https://pub.dev/documentation/dart_nostr/latest/
+topics:
+  - nostr
+  - flutter
+  - dart
+  - websocket
+  - encryption
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
