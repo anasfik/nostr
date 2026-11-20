@@ -246,6 +246,6 @@ There is no `dispose` method on `Nostr` in 11.2.0. To release an instance, call 
 
 ## Related
 
-- [Client options](./client-options) for timeouts and retries
-- [Error handling](./error-handling) for `NostrResult` and `NostrFailure`
-- [Subscribing to events](../relays-and-events/subscribing-to-events) for the facade subscription API
+- [Client options](./client-options.md) for timeouts and retries
+- [Error handling](./error-handling.md) for `NostrResult` and `NostrFailure`
+- [Subscribing to events](../relays-and-events/subscribing-to-events.md) for the facade subscription API

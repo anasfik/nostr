@@ -18,7 +18,7 @@ Key material is held by `NostrKeyPairs` (`lib/nostr/core/key_pairs.dart`). Both 
 | `generateKeyPairFromExistingPrivateKey(String)` | `NostrKeyPairs` | Rebuilds a pair from a stored private key |
 | `derivePublicKey({required String privateKey})` | `String` | Public key for a private key |
 | `isValidPrivateKey(String)` | `bool` | Instance method; `NostrKeyPairs.isValidPrivateKey` is the static equivalent |
-| `sign({required String privateKey, required String message})` | `String` | SHA-256 hashes the message before signing; see [Sign and verify](./sign-verify) |
+| `sign({required String privateKey, required String message})` | `String` | SHA-256 hashes the message before signing; see [Sign and verify](./sign-verify.md) |
 | `verify({required String publicKey, required String message, required String signature})` | `bool` | Hashes the message the same way |
 
 NIP-06 mnemonic helpers live on `nostr.nips.nip06` (`isMnemonicValid`, `privateKeyFromMnemonic`). Static wrappers with the same behaviour exist on the keys service as `NostrKeys.isMnemonicValid` and `NostrKeys.getPrivateKeyFromMnemonic`, but `NostrKeys` is not exported from the package root, so use the NIP-06 accessor unless you import the instance implementation directly.
@@ -52,8 +52,8 @@ Treat the cache as key material held in memory. Clear it with `nostr.keys.freeAl
 
 ## Next
 
-- [Generate key pairs](./generate-key-pair)
-- [Sign and verify](./sign-verify)
-- [NIP-19 bech32 encoding](./bech32-encoding)
-- [NIP-05 identifiers](../identity/nip05)
-- [Core concepts](../../must-know)
+- [Generate key pairs](./generate-key-pair.md)
+- [Sign and verify](./sign-verify.md)
+- [NIP-19 bech32 encoding](./bech32-encoding.md)
+- [NIP-05 identifiers](../identity/nip05.md)
+- [Core concepts](../../must-know.md)

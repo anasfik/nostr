@@ -67,7 +67,7 @@ export default function Home() {
         </section>
 
         <section className={styles.install} aria-label="Install dart_nostr">
-          <div><strong>Install the published package.</strong><span>pub.dev: 11.1.0, published 2026-11-19.</span></div>
+          <div><strong>Install the published package.</strong><span>pub.dev: 11.2.0, published 2026-11-20.</span></div>
           <CodeBlock language="bash">flutter pub add dart_nostr</CodeBlock>
           <Link to="/docs/installation/">Choose your version <span aria-hidden="true">↗</span></Link>
         </section>
@@ -84,7 +84,7 @@ export default function Home() {
             <p className={styles.note}>Illustrative snippet. Publishing sends a public event. The quick start covers connection errors and subscription cleanup.</p>
             <Link to="/docs/quick-start/">Quick start <span aria-hidden="true">↗</span></Link>
           </div>
-          <div className={styles.code}><CodeBlock language="dart" title="A first public note · dart_nostr 11.1.0">{example}</CodeBlock></div>
+          <div className={styles.code}><CodeBlock language="dart" title="A first public note · dart_nostr 11.2.0">{example}</CodeBlock></div>
         </section>
 
         <section className={styles.guides} aria-labelledby="guides">

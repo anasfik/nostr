@@ -115,11 +115,11 @@ Future<void> main() async {
 }
 ```
 
-`publish` does not aggregate per-relay answers. If you need every relay's `OK`, use `nostr.relays.sendEventToRelays` with its `onOk` callback, covered in [Low-level API](./low-level-api).
+`publish` does not aggregate per-relay answers. If you need every relay's `OK`, use `nostr.relays.sendEventToRelays` with its `onOk` callback, covered in [Low-level API](./low-level-api.md).
 
 ## Retries
 
-`connect`, `publish`, and `count` are retried according to `NostrClientOptions.retryPolicy`; the other facade calls are single-attempt. The default policy makes three total attempts. See [Client options](./client-options) for the policies and for `failFast`.
+`connect`, `publish`, and `count` are retried according to `NostrClientOptions.retryPolicy`; the other facade calls are single-attempt. The default policy makes three total attempts. See [Client options](./client-options.md) for the policies and for `failFast`.
 
 ## Exceptions you still have to handle
 
@@ -132,6 +132,6 @@ Not every surface returns a result:
 
 ## Related
 
-- [Client options](./client-options) for timeouts, retry policies, and `failFast`
-- [Low-level API](./low-level-api) for the relay methods behind the facade
-- [Sign and verify](../keys-management/sign-verify) for the `ArgumentError` cases around keys
+- [Client options](./client-options.md) for timeouts, retry policies, and `failFast`
+- [Low-level API](./low-level-api.md) for the relay methods behind the facade
+- [Sign and verify](../keys-management/sign-verify.md) for the `ArgumentError` cases around keys

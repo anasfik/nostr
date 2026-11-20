@@ -242,6 +242,6 @@ void main() {
 }
 ```
 
-Related: [Publishing events](./publishing-events),
-[Count events](./count-events), and
-[Low-level API](../advanced/low-level-api).
+Related: [Publishing events](./publishing-events.md),
+[Count events](./count-events.md), and
+[Low-level API](../advanced/low-level-api.md).

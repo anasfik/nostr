@@ -80,6 +80,6 @@ Not everything returns a result. Three surfaces throw deliberately:
 
 ## Where to go next
 
-- [Installation](./installation) — add the package to a project
-- [Core concepts](./must-know) — instance model, signers, results, relay state
-- [Quick start](./quick-start) — a complete first-run program
+- [Installation](./installation.md) — add the package to a project
+- [Core concepts](./must-know.md) — instance model, signers, results, relay state
+- [Quick start](./quick-start.md) — a complete first-run program

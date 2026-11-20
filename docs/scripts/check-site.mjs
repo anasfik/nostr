@@ -28,7 +28,7 @@ assert.ok(home.replace(/<[^>]*>/g, '').includes('flutter pub add dart_nostr'), '
 const playgroundUrl = baseUrl === '/' ? '/playground/' : 'https://nostr.gwhyyy.com/playground/';
 assert.ok(home.includes(`href="${playgroundUrl}"`), 'Demo link must reach its hosting domain');
 assert.ok(home.includes(`href="${baseUrl}docs/installation/"`), 'Announcement link must include baseUrl');
-assert.match(home, /11\.1\.0/, 'Landing must state the published version');
+assert.match(home, /11\.2\.0/, 'Landing must state the published version');
 assert.doesNotMatch(home, /10\.0\.1/, 'Landing must not advertise a stale version');
 assert.equal((home.match(/<h1[ >]/g) || []).length, 1);
 assert.match(home, /aria-label="Analytics consent"/, 'Consent bar must render on the landing page');
@@ -43,19 +43,23 @@ if (process.env.GA_ID) {
 }
 assert.ok(existsSync(resolve(build, 'docs/index.html')), 'Docs intro must live under /docs');
 assert.ok(existsSync(resolve(build, '404.html')));
-assert.match(readFileSync(resolve(build, 'docs/installation/index.html'), 'utf8'), /11\.1\.0/, 'Installation page must state the published version');
+assert.match(readFileSync(resolve(build, 'docs/installation/index.html'), 'utf8'), /11\.2\.0/, 'Installation page must state the published version');
 for (const name of ['robots.txt', 'llms.txt', 'llms-full.txt', 'img/social-card.png']) {
   assert.ok(existsSync(resolve(build, name)), `Missing ${name}`);
 }
 const sitemap = readFileSync(resolve(build, 'sitemap.xml'), 'utf8');
 const urls = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map(match => new URL(match[1]));
-assert.ok(urls.length >= 21, 'Landing plus at least twenty documentation routes');
+assert.ok(urls.length >= 21, 'Landing plus the documentation set');
 const expectedTitles = {
-  'docs/': 'Dart and Flutter Nostr SDK documentation',
-  'docs/installation/': 'Install dart_nostr for Dart and Flutter',
-  'docs/quick-start/': 'Dart Nostr quick start',
-  'docs/usage/keys-management/': 'Nostr key management in Dart',
-  'docs/usage/identity/nip19/': 'Nostr identifiers: npub, nsec and relay hints',
+  'docs/': 'dart_nostr',
+  'docs/installation/': 'Installation',
+  'docs/quick-start/': 'Quick start',
+  'docs/must-know/': 'Core concepts',
+  'docs/usage/keys-management/': 'Keys',
+  'docs/usage/identity/nip19/': 'NIP-19 encoding',
+  'docs/usage/relays-and-events/subscribing-to-events/': 'Subscribing to events',
+  'docs/reference/nip-coverage/': 'NIP coverage',
+  'docs/features/signers/': 'Signers',
 };
 const titles = new Set();
 const descriptions = new Set();
@@ -93,9 +97,10 @@ for (const [route, label] of Object.entries({
   '': 'Overview',
   'installation/': 'Installation',
   'quick-start/': 'Quick start',
+  'must-know/': 'Core concepts',
   'usage/keys-management/': 'Keys',
-  'usage/identity/nip19/': 'Identifiers',
-  'contributing/': 'Contributing',
+  'reference/accessors/': 'Accessors',
+  'features/signers/': 'Signers',
 })) {
   const page = readFileSync(resolve(build, 'docs', route, 'index.html'), 'utf8');
   const sidebarLinks = [...page.matchAll(/<a\b[^>]*class="[^"]*menu__link[^"]*"[^>]*>.*?<\/a>/g)].map(match => match[0]);

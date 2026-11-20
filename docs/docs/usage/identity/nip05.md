@@ -68,7 +68,7 @@ Future<void> main() async {
 }
 ```
 
-Pass the key as 64-character hex. An `npub` is not accepted: the implementation asserts the hex shape in debug builds and compares strings, so an `npub` input can never match the hex value in the domain document. Decode it first with [NIP-19](./nip19).
+Pass the key as 64-character hex. An `npub` is not accepted: the implementation asserts the hex shape in debug builds and compares strings, so an `npub` input can never match the hex value in the domain document. Decode it first with [NIP-19](./nip19.md).
 
 ## Limitations
 
@@ -79,6 +79,6 @@ Pass the key as 64-character hex. An `npub` is not accepted: the implementation 
 
 ## Related
 
-- [Keys](/usage/keys-management/) for generating and deriving keys
-- [NIP-19 encoding](./nip19) for `npub` and `nprofile`
-- [Client options](../advanced/client-options) for timeouts elsewhere in the client
+- [Keys](../keys-management/index.md) for generating and deriving keys
+- [NIP-19 encoding](./nip19.md) for `npub` and `nprofile`
+- [Client options](../advanced/client-options.md) for timeouts elsewhere in the client

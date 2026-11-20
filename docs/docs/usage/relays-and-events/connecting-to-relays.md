@@ -125,7 +125,7 @@ Future<void> main() async {
 ```
 
 Binding rules, including what happens when `connect` fails, are covered in
-[Signers](../../features/signers).
+[Signers](../../features/signers.md).
 
 ## Timeouts and retries
 
@@ -223,6 +223,6 @@ Future<void> main() async {
 | `fees` | `RelayFees?` | Admission and publication fees |
 | `retention` | `List<RelayRetention>` | Retention policies, possibly empty |
 
-Related: [Publishing events](./publishing-events),
-[Subscribing to events](./subscribing-to-events), and
-[Signers](../../features/signers).
+Related: [Publishing events](./publishing-events.md),
+[Subscribing to events](./subscribing-to-events.md), and
+[Signers](../../features/signers.md).

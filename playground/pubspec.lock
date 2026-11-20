@@ -103,7 +103,7 @@ packages:
       path: ".."
       relative: true
     source: path
-    version: "11.1.0"
+    version: "11.2.0"
   equatable:
     dependency: transitive
     description:

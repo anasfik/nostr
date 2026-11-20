@@ -123,5 +123,5 @@ void main() {
 }
 ```
 
-Related: [Subscribing to events](./subscribing-to-events) and
-[NIP coverage](../../reference/nip-coverage).
+Related: [Subscribing to events](./subscribing-to-events.md) and
+[NIP coverage](../../reference/nip-coverage.md).

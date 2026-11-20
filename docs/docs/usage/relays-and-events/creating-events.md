@@ -81,7 +81,7 @@ values. The library does not validate tag names.
 | `10002` | Relay list metadata |
 
 The full set of builders, including social events and long-form articles, lives
-on `nostr.nips.social`; see [NIP accessors](../../reference/accessors).
+on `nostr.nips.social`; see [NIP accessors](../../reference/accessors.md).
 
 ## Metadata event (kind 0)
 
@@ -166,7 +166,7 @@ void main() {
 
 Note that `NostrKeyPairs.sign` expects an event id here. If you want to sign an
 arbitrary message, use `nostr.keys.sign`, which hashes the message first; see
-[Sign and verify](../keys-management/sign-verify).
+[Sign and verify](../keys-management/sign-verify.md).
 
 ## Verify and serialize
 
@@ -225,5 +225,5 @@ void main() {
 message instead. Passing a prefix other than `EVENT`, or a message with fewer
 than three elements, throws `FormatException`.
 
-Related: [Publishing events](./publishing-events) and
-[Signers](../../features/signers).
+Related: [Publishing events](./publishing-events.md) and
+[Signers](../../features/signers.md).

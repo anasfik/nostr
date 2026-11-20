@@ -233,6 +233,6 @@ the raw private key for ECDH. `nostr.nips.nip04` therefore throws
 `ArgumentError` unless the bound signer is a `NostrLocalKeySigner`. Prefer NIP-17
 for new messages.
 
-Related: [Signers](./signers),
-[NIP coverage](../reference/nip-coverage), and
-[Publishing events](../usage/relays-and-events/publishing-events).
+Related: [Signers](./signers.md),
+[NIP coverage](../reference/nip-coverage.md), and
+[Publishing events](../usage/relays-and-events/publishing-events.md).

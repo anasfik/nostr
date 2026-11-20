@@ -36,7 +36,7 @@ const config = {
         const fs = require('node:fs');
         const path = require('node:path');
         const root = `${siteConfig.url}${siteConfig.baseUrl}`;
-        const summary = `# dart_nostr\n\n> An MIT-licensed Nostr SDK for Dart and Flutter. The published package is 11.1.0, which is what these guides and the playground use.\n\n## Documentation\n- [Overview](${root}docs/): SDK capabilities and API conventions.\n- [Installation](${root}docs/installation/): Install the published 11.1.0 release.\n- [Quick start](${root}docs/quick-start/): Connect, publish and subscribe.\n- [Errors](${root}docs/usage/advanced/error-handling/): Typed results and failures.\n- [Source](https://github.com/anasfik/nostr): Implementation and issue tracker.\n`;
+        const summary = `# dart_nostr\n\n> An MIT-licensed Nostr SDK for Dart and Flutter. The published package is 11.2.0, which is what these guides and the playground use.\n\n## Documentation\n- [Overview](${root}docs/): SDK capabilities and API conventions.\n- [Installation](${root}docs/installation/): Install the published 11.2.0 release.\n- [Quick start](${root}docs/quick-start/): Connect, publish and subscribe.\n- [Errors](${root}docs/usage/advanced/error-handling/): Typed results and failures.\n- [Source](https://github.com/anasfik/nostr): Implementation and issue tracker.\n`;
         const files = fs.readdirSync(path.join(__dirname, 'docs'), {recursive: true}).filter(name => name.endsWith('.md')).sort();
         const full = files.map(name => `\n\n## Source: docs/${name}\n\n${fs.readFileSync(path.join(__dirname, 'docs', name), 'utf8')}`).join('');
         fs.writeFileSync(path.join(outDir, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${root}sitemap.xml\n`);
@@ -88,10 +88,10 @@ const config = {
       image: 'img/social-card.png',
       colorMode: {respectPrefersColorScheme: true},
       announcementBar: {
-        id: 'release-111',
+        id: 'release-112',
         backgroundColor: 'var(--surface)',
         textColor: 'var(--ink-2)',
-        content: `dart_nostr 11.1.0 is published · <a href="${process.env.BASE_URL || '/'}docs/installation/">Install it</a>.`,
+        content: `dart_nostr 11.2.0 is published · <a href="${process.env.BASE_URL || '/'}docs/installation/">Install it</a>.`,
         isCloseable: false,
       },
       navbar: {

@@ -1,6 +1,48 @@
 # nostr.gwhyyy.com deployment
 
-## Observed state, 2026-11-18 (current, evening)
+## Observed state, 2026-11-20 (current)
+
+Release `/var/www/nostr/releases/20261120-205215` is selected by
+`/var/www/nostr/current`, shipping `dart_nostr 11.2.0` (published
+2026-11-20). It merges upstream `385674e` (87/100 NIP coverage, per-NIP
+accessors) while keeping this site's shell on Docusaurus 2.4.1.
+
+What changed: 29 documentation routes from upstream (new `features/` and
+`reference/` sections, API-accurate guides), 65 documentation links rewritten
+to relative `.md` targets so they resolve under `/docs/` instead of upstream's
+root `routeBasePath` (build fails on `onBrokenLinks: 'throw'` otherwise),
+version copy and checker expectations re-derived for 11.2.0, and the Flutter
+console rebuilt against the new SDK.
+
+Evidence:
+- docs build `nostr-112-docs-build2` exit 0, client 9.76 s / server 14.11 s,
+  `PASS: 30 routes, metadata, discovery files, no unconfigured tracking (site
+  only; demo NOT checked)` (`/tmp/opencode/nostr-112-docs-build2.log`).
+- Flutter `nostr-112-flutter` exit 0: analyze clean, `75/75` tests, release
+  build (`--no-wasm-dry-run --no-web-resources-cdn`, service worker removed),
+  `FLUTTER_BUILD_OK` (`/tmp/opencode/nostr-112-flutter.log`).
+- Assembled checker `PASS: 30 routes, …, and Flutter artifact`.
+- Live metadata sweep `/tmp/opencode/nostr-live-sweep-112.py`:
+  `PASS: 30 live routes, canonical, one h1, unique titles and descriptions`.
+- Live browser check `nostr-112-live-proof` `18/18 checks passed` (theme,
+  search `?q=keys`, mobile docs, playground boot, Project nav, `flutter-view`
+  below the 48 px header, no page errors), console proof
+  `PASS: refines real Flutter UI signs, validates, reads controlled protocol
+  event, cancels publishing, mobile inspector/back, keyboard walk`.
+- curl: `/`, `/docs/`, `/docs/installation/`, `/docs/features/signers/`,
+  `/docs/reference/nip-coverage/`, `/search/?q=nip-19`, `/playground/`,
+  `/sitemap.xml` (30 locs), `/robots.txt`, `/llms.txt`, `/img/social-card.png`
+  all 200; `/nope` 404.
+
+Rollback releases retained: `20261118-193000`, `20261118-180832`,
+`20261118-180057`, `20261114-084001`, `20261111-155830`.
+
+Deliberately not done: the upstream Docusaurus 3.10.2 + React 19 migration
+(this shell's plugins, CSS tokens and browser proofs target 2.4.1); GitHub
+Pages stays disabled so `anasfik.github.io/nostr` cannot serve a stale copy;
+`gh-pages` branch left untouched.
+
+## Observed state, 2026-11-18 (evening)
 
 Release `/var/www/nostr/releases/20261118-193000` is selected by
 `/var/www/nostr/current`. It adds GA4 (`G-2GYP7GFL4D`, property `565042173`)

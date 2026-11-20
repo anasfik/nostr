@@ -107,7 +107,7 @@ new signer on the next access. That has two consequences:
 - Reading a signer-bound getter with no signer bound throws `StateError`. It does
   not fall back to an empty or anonymous identity.
 
-The signer-bound accessors are listed in [NIP accessors](../reference/accessors).
+The signer-bound accessors are listed in [NIP accessors](../reference/accessors.md).
 Stateless helpers such as `nip19`, `nip05`, `nip11`, and `nip45` work without a
 signer.
 
@@ -227,8 +227,8 @@ signer; replace it with the one from your bunker.
 
 A remote signer must expose `nip44_encrypt` and `nip44_decrypt`, including for
 payloads addressed to its own pubkey. NIP-37 and NIP-60 depend on that; see
-[Encryption and DMs](./encryption-and-dms).
+[Encryption and DMs](./encryption-and-dms.md).
 
-Related: [Keys management](../usage/keys-management/),
-[NIP accessors](../reference/accessors), and
-[Encryption and DMs](./encryption-and-dms).
+Related: [Keys management](../usage/keys-management/index.md),
+[NIP accessors](../reference/accessors.md), and
+[Encryption and DMs](./encryption-and-dms.md).
