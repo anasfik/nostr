@@ -1,8 +1,9 @@
 # Documentation website
 
 This directory contains the [Docusaurus 3](https://docusaurus.io/) site for
-`dart_nostr`. The source guides live in `docs/docs/`; the site is published at
-<https://anasfik.github.io/nostr/> under the `/nostr/` base path.
+`dart_nostr`. The source guides live in `docs/docs/`; the published site is
+<https://nostr.gwhyyy.com/>. This checkout builds a standalone copy under the
+`/nostr/` base path for local preview and verification.
 
 ## Requirements
 
@@ -40,17 +41,21 @@ regressions.
 
 ## Deployment
 
-The site is live at <https://anasfik.github.io/nostr/>. Two modes exist, and
-only one is active at a time in Settings → Pages:
+The published site is self-hosted at <https://nostr.gwhyyy.com/>. GitHub Pages
+for this repository is retired: the `gh-pages` branch and the Pages workflow
+were removed, so nothing in this repo deploys.
 
-- **Deploy from a branch** (current): Pages serves the `gh-pages` branch.
-  After changing docs, run `npm ci && npm run build` here, copy `build/` into a
-  checkout of `gh-pages`, and push. `static/.nojekyll` ships into `build/`, so
-  Jekyll does not process the output.
-- **GitHub Actions**: switch Pages to "GitHub Actions" and
-  `.github/workflows/docs-pages.yml` builds and deploys on every push to `main`
-  that touches `docs/`. `deploy.ps1` and the old `gh-pages` deploy script are
-  obsolete.
+This checkout builds a standalone copy with `baseUrl: '/nostr/'`. To build it
+locally:
+
+```bash
+npm ci
+npm run build        # output in build/
+npm run serve        # verify the production build at localhost:3000/nostr/
+```
+
+`static/.nojekyll` still ships into `build/`; it is harmless and keeps the
+output valid for any static host that would otherwise run Jekyll.
 
 ## Theme
 

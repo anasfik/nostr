@@ -1,14 +1,18 @@
 # Dart Nostr documentation
 
-> Dart and Flutter SDK for the Nostr protocol. This file lists the published documentation routes under https://anasfik.github.io/nostr/.
+> Dart and Flutter SDK for the Nostr protocol. The documentation site is hosted
+> at https://nostr.gwhyyy.com/.
 
 Known routes:
 
-- [Getting started](https://anasfik.github.io/nostr/): package overview and orientation.
-- [Installation](https://anasfik.github.io/nostr/installation): add dart_nostr to a Dart or Flutter project.
-- [Quick start](https://anasfik.github.io/nostr/quick-start): connect, publish, and subscribe end to end.
-- [Must know](https://anasfik.github.io/nostr/must-know): package structure and singleton model.
-- [Usage guides](https://anasfik.github.io/nostr/usage/keys-management/): keys, identity, relays and events, advanced topics.
-- [Contributing](https://anasfik.github.io/nostr/contributing): repository workflow.
+- [Getting started](https://nostr.gwhyyy.com/docs/): package overview and orientation.
+- [Installation](https://nostr.gwhyyy.com/docs/installation/): add dart_nostr to a Dart or Flutter project.
+- [Quick start](https://nostr.gwhyyy.com/docs/quick-start/): connect, publish, and subscribe end to end.
+- [Core concepts](https://nostr.gwhyyy.com/docs/must-know/): package structure and singleton model.
+- [Usage guides](https://nostr.gwhyyy.com/docs/usage/keys-management/): keys, identity, relays and events, advanced topics.
+- [NIP coverage](https://nostr.gwhyyy.com/docs/reference/nip-coverage/): per-NIP support status.
+- [Accessors](https://nostr.gwhyyy.com/docs/reference/accessors/): `NostrNips` accessor reference.
 
-Protocol coverage and API accessor reference pages live at /nostr/reference/nip-coverage and /nostr/reference/accessors. The generated sitemap at https://anasfik.github.io/nostr/sitemap.xml is the canonical route list.
+The site's own sitemap is the canonical route list. This repository builds a
+standalone preview copy under the `/nostr/` base path; that build is not
+deployed.

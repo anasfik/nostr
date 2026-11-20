@@ -1,7 +1,7 @@
 # Dart Nostr documentation (full index)
 
 Source: https://github.com/anasfik/nostr
-Published under: https://anasfik.github.io/nostr/
+Published under: https://nostr.gwhyyy.com/docs/
 Package: https://pub.dev/packages/dart_nostr
 
 dart_nostr is a Dart and Flutter SDK for the Nostr protocol. It covers key
@@ -27,12 +27,12 @@ subscriptions with EOSE handling, event counting, and NIP utilities.
 - /nostr/usage/advanced/low-level-api — relays and services surfaces.
 - /nostr/contributing — contribution workflow.
 
-## Planned reference
+## Reference
 
-- /nostr/reference/nip-coverage — supported NIPs and known boundaries (next content wave).
-- /nostr/reference/accessors — public API accessors (next content wave).
+- /docs/reference/nip-coverage/ — supported NIPs and known boundaries.
+- /docs/reference/accessors/ — public API accessors.
 
-All content is maintained in the docs/docs directory of the repository. Links use
-the /nostr/ base path because the site is served from GitHub Pages. The
-generated sitemap at https://anasfik.github.io/nostr/sitemap.xml is the
-canonical route list.
+All content is maintained in the docs/docs directory of the repository. The
+published site is hosted at https://nostr.gwhyyy.com/; this repository also
+builds a standalone preview copy under the /nostr/ base path, which is not
+deployed.
