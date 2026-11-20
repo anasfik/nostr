@@ -28,7 +28,8 @@ assert.ok(home.replace(/<[^>]*>/g, '').includes('flutter pub add dart_nostr'), '
 const playgroundUrl = baseUrl === '/' ? '/playground/' : 'https://nostr.gwhyyy.com/playground/';
 assert.ok(home.includes(`href="${playgroundUrl}"`), 'Demo link must reach its hosting domain');
 assert.ok(home.includes(`href="${baseUrl}docs/installation/"`), 'Announcement link must include baseUrl');
-assert.match(home, /10\.0\.1/);
+assert.match(home, /11\.1\.0/, 'Landing must state the published version');
+assert.doesNotMatch(home, /10\.0\.1/, 'Landing must not advertise a stale version');
 assert.equal((home.match(/<h1[ >]/g) || []).length, 1);
 assert.match(home, /aria-label="Analytics consent"/, 'Consent bar must render on the landing page');
 assert.match(home, />Accept<\/button>/, 'Consent bar must offer Accept');
@@ -42,7 +43,7 @@ if (process.env.GA_ID) {
 }
 assert.ok(existsSync(resolve(build, 'docs/index.html')), 'Docs intro must live under /docs');
 assert.ok(existsSync(resolve(build, '404.html')));
-assert.match(readFileSync(resolve(build, 'docs/installation/index.html'), 'utf8'), /d61258e/);
+assert.match(readFileSync(resolve(build, 'docs/installation/index.html'), 'utf8'), /11\.1\.0/, 'Installation page must state the published version');
 for (const name of ['robots.txt', 'llms.txt', 'llms-full.txt', 'img/social-card.png']) {
   assert.ok(existsSync(resolve(build, name)), `Missing ${name}`);
 }

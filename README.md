@@ -35,10 +35,11 @@ dependencies:
   dart_nostr: ^11.1.0
 ```
 
-The examples below target 11.0.0. The commands resolve the latest published
-version; check [pub.dev versions](https://pub.dev/packages/dart_nostr/versions)
-before using these examples. Until 11.0.0 is published, use the pinned source
-preview in the [installation guide](https://nostr.gwhyyy.com/docs/installation/).
+The examples below target 11.1.0, the current published release (2026-11-19).
+`dart pub add dart_nostr` resolves that version; check
+[pub.dev versions](https://pub.dev/packages/dart_nostr/versions) if you need an
+older one. From 11.1.0 the NIP implementations live under `lib/nostr/nips/` and
+are reached through the `NostrNips` accessor on the client.
 
 ## Quick start
 

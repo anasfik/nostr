@@ -2,17 +2,16 @@
 sidebar_position: 2
 sidebar_label: Installation
 title: Install dart_nostr for Dart and Flutter
-description: Add dart_nostr to a Dart or Flutter project. Compare the published package with the 11.0.0 source preview and pin the dependency used by these guides.
+description: Add dart_nostr to a Dart or Flutter project. The published package is 11.1.0, the version these guides and the playground use.
 ---
 
 # Installation
 
 ## Flutter
 
-The commands below install the published **10.0.1** release (checked 2026-11-14).
-These guides and the playground target the **11.0.0 source preview**. Use the
-pinned Git dependency below to follow the preview APIs. Version 11.0.0 has not
-been published to pub.dev. Short snippets omit application setup; start with
+The commands below install the published **11.1.0** release (published 2026-11-19).
+These guides and the playground use that same version, so there is no source
+preview to pin. Short snippets omit application setup; start with
 the [quick start](./quick-start.md) for the client lifecycle.
 
 ```bash
@@ -25,23 +24,23 @@ flutter pub add dart_nostr
 dart pub add dart_nostr
 ```
 
-## Source preview used by these guides
+## Pinning a version
 
-Add to `pubspec.yaml`:
+`pubspec.yaml` accepts the caret range these guides assume:
 
 ```yaml
 dependencies:
-  dart_nostr:
-    git:
-      url: https://github.com/anasfik/nostr.git
-      ref: d61258e
+  dart_nostr: ^11.1.0
 ```
 
-Then run:
+Pin an exact version (`11.1.0`) or a Git ref only when you need to test unreleased
+work; the published release is what the guides document.
 
-```bash
-dart pub get
-```
+## NIPs moved under one accessor
+
+Version 11.1.0 consolidated the NIP implementations under
+`lib/nostr/nips/` and exposes them through `NostrNips` on the client. Older
+guides that imported per-NIP files directly should use the accessor instead.
 
 ## Import
 
