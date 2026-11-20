@@ -21,7 +21,7 @@ void main() {
 }
 ```
 
-Store `private` yourself. The library does not persist keys; the only copy it keeps is the in-memory cache described in [Keys](/usage/keys-management/).
+Store `private` yourself. The library does not persist keys; the only copy it keeps is the in-memory cache described in [Keys](./index.md).
 
 ## Generate only a private key
 
@@ -109,6 +109,6 @@ The same two operations are wrapped as `NostrKeys.isMnemonicValid` and `NostrKey
 
 ## Next
 
-- [Sign and verify](./sign-verify) with the generated keys
-- [NIP-19 bech32 encoding](./bech32-encoding) to share `npub` and `nsec` forms
-- [NIP-05 identifiers](../identity/nip05) to attach a name to a public key
+- [Sign and verify](./sign-verify.md) with the generated keys
+- [NIP-19 bech32 encoding](./bech32-encoding.md) to share `npub` and `nsec` forms
+- [NIP-05 identifiers](../identity/nip05.md) to attach a name to a public key

@@ -200,6 +200,6 @@ Future<void> main() async {
 | `nostr.relays.sendEventToRelaysAsync(event, timeout:)` | `Future<NostrEventOkCommand>` | First relay | Throws `TimeoutException` |
 | `nostr.relays.sendEventToRelays(event, onOk:)` | `Future<void>` | No | Nothing thrown for a rejection; inspect `onOk` |
 
-Related: [Creating events](./creating-events),
-[Subscribing to events](./subscribing-to-events), and
-[Error handling](../advanced/error-handling).
+Related: [Creating events](./creating-events.md),
+[Subscribing to events](./subscribing-to-events.md), and
+[Error handling](../advanced/error-handling.md).

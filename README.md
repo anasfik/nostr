@@ -369,7 +369,7 @@ CI (`.github/workflows/ci.yml`) runs `dart pub get`, `dart analyze` and `dart te
 
 ## Documentation & examples
 
-- Full docs: [anasfik.github.io/nostr](https://anasfik.github.io/nostr/)
+- Full docs: [nostr.gwhyyy.com/docs](https://nostr.gwhyyy.com/docs/) — guides, NIP coverage and the browser playground
 - API reference: [pub.dev/documentation/dart_nostr](https://pub.dev/documentation/dart_nostr/latest/)
 - Runnable samples: [`example/`](example/) — key generation, publishing, subscriptions, NIP-05 verification, NIP-11 relay info
 

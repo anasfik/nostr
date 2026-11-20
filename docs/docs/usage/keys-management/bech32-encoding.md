@@ -129,4 +129,4 @@ void main() {
 
 ## Share the same key with a name
 
-`nprofile` and `npub` both identify a public key. To attach a human-readable identifier to the same key, see [NIP-05](../identity/nip05).
+`nprofile` and `npub` both identify a public key. To attach a human-readable identifier to the same key, see [NIP-05](../identity/nip05.md).

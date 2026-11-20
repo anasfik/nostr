@@ -108,6 +108,6 @@ Rule of thumb: sign text with `nostr.keys.sign`, sign an event with `keyPairs.si
 
 ## Next
 
-- [Create events](../relays-and-events/creating-events) shows the builders that sign for you
-- [Publish events](../relays-and-events/publishing-events) covers relay acceptance
-- [Error handling](../advanced/error-handling) covers what a rejected publish looks like
+- [Create events](../relays-and-events/creating-events.md) shows the builders that sign for you
+- [Publish events](../relays-and-events/publishing-events.md) covers relay acceptance
+- [Error handling](../advanced/error-handling.md) covers what a rejected publish looks like

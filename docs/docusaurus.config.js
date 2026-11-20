@@ -1,31 +1,62 @@
 // @ts-check
+// Note: type annotations allow type checking and IDEs autocompletion
 
-const {themes} = require('prism-react-renderer');
-const lightCodeTheme = themes.github;
-const darkCodeTheme = themes.dracula;
+const lightCodeTheme = {
+  plain: {color: '#17263e', backgroundColor: '#ffffff'},
+  styles: [
+    {types: ['keyword', 'function', 'tag', 'number', 'boolean'], style: {color: '#245ac4'}},
+    {types: ['string', 'attr-value'], style: {color: '#9b2452'}},
+    {types: ['comment', 'prolog', 'doctype', 'cdata'], style: {color: '#4a5b73'}},
+  ],
+};
+const darkCodeTheme = {
+  plain: {color: '#ecf1fa', backgroundColor: '#18263b'},
+  styles: [
+    {types: ['keyword', 'function', 'tag', 'number', 'boolean'], style: {color: '#95bbff'}},
+    {types: ['string', 'attr-value'], style: {color: '#f4b6d0'}},
+    {types: ['comment', 'prolog', 'doctype', 'cdata'], style: {color: '#b6c4da'}},
+  ],
+};
 
 /** @type {import('@docusaurus/types').Config} */
 const config = {
   title: 'Dart Nostr',
-  tagline: 'A Dart and Flutter SDK for the Nostr protocol',
+  tagline: 'A Nostr SDK for Dart and Flutter',
   favicon: 'img/favicon.ico',
 
-  url: 'https://anasfik.github.io',
-  baseUrl: '/nostr/',
+  url: process.env.SITE_URL || 'https://nostr.gwhyyy.com',
+  // Set the /<baseUrl>/ pathname under which your site is served
+  // For GitHub pages deployment, it is often '/<projectName>/'
+  baseUrl: process.env.BASE_URL || '/',
+  trailingSlash: true,
+  plugins: [require.resolve('./plugins/docs-search.cjs'), require.resolve('./plugins/analytics.cjs'), function discoveryFiles() {
+    return {
+      name: 'discovery-files',
+      async postBuild({outDir, siteConfig}) {
+        const fs = require('node:fs');
+        const path = require('node:path');
+        const root = `${siteConfig.url}${siteConfig.baseUrl}`;
+        const summary = `# dart_nostr\n\n> An MIT-licensed Nostr SDK for Dart and Flutter. The published package is 11.2.0, which is what these guides and the playground use.\n\n## Documentation\n- [Overview](${root}docs/): SDK capabilities and API conventions.\n- [Installation](${root}docs/installation/): Install the published 11.2.0 release.\n- [Quick start](${root}docs/quick-start/): Connect, publish and subscribe.\n- [Errors](${root}docs/usage/advanced/error-handling/): Typed results and failures.\n- [Source](https://github.com/anasfik/nostr): Implementation and issue tracker.\n`;
+        const files = fs.readdirSync(path.join(__dirname, 'docs'), {recursive: true}).filter(name => name.endsWith('.md')).sort();
+        const full = files.map(name => `\n\n## Source: docs/${name}\n\n${fs.readFileSync(path.join(__dirname, 'docs', name), 'utf8')}`).join('');
+        fs.writeFileSync(path.join(outDir, 'robots.txt'), `User-agent: *\nAllow: /\n\nSitemap: ${root}sitemap.xml\n`);
+        fs.writeFileSync(path.join(outDir, 'llms.txt'), summary);
+        fs.writeFileSync(path.join(outDir, 'llms-full.txt'), summary + full);
+      },
+    };
+  }],
 
-  organizationName: 'anasfik',
-  projectName: 'nostr',
+  // GitHub pages deployment config.
+  // If you aren't using GitHub pages, you don't need these.
+  organizationName: 'anasfik', // Usually your GitHub org/user name.
+  projectName: 'nostr', // Usually your repo name.
 
   onBrokenLinks: 'throw',
-  onBrokenAnchors: 'throw',
+  onBrokenMarkdownLinks: 'warn',
 
-  markdown: {
-    hooks: {
-      onBrokenMarkdownLinks: 'throw',
-      onBrokenMarkdownImages: 'throw',
-    },
-  },
-
+  // Even if you don't use internalization, you can use this field to set useful
+  // metadata like html lang. For example, if your site is Chinese, you may want
+  // to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],
@@ -37,78 +68,52 @@ const config = {
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
         docs: {
-          routeBasePath: '/',
+          routeBasePath: 'docs',
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/anasfik/nostr/edit/main/docs/',
-          showLastUpdateAuthor: false,
-          showLastUpdateTime: false,
+          editUrl:
+            'https://github.com/anasfik/nostr/tree/main/docs/',
         },
         blog: false,
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
-        },
-        sitemap: {
-          filename: 'sitemap.xml',
-          lastmod: 'date',
-          changefreq: 'weekly',
-          priority: 0.5,
         },
       }),
     ],
   ],
 
   themeConfig:
-    /** @type {import('@docusaurus/preset-classic').ThemeConfig} */
+    
     ({
-      image: 'img/logo.png',
-      metadata: [
-        {
-          name: 'description',
-          content:
-            'Documentation for dart_nostr, a Dart and Flutter SDK for the Nostr protocol: keys, events, relays, subscriptions, and NIP utilities.',
-        },
-        {
-          name: 'keywords',
-          content: 'nostr, dart, flutter, sdk, relays, events, nips',
-        },
-      ],
-      colorMode: {
-        defaultMode: 'light',
-        disableSwitch: false,
-        respectPrefersColorScheme: true,
+      // Replace with your project's social card
+      image: 'img/social-card.png',
+      colorMode: {respectPrefersColorScheme: true},
+      announcementBar: {
+        id: 'release-112',
+        backgroundColor: 'var(--surface)',
+        textColor: 'var(--ink-2)',
+        content: `dart_nostr 11.2.0 is published · <a href="${process.env.BASE_URL || '/'}docs/installation/">Install it</a>.`,
+        isCloseable: false,
       },
       navbar: {
         title: 'Dart Nostr',
         logo: {
           alt: 'Dart Nostr logo',
-          src: 'img/logo.png',
-          width: 32,
-          height: 32,
+          src: 'img/logo-nav.png',
+          width: 40,
+          height: 40,
         },
         items: [
+          {to: '/search/', label: 'Search docs', position: 'right'},
+          {href: 'https://pub.dev/packages/dart_nostr', label: 'pub.dev', position: 'right'},
           {
-            to: '/',
-            label: 'Getting started',
+            type: 'docSidebar',
+            sidebarId: 'tutorialSidebar',
             position: 'left',
-          },
-          {
-            to: '/reference/nip-coverage',
-            label: 'Protocols',
-            position: 'left',
-          },
-          {
-            to: '/reference/accessors',
-            label: 'API',
-            position: 'left',
+            label: 'Documentation',
           },
           {
             href: 'https://github.com/anasfik/nostr',
             label: 'GitHub',
-            position: 'right',
-          },
-          {
-            href: 'https://pub.dev/packages/dart_nostr',
-            label: 'Pub',
             position: 'right',
           },
         ],
@@ -119,30 +124,33 @@ const config = {
           {
             title: 'Docs',
             items: [
-              {label: 'Getting started', to: '/'},
-              {label: 'Installation', to: '/installation'},
-              {label: 'Quick start', to: '/quick-start'},
-            ],
-          },
-          {
-            title: 'Reference',
-            items: [
-              {label: 'Protocol coverage', to: '/reference/nip-coverage'},
-              {label: 'API accessors', to: '/reference/accessors'},
+              {
+                label: 'Documentation',
+                to: '/docs/',
+              },
             ],
           },
           {
             title: 'Community',
             items: [
               {
-                label: 'GitHub issues',
+                label: 'Issues',
                 href: 'https://github.com/anasfik/nostr/issues',
               },
               {
-                label: 'Pub package',
+                label: 'Pub',
                 href: 'https://pub.dev/packages/dart_nostr',
               },
-              {label: 'Author', href: 'https://github.com/anasfik'},
+            ],
+          },
+          {
+            title: 'More',
+            items: [
+
+              {
+                label: 'Author',
+                href: 'https://github.com/anasfik',
+              },
             ],
           },
         ],
@@ -151,11 +159,7 @@ const config = {
       prism: {
         theme: lightCodeTheme,
         darkTheme: darkCodeTheme,
-        additionalLanguages: ['dart'],
-      },
-      tableOfContents: {
-        minHeadingLevel: 2,
-        maxHeadingLevel: 3,
+        additionalLanguages: ['dart']
       },
     }),
 };

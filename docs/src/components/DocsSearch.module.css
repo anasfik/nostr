@@ -1,0 +1,23 @@
+.search {width: 100%; max-width: 54rem; margin: 0 auto; padding: var(--space-2xl) var(--space-m);}
+.search h1 {font-size: clamp(var(--step-3), 4vw, var(--step-5)); letter-spacing: -.035em; line-height: 1.15; text-wrap: balance;}
+.lead {max-width: 60ch; color: var(--ink-2); margin-bottom: var(--space-xl);}
+.search form {margin-bottom: var(--space-l);}
+.search label {display: block; font-weight: 600; margin-bottom: var(--space-2xs);}
+.controls {display: grid; grid-template-columns: 1fr auto; gap: var(--space-xs);}
+.controls input {min-width: 0; width: 100%; background: var(--surface); color: var(--ink); border: 1px solid var(--line); border-radius: var(--radius); padding: var(--space-xs) var(--space-s); font: inherit; min-height: 48px;}
+.controls button {font: inherit; font-weight: 600; min-height: 48px; padding: var(--space-xs) var(--space-m); border: 1px solid var(--accent); border-radius: var(--radius); background: var(--accent); color: var(--base); cursor: pointer; white-space: nowrap;}
+.controls button:hover {background: var(--ifm-color-primary-dark);}
+.controls button:active {transform: translateY(1px);}
+.hint {font-size: .875rem; color: var(--ink-2); margin-top: var(--space-xs);}
+.clear {display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline;}
+.results {list-style: none; padding: 0; margin: var(--space-m) 0;}
+.results li {padding: var(--space-m) 0; border-top: 1px solid var(--line);}
+.results a {font-size: var(--step-1); font-weight: 600; text-decoration: underline;}
+.results p {margin: var(--space-2xs) 0 0; max-width: 65ch; color: var(--ink-2);}
+.empty {margin-top: var(--space-l);}
+.startingPoints {display: flex; flex-wrap: wrap; gap: var(--space-xs) var(--space-m); border-top: 1px solid var(--line); padding-top: var(--space-m); margin-top: var(--space-xl);}
+.startingPoints a {display: inline-flex; align-items: center; min-height: 44px; text-decoration: underline;}
+@media (max-width: 480px) {
+  .search {padding-top: var(--space-xl);}
+  .controls {grid-template-columns: 1fr;}
+}

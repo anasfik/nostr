@@ -89,6 +89,6 @@ Future<void> main() async {
 
 ## Related
 
-- [Error handling](./error-handling) for `NostrResult` and `NostrFailure`
-- [Low-level API](./low-level-api) for direct relay control
-- [Connecting to relays](../relays-and-events/connecting-to-relays) for the connection lifecycle
+- [Error handling](./error-handling.md) for `NostrResult` and `NostrFailure`
+- [Low-level API](./low-level-api.md) for direct relay control
+- [Connecting to relays](../relays-and-events/connecting-to-relays.md) for the connection lifecycle

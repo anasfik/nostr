@@ -5,7 +5,7 @@ description: Encode and decode NIP-19 entities — npub, nsec, nprofile, nevent,
 
 # NIP-19 encoding
 
-NIP-19 covers the bech32 forms used to share keys and event references. In dart_nostr they are methods on `nostr.bech32`; the full method-by-method reference, including the exact decoded map keys, is on [Keys — NIP-19 bech32 encoding](../keys-management/bech32-encoding).
+NIP-19 covers the bech32 forms used to share keys and event references. In dart_nostr they are methods on `nostr.bech32`; the full method-by-method reference, including the exact decoded map keys, is on [Keys — NIP-19 bech32 encoding](../keys-management/bech32-encoding.md).
 
 | Entity | Method |
 |---|---|
@@ -53,6 +53,6 @@ Be aware of two input rules: `encodeNAddr` throws `ArgumentError` for a kind tha
 
 ## Next
 
-- [NIP-05 identifiers](./nip05) for `name@domain` verification
-- [Keys](/usage/keys-management/) for generation and signing
-- [Reference — accessors](../../reference/accessors) for the per-NIP surface
+- [NIP-05 identifiers](./nip05.md) for `name@domain` verification
+- [Keys](../keys-management/index.md) for generation and signing
+- [Reference — accessors](../../reference/accessors.md) for the per-NIP surface

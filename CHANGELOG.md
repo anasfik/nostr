@@ -143,6 +143,8 @@
 
 ### Fixes
 
+- Explicit disconnect and resource teardown invalidate pending handshakes and reconnect attempts, preventing closed sessions from reconnecting later.
+- Package archive excludes the documentation site, Flutter playground, deployment files and generated web assets.
 - Runtime relay management added: `addRelays()`, `removeRelay()`, `liveRelayUrls` on instances — adding a relay no longer drops existing connections
 - `NostrFailure.unknown` messages now include the underlying error type and text instead of hiding the cause
 - `nostr.nip21` convenience accessor for URI parsing; `NostrBech32` logger is now optional

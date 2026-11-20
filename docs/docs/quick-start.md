@@ -83,8 +83,8 @@ For an application that is shutting down for good, call `await nostr.dispose()` 
 
 ## Next steps
 
-- [Core concepts](./must-know) — instance model, signer contract, results, relay state
-- [Key management](./usage/keys-management/) — derive, validate, sign, and encode keys
-- [Connecting to relays](./usage/relays-and-events/connecting-to-relays) — options, timeouts, retries
-- [Publishing events](./usage/relays-and-events/publishing-events) — event kinds and OK handling
-- [Subscribing to events](./usage/relays-and-events/subscribing-to-events) — filters, streams, EOSE
+- [Core concepts](./must-know.md) — instance model, signer contract, results, relay state
+- [Key management](./usage/keys-management/index.md) — derive, validate, sign, and encode keys
+- [Connecting to relays](./usage/relays-and-events/connecting-to-relays.md) — options, timeouts, retries
+- [Publishing events](./usage/relays-and-events/publishing-events.md) — event kinds and OK handling
+- [Subscribing to events](./usage/relays-and-events/subscribing-to-events.md) — filters, streams, EOSE
