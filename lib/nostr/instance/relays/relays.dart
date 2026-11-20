@@ -866,6 +866,8 @@ class NostrRelays implements NostrRelaysBase {
             relay: relay,
           );
         } else if (messageType == NostrConstants.eose) {
+          // NIP-67 hints are carried on the typed command, so existing
+          // onEose callbacks receive them unchanged.
           _handleEoseCommandMessageFromRelay(
             eoseCommand: NostrRequestEoseCommand.fromDecodedMessage(decoded),
             relay: relay,

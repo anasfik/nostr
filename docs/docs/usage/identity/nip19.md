@@ -1,28 +1,58 @@
 ---
 sidebar_position: 2
-sidebar_label: Identifiers
-title: "Nostr identifiers: npub, nsec and relay hints"
-description: Choose a Nostr identifier for a public key, private key, profile or event. Learn when to use npub, nsec, nprofile and nevent in a Dart app.
+description: Encode and decode NIP-19 entities — npub, nsec, nprofile, nevent, naddr.
 ---
 
-# Choose a Nostr identifier
+# NIP-19 encoding
 
-NIP-19 adds recognizable prefixes to identifiers that people copy, share or scan. It does not replace the hex keys and event IDs used in Nostr protocol events and filters.
+NIP-19 covers the bech32 forms used to share keys and event references. In dart_nostr they are methods on `nostr.bech32`; the full method-by-method reference, including the exact decoded map keys, is on [Keys — NIP-19 bech32 encoding](../keys-management/bech32-encoding).
 
-## Which format should an app display?
+| Entity | Method |
+|---|---|
+| `npub` | `nostr.bech32.encodePublicKeyToNpub(pubkey)` |
+| `nsec` | `nostr.bech32.encodePrivateKeyToNsec(privkey)` |
+| `nprofile` | `nostr.bech32.encodeNProfile(pubkey:, userRelays:)` |
+| `nevent` | `nostr.bech32.encodeNevent(eventId:, pubkey:, userRelays:)` |
+| `naddr` | `nostr.bech32.encodeNAddr(kind:, authorPubkey:, identifier:, userRelays:)` |
 
-| Format | Contains | Typical use |
-|---|---|---|
-| `npub` | Public key | Display or share an account identifier |
-| `nsec` | Private key | Secret key import or export, never a public profile field |
-| `nprofile` | Public key and optional relay hints | Share a profile with clues about where it may be found |
-| `nevent` | Event ID and optional relay/author hints | Share a reference to an existing event |
-| `naddr` | Author, kind and identifier coordinate | Refer to an addressable event |
+Decoding is symmetric: `decodeNpubKeyToPublicKey` and `decodeNsecKeyToPrivateKey` return hex strings, while the three TLV decoders return a `Map<String, dynamic>` rather than a typed object.
 
-## Sharing is not storage or verification
+The type `NostrBech32` is also exported under the alias `NostrNip19`, so either name works in signatures.
 
-An `nsec` string is still a private key. Encoding it does not encrypt it. Never include it in a public event, a screenshot, telemetry or a bug report.
+```dart
+import 'package:dart_nostr/dart_nostr.dart';
 
-Relay hints help another client locate a profile or event; they do not prove availability, ownership or trust. Decoding an identifier does not fetch an event or verify its signature. Treat decoded values as external input before using them in your app.
+void main() {
+  final nostr = Nostr();
+  final keys = nostr.keys.generateKeyPair();
+  final note = NostrEvent.fromPartialData(
+    kind: 1,
+    content: 'hello nostr',
+    keyPairs: keys,
+  );
 
-Use the [Dart NIP-19 encoding examples](../keys-management/bech32-encoding.md) for method names and round trips. For the wire-format rules and prefix definitions, read the [NIP-19 specification](https://github.com/nostr-protocol/nips/blob/master/19.md).
+  final npub = nostr.bech32.encodePublicKeyToNpub(keys.public);
+  final nprofile = nostr.bech32.encodeNProfile(
+    pubkey: keys.public,
+    userRelays: const ['wss://relay.damus.io'],
+  );
+  final nevent = nostr.bech32.encodeNevent(
+    eventId: note.id!,
+    pubkey: keys.public,
+    userRelays: const ['wss://relay.damus.io'],
+  );
+
+  final profile = nostr.bech32.decodeNprofileToMap(nprofile);
+  final eventRef = nostr.bech32.decodeNeventToMap(nevent);
+
+  print([npub, profile['pubkey'], eventRef['eventId']]);
+}
+```
+
+Be aware of two input rules: `encodeNAddr` throws `ArgumentError` for a kind that does not fit in 32 bits, and the `naddr` decoder rejects anything that is not an `naddr` entity. The `npub` and `nsec` decoders only assert their prefix, and assertions are removed in release builds.
+
+## Next
+
+- [NIP-05 identifiers](./nip05) for `name@domain` verification
+- [Keys](/usage/keys-management/) for generation and signing
+- [Reference — accessors](../../reference/accessors) for the per-NIP surface

@@ -1,63 +1,132 @@
 ---
 sidebar_position: 3
-description: Encode and decode npub, nsec, nprofile, nevent, and naddr using NIP-19.
+description: Encode and decode npub, nsec, nprofile, nevent, and naddr with NIP-19.
 ---
 
-# NIP-19 Bech32 Encoding
+# NIP-19 bech32 encoding
 
-`nostr.bech32` handles all NIP-19 entity encoding and decoding.
+`nostr.bech32` (type `NostrBech32`, also aliased as `NostrNip19`) converts between hex keys or event coordinates and their bech32 forms. The TLV decoders return `Map<String, dynamic>`; there are no typed entity classes.
 
-For help choosing a format rather than calling the API, read [Nostr identifiers and relay hints](../identity/nip19.md).
+| Entity | Encode | Decode | Decoded keys |
+|---|---|---|---|
+| `npub` | `encodePublicKeyToNpub(pubkey)` | `decodeNpubKeyToPublicKey(npub)` | hex string |
+| `nsec` | `encodePrivateKeyToNsec(privkey)` | `decodeNsecKeyToPrivateKey(nsec)` | hex string |
+| `nprofile` | `encodeNProfile(pubkey:, userRelays:)` | `decodeNprofileToMap(nprofile)` | `pubkey`, `relays` |
+| `nevent` | `encodeNevent(eventId:, pubkey:, userRelays:)` | `decodeNeventToMap(nevent)` | `eventId`, `pubkey`, `relays` |
+| `naddr` | `encodeNAddr(kind:, authorPubkey:, identifier:, userRelays:)` | `decodeNaddrToMap(naddr)` | `kind`, `pubkey`, `identifier`, `relays` |
 
-## npub / nsec
+`userRelays` is optional on all encoders and defaults to an empty list. On `naddr`, `identifier` is the event's `d` tag value and also defaults to an empty string.
+
+## npub and nsec
 
 ```dart
-final nostr = Nostr.instance;
-final keyPair = nostr.keys.generateKeyPair();
+import 'package:dart_nostr/dart_nostr.dart';
 
-// encode
-final npub = nostr.bech32.encodePublicKeyToNpub(keyPair.public);
-final nsec = nostr.bech32.encodePrivateKeyToNsec(keyPair.private);
+void main() {
+  final nostr = Nostr();
+  final keyPairs = nostr.keys.generateKeyPair();
 
-print(npub);  // npub1...
-// nsec is a secret. Never log, publish, or send it to analytics.
+  final npub = nostr.bech32.encodePublicKeyToNpub(keyPairs.public);
+  final nsec = nostr.bech32.encodePrivateKeyToNsec(keyPairs.private);
 
-// decode
-final pubKey = nostr.bech32.decodeNpubKeyToPublicKey(npub);
-final privKey = nostr.bech32.decodeNsecKeyToPrivateKey(nsec);
+  print(npub); // npub1...
+  print(nsec); // nsec1...
 
-print(pubKey == keyPair.public);    // true
-print(privKey == keyPair.private);  // true
+  final publicKey = nostr.bech32.decodeNpubKeyToPublicKey(npub);
+  final privateKey = nostr.bech32.decodeNsecKeyToPrivateKey(nsec);
+
+  print(publicKey == keyPairs.public); // true
+  print(privateKey == keyPairs.private); // true
+}
 ```
+
+The `npub` and `nsec` decoders assert on the prefix in debug builds only. In release builds a mismatched entity decodes to hex without that check, so validate the prefix yourself if the input is untrusted.
 
 ## nprofile
 
-`nprofile` encodes a public key with optional relay hints.
+`nprofile` carries a public key plus relay hints. The decoded value is a map whose `relays` entry is a list of strings.
 
 ```dart
-final nprofile = nostr.bech32.encodeNProfile(
-  pubkey: keyPair.public,
-  userRelays: ['wss://relay.damus.io'],
-);
-print(nprofile);  // nprofile1...
+import 'package:dart_nostr/dart_nostr.dart';
 
-final decoded = nostr.bech32.decodeNprofileToMap(nprofile);
-print(decoded['pubkey']);
-print(decoded['relays']);
+void main() {
+  final nostr = Nostr();
+  final keyPairs = nostr.keys.generateKeyPair();
+
+  final nprofile = nostr.bech32.encodeNProfile(
+    pubkey: keyPairs.public,
+    userRelays: const ['wss://relay.damus.io'],
+  );
+  print(nprofile); // nprofile1...
+
+  final decoded = nostr.bech32.decodeNprofileToMap(nprofile);
+
+  print(decoded['pubkey']); // hex public key
+  print(decoded['relays']); // [wss://relay.damus.io]
+}
 ```
 
 ## nevent
 
-`nevent` encodes an event reference with optional relay and author hints.
+`nevent` references an event by id, optionally with the author's public key and relay hints. Create the event first to have an id to encode.
 
 ```dart
-final nevent = nostr.bech32.encodeNevent(
-  eventId: event.id!,
-  userRelays: ['wss://relay.damus.io'],
-  pubkey: keyPair.public,
-);
-print(nevent);  // nevent1...
+import 'package:dart_nostr/dart_nostr.dart';
 
-final decoded = nostr.bech32.decodeNeventToMap(nevent);
-print(decoded['eventId']);
+void main() {
+  final nostr = Nostr();
+  final keyPairs = nostr.keys.generateKeyPair();
+  final note = NostrEvent.fromPartialData(
+    kind: 1,
+    content: 'hello nostr',
+    keyPairs: keyPairs,
+  );
+
+  final nevent = nostr.bech32.encodeNevent(
+    eventId: note.id!,
+    pubkey: keyPairs.public,
+    userRelays: const ['wss://relay.damus.io'],
+  );
+  print(nevent); // nevent1...
+
+  final decoded = nostr.bech32.decodeNeventToMap(nevent);
+
+  print(decoded['eventId']); // 64-character hex event id
+  print(decoded['pubkey']); // author public key
+  print(decoded['relays']); // [wss://relay.damus.io]
+}
 ```
+
+## naddr
+
+`naddr` addresses a parameterised replaceable event by kind, author, and `d` tag. The relay hints are encoded as TLV type 3.
+
+```dart
+import 'package:dart_nostr/dart_nostr.dart';
+
+void main() {
+  final nostr = Nostr();
+  final keyPairs = nostr.keys.generateKeyPair();
+
+  final naddr = nostr.bech32.encodeNAddr(
+    kind: 30023,
+    authorPubkey: keyPairs.public,
+    identifier: 'hello-nostr',
+    userRelays: const ['wss://relay.damus.io'],
+  );
+  print(naddr); // naddr1...
+
+  final decoded = nostr.bech32.decodeNaddrToMap(naddr);
+
+  print(decoded['kind']); // 30023
+  print(decoded['pubkey']); // author public key
+  print(decoded['identifier']); // hello-nostr
+  print(decoded['relays']); // [wss://relay.damus.io]
+}
+```
+
+`encodeNAddr` rejects a kind outside the unsigned 32-bit range with `ArgumentError`, and `decodeNaddrToMap` rejects an entity whose prefix is not `naddr`.
+
+## Share the same key with a name
+
+`nprofile` and `npub` both identify a public key. To attach a human-readable identifier to the same key, see [NIP-05](../identity/nip05).

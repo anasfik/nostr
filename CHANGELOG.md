@@ -1,5 +1,77 @@
 # Changelog
 
+## 11.2.0
+
+**NIP coverage: 87 of the 100 canonical NIPs**
+
+### Added
+
+- **Shared NIP helpers** (`nips/common/tags.dart`): `NostrTags` (read/add/remove tags immutably), `NostrEventAddress` (`a`-coordinate parse/build, addressable-kind check) and `NostrValidators` (hex64, integer/time coercion, lowercase and geohash checks).
+- **NIP-24 extra metadata** (`NostrNip24`, `nips/nip24/nip24.dart`): kind-0 extras (`display_name`, `website`, `banner`, `bot`, `birthday`), deprecated-field cleanup, and `r`/`i`/`title`/`t` tag helpers with lowercase hashtag validation.
+- **NIP-32 labeling** (`NostrNip32`, `nips/nip32/nip32.dart`): builds and signs kind-1985 labels for `e`, `p`, `a`, `r` and `t` targets with optional relay hints.
+- **NIP-34 git** (`NostrNip34`, `nips/nip34/nip34.dart`): repository announcements (30617), repo state (30618), patches (1617), pull requests (1618/1619), issues (1621), statuses (1630–1633), grasp lists (10317), clone-URI parsing and trusted status resolution.
+- **NIP-35 torrents** (`NostrNip35`, `nips/nip35/nip35.dart`): kind-2003 indexes with `file`/`tracker`/`i` tags, plus kind-2004 comment detection.
+- **NIP-36 content warnings** (`NostrNip36`, `nips/nip36/nip36.dart`): distinguishes a bare `content-warning` tag from a reasoned one and preserves an explicitly empty reason.
+- **NIP-37 draft wraps** (`NostrNip37`, `nips/nip37/nip37.dart`): kind-31234 encrypted drafts, kind-1234 checkpoints and kind-10013 encrypted relay lists, including draft deletion (empty content).
+- **NIP-38 user statuses** (`NostrNip38`, `nips/nip38/nip38.dart`): kind-30315 statuses with `r`/`p`/`e`/`a` references, an optional `expiration`, and empty content as the clear signal.
+- **NIP-43 relay access** (`NostrNip43`, `nips/nip43/nip43.dart`): role definitions (33534), membership lists (13534), add/remove events (8000/8001) and join/leave requests (28934/28936); templates carry exactly one NIP-70 marker.
+- **NIP-48 bridged events** (`NostrNip48`, `nips/nip48/nip48.dart`): `proxy` tag parse/build for any event kind.
+- **NIP-52 calendars** (`NostrNip52`, `nips/nip52/nip52.dart`): date-based events (31922), time-based events (31923), calendars (31924) and RSVPs (31925).
+- **NIP-53 live** (`NostrNip53`, `nips/nip53/nip53.dart`): streams (30311), chat (1311), rooms (30312), meetings (30313), presence (10312), participant roles and NIP-53 activity proofs.
+- **NIP-56 reporting** (`NostrNip56`, `nips/nip56/nip56.dart`): kind-1984 reports with typed report types and NIP-32 label interop.
+- **NIP-5A static sites** (`NostrNip5a`, `nips/nip5a/nip5a.dart`): root manifests (15128), named manifests (35128) and snapshot manifests (5128).
+- **NIP-60 cashu** (`NostrNip60`, `nips/nip60/nip60.dart`): wallet state (17375), token events (7375), spending history (7376), mint quotes (7374), spend planning and NIP-09 token deletion.
+- **NIP-61 nutzaps** (`NostrNip61`, `nips/nip61/nip61.dart`): mint recommendations (10019), P2PK-locked nutzaps (9321) and structural nutzap verification.
+- **NIP-62 request to vanish** (`NostrNip62`, `nips/nip62/nip62.dart`): kind-62 requests, per-relay or `ALL_RELAYS`.
+- **NIP-64 chess** (`NostrNip64`, `nips/nip64/nip64.dart`): PGN tag parsing and 80-column movetext serialization for kind 64.
+- **NIP-66 liveness** (`NostrNip66`, `nips/nip66/nip66.dart`): monitor announcements (10166), relay discovery events (30166), timeouts and check lists; read-only, never gates connections.
+- **NIP-67 EOSE hints** (`NostrNip67`, `nips/nip67/nip67.dart`): parses `finish`/`more`/`auth` hints from a three-element `EOSE` and surfaces them on `NostrEOSE.hints` and `NostrRequestEoseCommand.hints`.
+- **NIP-68 pictures** (`NostrNip68`, `nips/nip68/nip68.dart`): kind-20 picture-first events with `imeta` and `annotate-user` annotations.
+- **NIP-69 P2P orders** (`NostrNip69`, `nips/nip69/nip69.dart`): kind-38383 orders with fiat ranges, payment methods, ratings and platform/source tags.
+- **NIP-70 protected events** (`NostrNip70`, `nips/nip70/nip70.dart`): detects the `['-']` protection tag, returns a copy carrying exactly one such tag (id/sig cleared for re-signing), and reports whether a protected event may be embedded in a repost.
+- **NIP-71 video** (`NostrNip71`, `nips/nip71/nip71.dart`): regular (21/22) and addressable (34235/34236) video events with `imeta` text tracks.
+- **NIP-73 external content ids** (`NostrNip73`, `nips/nip73/nip73.dart`): `i`/`k` parsing, kind derivation, tags and filters.
+- **NIP-7D forum threads** (`NostrNip7d`, `nips/nip7d/nip7d.dart`): kind-11 thread templates and parsing; replies are NIP-22 kind-1111 comments.
+- **NIP-78 custom app data** (`NostrNip78`, `nips/nip78/nip78.dart`): builds and signs kinds 78 and 30078, validates the `d` tag required by the addressable kind, and parses either back into `NostrAppData`.
+- **NIP-85 trusted assertions** (`NostrNip85`, `nips/nip85/nip85.dart`): user (30382), event (30383), address (30384) and identifier (30385) assertions plus provider recommendations (10040).
+- **NIP-86 relay management** (`NostrNip86`, `nips/nip86/nip86.dart`): JSON-RPC client for relay management, authorized with NIP-98.
+- **NIP-87 ecash discovery** (`NostrNip87`, `nips/nip87/nip87.dart`): kind-38000 recommendations, cashu mint info (38172) and fedimint info (38173).
+- **NIP-88 polls** (`NostrNip88`, `nips/nip88/nip88.dart`): builds/signs kind-1068 polls and kind-1018 responses, parses polls and computes tallies from kind-1018 responses.
+- **NIP-89 app handlers** (`NostrNip89`, `nips/nip89/nip89.dart`): kind-31989 recommendations and kind-31990 handler information, with platform URL tags.
+- **NIP-92 media attachments** (`NostrNip92`, `nips/nip92/nip92.dart`): parses and re-serializes `imeta` tags, including per-field metadata and profile picture/banner lookups.
+- **NIP-A0 voice messages** (`NostrNipA0`, `nips/nipa0/nipa0.dart`): kind-1222 messages and kind-1244 replies with waveform and duration.
+- **NIP-A3 payment targets** (`NostrNipA3`, `nips/nipa3/nipa3.dart`): kind-10133 `payto` targets.
+- **NIP-A4 public messages** (`NostrNipA4`, `nips/nipa4/nipa4.dart`): kind-24 messages with receiver tags.
+- **NIP-B0 bookmarks** (`NostrNipB0`, `nips/nipb0/nipb0.dart`): kind-39701 web bookmarks with URL coordinates, topics and titles.
+- **NIP-C0 code snippets** (`NostrNipC0`, `nips/nipc0/nipc0.dart`): kind-1337 snippets with language, repo, dependencies and SPDX license tags.
+- **NIP-C7 chats** (`NostrNipC7`, `nips/nipc7/nipc7.dart`): kind-9 chat messages, four-slot `q` replies and chat filters.
+- **NIP-CC geocaching** (`NostrNipCC`, `nips/nipcc/nipcc.dart`): kind-37516 listings, kind-37517 curation lists, kind-7516 found logs, kind-7517 verification proofs and kind-1111 log comments.
+- **NIP-CD slash commands** (`NostrNipCD`, `nips/nipcd/nipcd.dart`): kind-31992 command definitions, kind-10992 installed lists and invocation parsing with typed arguments and scopes.
+- **NIP-F4 podcasts** (`NostrNipF4`, `nips/nipf4/nipf4.dart`): kind-10154 metadata, kind-10064 authored lists and kind-54 episodes.
+- **`NostrNips` accessors** for every new module: `nip24`, `nip32`, `nip34`, `nip35`, `nip36`, `nip37`, `nip38`, `nip43`, `nip48`, `nip52`, `nip53`, `nip5a`, `nip56`, `nip60`, `nip61`, `nip62`, `nip64`, `nip66`, `nip68`, `nip69`, `nip70`, `nip71`, `nip73`, `nip78`, `nip7d`, `nip85`, `nip86`, `nip87`, `nip88`, `nip89`, `nip92`, `nipc0`, `nipc7`, `nipCC`, `nipcd`, `nipa0`, `nipa3`, `nipa4`, `nipB0`, `nipf4`. Stateless helpers are cached const instances; signer-bound helpers rebuild on `bindSigner`.
+- **`createComment` scopes**: `NostrSocialBuilder.createComment` accepts address (`rootAddress`/`parentAddress`) and external (`rootExternalId`/`parentExternalId`/`externalKind`) scopes in addition to event ids, per `22.md:44-198`.
+
+### Changed
+
+- **NIP-22 comments are kind 1111** (breaking behavior): `createComment` no longer emits `kind: 22`, which NIP-71 reserves for short video. Root scope uses uppercase `K`/`E`/`A`/`I` tags, the direct parent uses lowercase `k`/`e`/`a`/`i` tags. `targetEventId` and `targetAuthorPubkey` became optional (required for event scope only); mixing root scope families throws `ArgumentError`. Existing calls still compile, but the emitted kind and tags change.
+- **NIP-53 rooms require `roomName`**: `generateRoomTemplate` rejects a blank room name, matching `53.md:142`; a kind-30312 room without one is invalid.
+- **NIP-53 unknown status is typed null**: live events, rooms and meetings expose `status` as `null` for values outside `planned`/`live`/`ended` (and for an absent tag), with the raw tag value kept in `rawStatus`.
+- **NIP-37 and NIP-60 need self-addressed NIP-44**: the bound signer must be able to encrypt and decrypt to its own public key. Remote signers that cannot will fail at runtime, which is documented on the accessors.
+- **NIP-67 EOSE parsing**: `NostrEOSE.fromRelayMessage` reads the subscription id from slot 1 instead of the last element, so a three-element `EOSE` no longer fails a cast and the hint array is never mistaken for the subscription id; hints are exposed separately on both EOSE models.
+
+### Fixed
+
+- **NIP-60 cashu payloads**: malformed NIP-44 ciphertext in wallet, token, history and quote events now surfaces as `FormatException` with the underlying reason instead of an uncaught crypto error.
+- **NIP-61 nutzap proofs**: every proof must carry a NUT-11 P2PK secret locked to the advertised `02`-prefixed key; missing or differently locked proofs are rejected rather than accepted.
+- **NIP-CC verification**: only found logs whose embedded kind-7517 proof is authored by the cache verification key, references the cache `naddr`, names the finder and matches the log `a` address count as verified finds, so forged or foreign proofs cannot win.
+- **NIP-34 status resolution**: only the root author and listed maintainers can set a patch/PR/issue status; the most recent trusted status wins.
+- **NIP-7D / NIP-C7 templates**: `extraTags` can no longer inject a second `title` on a thread, and replies reject a blank `q` target instead of emitting an unusable tag.
+
+### Documentation
+
+- README coverage table now reports 87 supported, 4 partial (12/20/33/40) and 9 missing canonical NIPs against `nostr-protocol/nips` @ `bec0fc8`, with Dart paths and handled kinds per NIP; the accessor table lists every `NostrNips` getter; the roadmap is reduced to the 9 remaining NIPs and the testing section reports 992 tests.
+- `pubspec.yaml`: version 11.2.0 and a description matching the measured coverage.
+
 ## 11.1.0
 
 **NIP layout consolidation + new NIP coverage**
